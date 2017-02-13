@@ -1,0 +1,127 @@
+﻿@using MVCFrontend.Helpers
+@model MVCFrontend.Models.MessageViewModel
+@{
+    ViewBag.Title = "About";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+<div>
+    <p>Please enter a string identifying your message to the remote queue. </p>
+    <p> For security reasons, everything that is not a "[0-9a-zA-Z-_]" will be stripped from this ID-string.</p>
+    <form id ="msgForm" action="" method="post">
+            <input type="text" name="message" /> <br />
+            <input type="hidden" name="socketToken" value="@Model.SocketToken"/>
+            <input type="submit" value="Send"/>
+    </form>
+</div>
+
+<div id="apiResult">
+    <p>Api Result</p>
+</div>
+<hr />
+<div>Remote Log (=socket chat)</div>
+<div id="log" style="border: solid 1px #3399CC; padding: 3px;"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#msgForm').submit(function (event) {
+            SubmitIfLoggedOn(event);
+        });
+    });
+
+    function SubmitIfLoggedOn() {
+        event.preventDefault();
+        $.ajax({
+            type: 'GET', // define the type of HTTP verb we want to use (POST for our form)
+            url: '/Message/AuthPing', // the url where we want to POST
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer @Model.AjaxAccessToken');
+            },
+        })
+        .done(function (data) {
+            Submit();
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $("#apiResult").text("OAUTH2 Silicon Token expired, refresh the page.");
+        });
+    }
+    function Submit(event){
+        $("#apiResult").text("Sending your message to remote queue..");
+        $("#log").empty();
+        ConnectToSocketServer();
+        var formData = {
+            'message': $('input[name=message]').val(),
+            'socketToken': $('input[name=socketToken]').val()
+        };
+        $.ajax({
+            type: 'POST', // define the type of HTTP verb we want to use (POST for our form)
+            url: '/Message/ToRemoteQueue', // the url where we want to POST
+            data: formData, // our data obj ensures the formcollection will be as usual
+            dataType: 'text', // what type of data do we expect back from the server
+            encode: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer @Model.AjaxAccessToken');
+            },
+        })
+        .done(function (data) {
+            $("#apiResult").text(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            alert("Call to queue manager failed: error= " + errorThrown);
+        })
+}
+</script>
+<script>
+    // Create SocketIO instance, connect
+    var _gSocket = null;
+    var serverUrl = '@Appsettings.SocketServerUrl()';
+
+    function ConnectToSocketServer() {
+        if ("WebSocket" in window) {
+            var socketToken = '@Model.SocketToken';
+            if (socketToken.length > 0) {
+                try {
+                    if (_gSocket != null) {
+                        //alert('closing existing socket..');
+                        _gSocket.close();
+                    }
+                    _gSocket = new WebSocket(serverUrl);
+                    LogMessage("..chat log initialized.\n");
+                    // Add a message listener
+                    _gSocket.onmessage = function (msg) {
+                        if (msg.data.toString().startsWith(socketToken.toString())) {
+                            var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
+                            LogMessage(msgWithoutToken);
+                        }
+                        else {
+                            LogMessage("Message from another session..Skip - " + msg.data);
+                        }
+
+                    };
+                    _gSocket.onerror = function (msg) {
+                        LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                    };
+                }
+                catch (ex) {
+                    LogMessage("Exception connecting to host or socket:");
+                    LogMessage(ex.message);
+                }
+            }
+            else { 
+                LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+            }
+        }
+        else {
+            LogMessage("webSockets are not supported on this browser, the chat log will not work.");
+        }
+    }
+
+    function socketDisconnected(socketArg){
+        return socketArg.ready == 0;
+    }
+
+    function LogMessage(msg) {
+        $("#log").prepend("<p>" + msg + "</p>");
+    }
+</script>

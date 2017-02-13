@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "Contact";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+<div id="log">Log messages come here through a socket connection :)<br /></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+		// Create SocketIO instance, connect
+		var socket;
+		try {
+			socket = new WebSocket('ws://localhost:8181');
+			// Add a message listener
+			socket.onmessage = function(msg) {
+				LogMessage(msg.data);
+			};
+	}
+	catch (ex){
+		LogMessage("(Obfuscated)Error connecting to host or socket.");
+	}
+        function LogMessage(msg){
+            $("#log").append("<p>" + msg + "</p>");
+        }
+</script>

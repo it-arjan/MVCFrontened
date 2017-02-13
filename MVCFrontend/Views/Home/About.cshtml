@@ -1,0 +1,47 @@
+﻿@model MVCFrontend.Models.AboutModel
+@{
+    ViewBag.Title = "About";
+    // Find difference between Date.Now and Date.UtcNow
+    var localNow = DateTime.Now;
+    var utcNow = DateTime.UtcNow;
+    var difference = localNow - utcNow;
+
+    DateTime UnoxStartDateCET = new DateTime(1970, 1, 1).AddHours(difference.TotalHours);
+    string claimValue;
+}
+<h2>@ViewBag.Title.</h2>
+<h3></h3>
+
+<div>
+    @ViewBag.Message, @Html.ActionLink("Send a message to a remote Message Queue", "Index", "Message")
+</div>
+
+<div>
+    <p>
+        <h3>All Session variables</h3>
+        @if (Session.Count == 0)
+        {
+            <span>-none-</span>
+        }
+        @foreach (string key in Session.Keys)
+        {
+            <span>@key :</span><span>@Session[key].ToString()</span>
+        }
+    </p>
+    <h3>All claims</h3>
+    @foreach (var claim in Model.Claims)
+    {
+        <p>
+
+            @if (claim.Type == "exp" || claim.Type == "auth_time" || claim.Type == "nbf")
+            {
+                claimValue = UnoxStartDateCET.AddSeconds(double.Parse(claim.Value)).ToLongTimeString();
+            }
+            else
+            {
+                claimValue = claim.Value;
+            }
+            <strong> @claim.Type</strong>, @claimValue
+        </p>
+    }
+</div>
