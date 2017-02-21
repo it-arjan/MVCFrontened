@@ -9,56 +9,76 @@ namespace MVCFrontend.Helpers
 {
     public static class Appsettings
     {
-        public static string AuthUrlKey()
-        {
-            return string.Format("facing.{0}.authserver", ConfigurationManager.AppSettings.Get("facing").ToLower());
-        }
+        public const string SchemeKey = "scheme";
+        public const string AuthServerKey = "authserver";
+        public const string SocketPortKey = "websocket.port";
+        public const string SocketSchemeKey = "websocket.scheme";
+        public const string HostnameKey = "hostname";
+        public const string QueueApiUrlKey = "queue.deliver.api";
 
-        public static string HostUrlKey()
-        {
-            return string.Format("facing.{0}.host.url", ConfigurationManager.AppSettings.Get("facing").ToLower());
-        }
+        public const string SiliconClientIdKey = "SiliconClientId";
+        public const string SiliconClientSecretKey = "SiliconClientSecret";
 
-        public static string QueueApiUrlKey()
-        {
-            return string.Format("facing.{0}.queue.api", ConfigurationManager.AppSettings.Get("facing").ToLower());
-        }
-
-        public static string SocketServerUrlKey()
-        {
-            return string.Format("facing.{0}.socketserver.url", ConfigurationManager.AppSettings.Get("facing").ToLower());
-        }
+        public const string FrontendClientIdKey = "FrontendClientId";
 
         public static string AuthUrl()
         {
-            var key = AuthUrlKey();
-            return GetWithSlash(key);
+            return string.Format("{0}://{1}/", Scheme(), AuthServer());
         }
-        public static string HostUrl()
+        public static string AuthServer()
         {
-            var key = HostUrlKey();
-            return GetWithSlash(key);
+            return ConfigurationManager.AppSettings.Get(AuthServerKey);
         }
 
+        public static string HostUrl()
+        {
+            return string.Format("{0}://{1}/", Scheme(), Hostname());
+        }
         public static string QueueApiUrl()
         {
-            var key = QueueApiUrlKey();
-            return GetWithSlash(key);
+            return string.Format("{0}://{1}/", Scheme(), QueueApi());
         }
+        public static string QueueApi()
+        {
+            return ConfigurationManager.AppSettings.Get(QueueApiUrlKey);
+        }
+
         public static string SocketServerUrl()
         {
-            var key = SocketServerUrlKey();
-            return GetWithSlash(key);
+            return string.Format("{0}://{1}:{2}/", SocketScheme(), Hostname(), SocketPort());
+        }
+
+        public static string Scheme()
+        {
+            return ConfigurationManager.AppSettings.Get(SchemeKey);
+        }
+
+        public static string Hostname()
+        {
+            return ConfigurationManager.AppSettings.Get(HostnameKey);
+        }
+
+        private static string SocketPort()
+        {
+            return ConfigurationManager.AppSettings.Get(SocketPortKey);
+        }
+        public static string SocketScheme()
+        {
+            return ConfigurationManager.AppSettings.Get(SocketSchemeKey);
         }
 
         public static string SiliconClientId()
         {
-            return ConfigurationManager.AppSettings.Get("SiliconClientId");
+            return ConfigurationManager.AppSettings.Get(SiliconClientIdKey);
         }
 
         public static string SiliconClientSecret()
         {
-            return ConfigurationManager.AppSettings.Get("SiliconClientSecret");
+            return ConfigurationManager.AppSettings.Get(SiliconClientSecretKey);
+        }
+        public static string FrontendClientId()
+        {
+            return ConfigurationManager.AppSettings.Get(FrontendClientIdKey);
         }
 
         private static string GetWithSlash(string key)

@@ -23,11 +23,21 @@ namespace MVCFrontend
         private ILogger _logger = LogManager.CreateLogger(typeof(Startup));
         private void CheckHealth()
         {
-            if (ConfigurationManager.AppSettings.Get("facing") == null) throw new Exception("setting 'facing' is not present in app.config");
+            _logger.Debug("Checking config settings..");
 
-            if (ConfigurationManager.AppSettings.Get(Helpers.Appsettings.AuthUrlKey()) == null) throw new Exception(Helpers.Appsettings.AuthUrlKey() + " is not present in app.config");
-            if (ConfigurationManager.AppSettings.Get(Helpers.Appsettings.HostUrlKey()) == null) throw new Exception(Helpers.Appsettings.HostUrlKey() + " is not present in app.config");
+            if (Helpers.Appsettings.Scheme() == null) throw new Exception(Helpers.Appsettings.SchemeKey + " is not present in app.config");
+            if (Helpers.Appsettings.Hostname() == null) throw new Exception(Helpers.Appsettings.HostnameKey + " is not present in app.config");
 
+            if (Helpers.Appsettings.AuthServer() == null) throw new Exception(Helpers.Appsettings.AuthServerKey + " is not present in app.config");
+            if (Helpers.Appsettings.SiliconClientId() == null) throw new Exception(Helpers.Appsettings.SiliconClientIdKey + " is not present in app.config");
+            if (Helpers.Appsettings.SiliconClientSecret() == null) throw new Exception(Helpers.Appsettings.SiliconClientSecretKey + " is not present in app.config");
+            if (Helpers.Appsettings.FrontendClientId() == null) throw new Exception(Helpers.Appsettings.FrontendClientIdKey + " is not present in app.config");
+
+            _logger.Debug("config setting seem ok..");
+            _logger.Debug("Url = {0}", Helpers.Appsettings.HostUrl());
+            _logger.Debug("Socket server Url = {0}", Helpers.Appsettings.SocketServerUrl());
+            _logger.Debug("Auth server Url= {0}", Helpers.Appsettings.AuthUrl());
+            _logger.Debug("..done with config checks");
         }
         public void Configuration(IAppBuilder app)
         {
@@ -56,11 +66,11 @@ namespace MVCFrontend
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
             {
-                ClientId = "mcvfrontend_human",
+                ClientId = Helpers.Appsettings.FrontendClientId(),
                 Authority = Helpers.Appsettings.AuthUrl(),
                 RedirectUri = Helpers.Appsettings.HostUrl(),
                 ResponseType = "token id_token",
-                Scope = "openid roles MvcFrontEnd", 
+                Scope = "openid roles " + Helpers.IdSrv3.ScopeMcvFrontEnd, 
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Helpers.Appsettings.HostUrl(),
 
@@ -73,8 +83,6 @@ namespace MVCFrontend
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
                         
-                        // not sure why this is needed, disable it
-                        //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
                     },
                     RedirectToIdentityProvider = notification =>
@@ -106,7 +114,7 @@ namespace MVCFrontend
             {
                 Authority = Helpers.Appsettings.AuthUrl(),
                 ValidationMode = ValidationMode.ValidationEndpoint, 
-                RequiredScopes = new[] { "MvcFrontEnd" },
+                RequiredScopes = new[] { Helpers.IdSrv3.ScopeMcvFrontEnd },
                 ValidationResultCacheDuration= TimeSpan.FromMinutes(15)
             });
 
