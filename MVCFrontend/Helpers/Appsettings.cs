@@ -13,6 +13,8 @@ namespace MVCFrontend.Helpers
         public const string AuthServerKey = "authserver";
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
+        public const string SocketServerHostnameKey = "websocket.server.hostname";
+        
         public const string HostnameKey = "hostname";
         public const string QueueApiUrlKey = "queue.deliver.api";
 
@@ -23,11 +25,11 @@ namespace MVCFrontend.Helpers
 
         public static string AuthUrl()
         {
-            return string.Format("{0}://{1}/", Scheme(), AuthServer());
+            return string.Format("{0}://{1}", Scheme(), AuthServer());
         }
         public static string AuthServer()
         {
-            return ConfigurationManager.AppSettings.Get(AuthServerKey);
+            return GetWithSlash(AuthServerKey);
         }
 
         public static string HostUrl()
@@ -36,21 +38,25 @@ namespace MVCFrontend.Helpers
         }
         public static string QueueApiUrl()
         {
-            return string.Format("{0}://{1}/", Scheme(), QueueApi());
+            return string.Format("{0}://{1}", Scheme(), QueueApi());
         }
         public static string QueueApi()
         {
-            return ConfigurationManager.AppSettings.Get(QueueApiUrlKey);
+            return GetWithSlash(QueueApiUrlKey);
         }
 
         public static string SocketServerUrl()
         {
-            return string.Format("{0}://{1}:{2}/", SocketScheme(), Hostname(), SocketPort());
+            return string.Format("{0}://{1}:{2}", SocketScheme(), SocketServerHostname(), SocketPort());
         }
 
         public static string Scheme()
         {
             return ConfigurationManager.AppSettings.Get(SchemeKey);
+        }
+        public static string SocketServerHostname()
+        {
+            return ConfigurationManager.AppSettings.Get(SocketServerHostnameKey);
         }
 
         public static string Hostname()
