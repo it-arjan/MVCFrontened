@@ -93,12 +93,12 @@
                     LogMessage("..chat log initialized.\n");
                     // Add a message listener
                     _gSocket.onmessage = function (msg) {
-                        if (msg.data.toString().startsWith(socketToken.toString())) {
+                        if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
                             var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
                             LogMessage(msgWithoutToken);
                         }
                         else {
-                            LogMessage("Message from another session..Skip - " + msg.data);
+                            LogMessage("This message seems from another session. - " + msg.data);
                         }
 
                     };
