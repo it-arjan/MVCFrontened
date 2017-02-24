@@ -25,7 +25,7 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            model.AjaxAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
+            model.AjaxAccessToken = GetSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
             model.SocketToken = Guid.NewGuid().ToString();
             return View("SendMessage", model);
         }
@@ -41,7 +41,7 @@ namespace MVCFrontend.Controllers
             var model = new MessageViewModel();
             if (!string.IsNullOrEmpty(message.Trim()))
             {
-                var token = NewSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi);
+                var token = GetSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi);
                 if (!token.IsError)
                 {
 
@@ -58,6 +58,7 @@ namespace MVCFrontend.Controllers
                     data.MessageId = message;
                     data.PostBackUrl = string.Format("{0}/Message/Postback", Helpers.Appsettings.HostUrl());
                     data.SocketToken = socketToken;
+                    data.UserName = GetNameFromPrincipal();
 
                     easyHttp.Post(apiUrl, data, "application/json");
 
@@ -77,7 +78,18 @@ namespace MVCFrontend.Controllers
             return result;
         }
 
-        private TokenResponse NewSiliconClientToken(string scope)
+        private string GetNameFromPrincipal()
+        {
+            string result = null;
+            var claimsprincipal = User as ClaimsPrincipal;
+
+            result = claimsprincipal
+                        .Claims.Where(c => c.Type == ClaimTypes.Name)
+                        .Select(c => c.Value).SingleOrDefault();
+            return result;
+        }
+
+        private TokenResponse GetSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Helpers.Appsettings.AuthUrl());
             _logger.Debug("Getting a silicon client token at {0}", tokenUrl);
@@ -108,6 +120,7 @@ namespace MVCFrontend.Controllers
             public string MessageId { get; set; }
             public string PostBackUrl { get; set; }
             public string SocketToken { get; set; }
+            public string UserName { get; set; }
         }
     }
 }

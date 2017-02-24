@@ -90,7 +90,6 @@
                         _gSocket.close();
                     }
                     _gSocket = new WebSocket(serverUrl);
-                    LogMessage("..chat log initialized.\n");
                     // Add a message listener
                     _gSocket.onmessage = function (msg) {
                         if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
@@ -105,9 +104,11 @@
                     _gSocket.onerror = function (msg) {
                         LogMessage("_gSocket.onerror is triggered: " + msg.data);
                     };
+
+                    LogMessage("..chat log initialized.\n");
                 }
                 catch (ex) {
-                    LogMessage("Exception connecting to host or socket:");
+                    LogMessage("Exception connecting to socket server: " + serverUrl);
                     LogMessage(ex.message);
                 }
             }
