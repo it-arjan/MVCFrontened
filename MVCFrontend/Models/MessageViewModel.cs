@@ -9,6 +9,9 @@ namespace MVCFrontend.Models
     {
         public string AjaxAccessToken;
         public string SocketToken;
+        public string DoneToken;
         public ApiResultModel ApiResult;
+        public string UserName;
+        public string Roles;
     }
 }

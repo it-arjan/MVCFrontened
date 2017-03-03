@@ -12,8 +12,10 @@ using EasyHttp.Http;
 using System.Net;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using System.Runtime.Serialization.Json;
 using Newtonsoft.Json;
+using System.Security.Permissions;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MVCFrontend.Controllers
 {
@@ -25,45 +27,54 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            model.AjaxAccessToken = GetSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
+            model.AjaxAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
             model.SocketToken = Guid.NewGuid().ToString();
+            model.DoneToken = Guid.NewGuid().ToString();
+            model.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
+            model.Roles = string.Join(", ", GetClaimValuesFromPrincipal("role"));
             return View("SendMessage", model);
         }
-
+        [HttpGet]
         public string AuthPing()
         {
             return "Silicon token valid";
         }
 
-        public string ToRemoteQueue(string message, string socketToken)
+        [HttpPost]
+        public string ToRemoteQueue(string message, string socketToken, string doneToken)
         {
             string result = null;
             var model = new MessageViewModel();
             if (!string.IsNullOrEmpty(message.Trim()))
             {
-                var token = GetSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi);
+                // btw: Request.Headers.Authorization.Parameter == null?
+                var token = NewSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi); 
                 if (!token.IsError)
                 {
 
-                    var apiUrl = Helpers.Appsettings.QueueApiUrl(); ;
+                    var apiUrl = Helpers.Appsettings.QueueApiUrl();
 
                     var auth_header = string.Format("bearer {0}", token.AccessToken);
-                    _logger.Debug(string.Format("Calling {0} with token: {1}", apiUrl, auth_header));
+                    //_logger.Debug(string.Format("Calling {0} with token: {1}", apiUrl, auth_header));
 
                     var easyHttp = new HttpClient();
+                     
                     easyHttp.Request.AddExtraHeader("Authorization", auth_header);
                     easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
 
-                    var data = new PostObj();
+                    var data = new QueuePostdata();
                     data.MessageId = message;
                     data.PostBackUrl = string.Format("{0}/Message/Postback", Helpers.Appsettings.HostUrl());
                     data.SocketToken = socketToken;
-                    data.UserName = GetNameFromPrincipal();
+                    data.DoneToken = doneToken;
+                    // Note: Claims still contain the human values because this tokens scope is a resource scope
+                    data.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
 
                     easyHttp.Post(apiUrl, data, "application/json");
 
                     model.ApiResult = new ApiResultModel();
                     model.ApiResult.Message = string.Format("Queue Api returned {0} and '{1}'", easyHttp.Response.StatusCode, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
+                    
                 }
                 else
                 {
@@ -78,18 +89,14 @@ namespace MVCFrontend.Controllers
             return result;
         }
 
-        private string GetNameFromPrincipal()
+        private List<string> GetClaimValuesFromPrincipal(string claimType)
         {
-            string result = null;
-            var claimsprincipal = User as ClaimsPrincipal;
-
-            result = claimsprincipal
-                        .Claims.Where(c => c.Type == ClaimTypes.Name)
-                        .Select(c => c.Value).SingleOrDefault();
-            return result;
+            return ClaimsPrincipal.Current
+                        .Claims.Where(c => c.Type == claimType)
+                        .Select(c => c.Value).ToList();
         }
 
-        private TokenResponse GetSiliconClientToken(string scope)
+        private TokenResponse NewSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Helpers.Appsettings.AuthUrl());
             _logger.Debug("Getting a silicon client token at {0}", tokenUrl);
@@ -101,25 +108,44 @@ namespace MVCFrontend.Controllers
 
             return token;
         }
-        [Authorize]
         [HttpPost]
-        public ActionResult Postback(string json)
+        public ActionResult Postback(PostbackData data)
         {
-            //var postedstring = await Request.Form.
-            _logger.Info("postback called");
-
-           _logger.Debug("receieved '{0}'", json);
-            return new HttpStatusCodeResult(HttpStatusCode.Gone);
+           _logger.Debug("Some data is being posted back:  '{0}'", JsonConvert.SerializeObject(data));
+            try
+            {
+                // ETF handles the data scurity
+                var db = new DAL.FrontendDbContext();
+                db.Postbacks.Add(data);
+                db.SaveChanges();
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception ex) {
+                string msg = ex.Message;
+                while (ex.InnerException != null)
+                {
+                    msg = string.Format("{0} \n{1}", msg, ex.InnerException.Message);
+                    ex = ex.InnerException;
+                }
+                _logger.Debug("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(data));
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            
+        }
+        private async Task Wait()
+        {
+            await Task.Delay(10);
         }
         private class EntryQApiResult
         {
             public string message { get; set; }
         }
-        private class PostObj
+        private class QueuePostdata
         {
             public string MessageId { get; set; }
             public string PostBackUrl { get; set; }
             public string SocketToken { get; set; }
+            public string DoneToken { get; set; }
             public string UserName { get; set; }
         }
     }

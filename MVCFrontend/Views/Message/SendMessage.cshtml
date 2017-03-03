@@ -1,131 +1,170 @@
 ﻿@using MVCFrontend.Helpers
+@using System.Security.Claims;
 @model MVCFrontend.Models.MessageViewModel
 @{
     ViewBag.Title = "About";
+    var hasRights = ClaimsPrincipal.Current.HasClaim("role", "SendMessage") || ClaimsPrincipal.Current.isAdmin();
 }
 <h2>@ViewBag.Title.</h2>
-<h3>@ViewBag.Message</h3>
-
-<div>
-    <p>Please enter a string identifying your message to the remote queue. </p>
-    <p> For security reasons, everything that is not a "[0-9a-zA-Z-_]" will be stripped from this ID-string.</p>
-    <form id ="msgForm" action="" method="post">
+<h3>Welcome @Model.UserName! The following roles are assigned to you: @Model.Roles</h3>
+@if (hasRights)
+{
+    <div>
+        <p>Please enter a string identifying your message to the remote queue. </p>
+        <p> For security reasons, everything that is not a "[0-9a-zA-Z-_]" will be stripped from this ID-string.</p>
+        <form id="msgForm" action="" method="post">
             <input type="text" name="message" /> <br />
-            <input type="hidden" name="socketToken" value="@Model.SocketToken"/>
-            <input type="submit" value="Send"/>
-    </form>
-</div>
+            <input type="submit" value="Send" />
+        </form>
+    </div>
 
-<div id="apiResult">
-    <p>Api Result</p>
-</div>
-<hr />
-<div>Remote Log (=socket chat) <button onclick="InitializeChat()">Re-Initialize</button></div>
-<div id="log" style="border: solid 1px #3399CC; padding: 3px;"></div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $('#msgForm').submit(function (event) {
-            SubmitIfLoggedOn(event);
-        });
-        InitializeChat();
-    });
+    <div id="apiResult">
+        <p>Api Result</p>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">Remote socketChat (=socket chat) <a class="allButtons" href="#" id="InitializeChat" >Re-Initialize</a></div>
+        <div class="col-md-4">Postback data of @Model.UserName of Today <a href="#" id="QueryPostbackData" class="allButtons">Refresh</a></div>
+    </div>
+    <div class="row">
+        <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
+        <div id="postback" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="~/Scripts/Custom/secure-utils.js"></script>
+    <script>
+            $(document).ready(function () {
+                $('#msgForm').submit(function (event) {
+                    event.preventDefault();
+                    CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxAccessToken', "#apiResult");
+                });
+                $('#QueryPostbackData').click(function (event) {
+                    event.preventDefault();
+                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postback");
+                });
+                $('#InitializeChat').click(function (event) {
+                    event.preventDefault();
+                    InitializeChat()
+                });
+                //call these on page load
+                QueryPostbackData('@Model.AjaxAccessToken', '#postback');
+                InitializeChat();
+            });
 
-    function SubmitIfLoggedOn() {
-        event.preventDefault();
-        $.ajax({
-            type: 'GET', 
-            url: '/Message/AuthPing', 
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'bearer @Model.AjaxAccessToken');
-            },
-        })
-        .done(function (data) {
-            Submit();
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            $("#apiResult").text("OAUTH2 Silicon Token expired, refresh the page.");
-        });
-    }
-    function InitializeChat() {
-        $("#log").empty();
-        ConnectToSocketServer();
-    }
-    function Submit(event){
-        $("#apiResult").text("Sending your message to remote queue..");
-        var formData = {
-            'message': $('input[name=message]').val(),
-            'socketToken': $('input[name=socketToken]').val()
-        };
-        $.ajax({
-            type: 'POST', 
-            url: '/Message/ToRemoteQueue', 
-            data: formData, 
-            dataType: 'text', 
-            encode: true,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'bearer @Model.AjaxAccessToken');
-            },
-        })
-        .done(function (data) {
-            $("#apiResult").text(data);
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            alert("Call to queue manager failed: error= " + errorThrown);
-        })
-}
-</script>
-<script>
-    // Create SocketIO instance, connect
-    var _gSocket = null;
-    var serverUrl = '@Appsettings.SocketServerUrl()';
+            function InitializeChat() {
+                $("#socketChat").empty();
+                ConnectToSocketServer();
+            }
 
-    function ConnectToSocketServer() {
-        if ("WebSocket" in window) {
-            var socketToken = '@Model.SocketToken';
-            if (socketToken.length > 0) {
-                try {
-                    if (_gSocket != null) {
-                        //alert('closing existing socket..');
-                        _gSocket.close();
+            function Submit(ajaxAccessToken, resultDivId) {
+                var formData = {
+                    'message': $('input[name=message]').val(),
+                    'socketToken': "@Model.SocketToken",
+                    'doneToken':"@Model.DoneToken"                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Message/ToRemoteQueue',
+                    data: formData,
+                    dataType: 'text',
+                    encode: true,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                    },
+                })
+                .done(function (data) {
+                    $(resultDivId).text(data);
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    $(resultDivId).append("<br/>Call to queue manager failed: error= " + errorThrown);
+                })
+            }
+    </script>
+    //postback data view stuff in this script
+    <script>
+        function QueryPostbackData(ajaxAccessToken, resultDivId) {
+            $(resultDivId).html("<h3>Loading processed messages... </h3>");
+            $.ajax({
+                type: 'Get',
+                dataType: 'html',
+                url: '/Postbackdatas/',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                },
+            })
+            .done(function (data) {
+                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(Model.AjaxAccessToken)'; <" + "/script>";
+                $(resultDivId).html(data + scriptArg);
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
+            })
+        }
+    </script>
+    //Socket stuff in this script
+    <script>
+        // Create SocketIO instance, connect
+        var _gSocket = null;
+        var serverUrl = '@Appsettings.SocketServerUrl()';
+
+        function ConnectToSocketServer() {
+            if ("WebSocket" in window) {
+                var socketToken = '@Model.SocketToken';
+                var doneToken = '@Model.DoneToken';
+                if (socketToken.length > 0) {
+                    try {
+                        if (_gSocket != null) {
+                            //alert('closing existing socket..');
+                            _gSocket.close();
+                        }
+                        _gSocket = new WebSocket(serverUrl);
+                        // Add a message listener
+                        _gSocket.onmessage = function (msg) {
+                            if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
+                                var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
+                                if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
+                                    LogMessage("Done token received, auto-refreshing postbacks...");
+                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postback");
+                                }
+                                else {
+                                    LogMessage(msgWithoutToken);
+                                }
+                            }
+                            else {
+                                LogMessage("This message seems from another session. - " + msg.data);
+                            }
+
+                        };
+                        _gSocket.onerror = function (msg) {
+                            LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                        };
+
+                        LogMessage("..chat log initialized.\n");
                     }
-                    _gSocket = new WebSocket(serverUrl);
-                    // Add a message listener
-                    _gSocket.onmessage = function (msg) {
-                        if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
-                            var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
-                            LogMessage(msgWithoutToken);
-                        }
-                        else {
-                            LogMessage("This message seems from another session. - " + msg.data);
-                        }
-
-                    };
-                    _gSocket.onerror = function (msg) {
-                        LogMessage("_gSocket.onerror is triggered: " + msg.data);
-                    };
-
-                    LogMessage("..chat log initialized.\n");
+                    catch (ex) {
+                        LogMessage("Exception connecting to socket server: " + serverUrl);
+                        LogMessage(ex.message);
+                    }
                 }
-                catch (ex) {
-                    LogMessage("Exception connecting to socket server: " + serverUrl);
-                    LogMessage(ex.message);
+                else {
+                    LogMessage("Socket Token not set, the chat will not work, refresh the page.");
                 }
             }
-            else { 
-                LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+            else {
+                LogMessage("webSockets are not supported on this browser, the chat log will not work.");
             }
         }
-        else {
-            LogMessage("webSockets are not supported on this browser, the chat log will not work.");
+
+        function socketDisconnected(socketArg) {
+            return socketArg.ready == 0;
         }
-    }
 
-    function socketDisconnected(socketArg){
-        return socketArg.ready == 0;
+        function LogMessage(msg) {
+            $("#socketChat").prepend("<p>" + msg + "</p>");
+        }
+    </script>
     }
-
-    function LogMessage(msg) {
-        $("#log").prepend("<p>" + msg + "</p>");
+    else
+    {
+    <p>Your assigned roles do not allow for sending messages.</p>
     }
-</script>

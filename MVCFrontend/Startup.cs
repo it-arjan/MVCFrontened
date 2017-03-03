@@ -70,7 +70,7 @@ namespace MVCFrontend
                 Authority = Helpers.Appsettings.AuthUrl(),
                 RedirectUri = Helpers.Appsettings.HostUrl(),
                 ResponseType = "token id_token",
-                Scope = "openid roles " + Helpers.IdSrv3.ScopeMcvFrontEnd, 
+                Scope = "openid roles " + Helpers.IdSrv3.ScopeMcvFrontEndHuman, 
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Helpers.Appsettings.HostUrl(),
 
@@ -82,7 +82,9 @@ namespace MVCFrontend
                         var identity = notification.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
-                        
+
+                        // not sure why this is needed, disable it
+                        //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
                     },
                     RedirectToIdentityProvider = notification =>
@@ -94,7 +96,7 @@ namespace MVCFrontend
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            notification.ProtocolMessage.MaxAge = (900 * Helpers.IdSrv3.SessionSetting).ToString();
+                            notification.ProtocolMessage.MaxAge = (60 * Helpers.Appsettings.AuthSessionLengthMinutes() * Helpers.IdSrv3.SessionSetting).ToString();
                         }
 
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)

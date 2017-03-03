@@ -1,0 +1,51 @@
+﻿@using MVCFrontend.Helpers;
+@using System.Security.Claims;
+@model MVCFrontend.Models.PostbackData
+
+@{
+    Layout = null;
+}
+<div>
+    <div>
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.MessageId)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.MessageId)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.UserName)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.UserName)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Duration)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Duration) secs.
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Content)
+            </dt>
+
+            <dd>
+                <p> @Html.Raw(Model.Content.Replace("\n", "<br/>")) </p>
+            </dd>
+
+        </dl>
+    </div>
+    <p>
+        @if (ClaimsPrincipal.Current.isAdmin())
+        {
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Id })
+        }
+    </p>
+</div>

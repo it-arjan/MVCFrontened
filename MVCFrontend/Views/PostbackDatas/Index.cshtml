@@ -1,0 +1,95 @@
+﻿@using MVCFrontend.Helpers;
+@using System.Security.Claims;
+@model IEnumerable<MVCFrontend.Models.PostbackData>
+
+@{
+    Layout = null;
+    var username = ClaimsPrincipal.Current.Claims.Where(c => c.Type == "given_name").Select(c => c.Value).FirstOrDefault();
+
+}
+<div>
+    <p>
+        @if (ClaimsPrincipal.Current.isAdmin())
+        {
+            @Html.ActionLink("Create New", "Create")
+        }
+    </p>
+    <table class="tttable">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MessageId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Started)
+            </th>
+        </tr>
+        @if (!Model.Any())
+        {
+        <tr>
+            <td colspan="3">No messages sent by @username on @DateTime.Today.Date.ToString("dddd, MMMM d, yyyy")</td>
+        </tr>
+        }
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MessageId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Started)
+            </td>
+            <td>
+                @*@Html.ActionLink("Show log", "Details", new { id = item.Id })*@ 
+                    <a href="#" id="openPopupDetails" class="allButtons" onclick="event.preventDefault();openPopupDetails(@item.Id);">Show log</a>
+                    @if (ClaimsPrincipal.Current.isAdmin())
+                {
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Id })
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                    }
+</td>
+        </tr>
+    }
+    
+    </table>
+</div>
+<div id="PostbackDetails" class="detailDiv" style="display:none;position:absolute;top:0%;left:0%;width:100%; "></div>
+
+<script>
+    $(document).keyup(function (e) {
+        if (e.keyCode === 27) { // esc
+            //console.log('ESC!!!');
+            $('#PostbackDetails').hide(); //slideToggle gets confused when called here
+        }
+    });
+    function closePopupDetails() {
+        //console.log('->closePopupDetails');
+        $('#PostbackDetails').slideToggle();
+    }
+    function openPopupDetails(id) {
+        closePopupDetails();
+        CallFuncWhenAxjaxTokenValid(QueryDetails, g_AjaxAccessToken4Details, "#PostbackDetails", id);
+    }
+    function QueryDetails(ajaxAccessToken, resultDivId, id) {
+        $(resultDivId).html("<h3>Loading details ... </h3>");
+        $.ajax({
+            type: 'Get',
+            dataType: 'html',
+            url: '/Postbackdatas/Details?id=' + id,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+            },
+        })
+        .done(function (data) {
+            var buttonHtml = "<button id='xbutton' class='xbutton' onclick='closePopupDetails();'>X</button>";
+            $(resultDivId).html(buttonHtml + data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>Querying postback details failed: error= " + errorThrown);
+        })
+    }
+</script>

@@ -11,6 +11,7 @@ namespace MVCFrontend.Helpers
     {
         public const string SchemeKey = "scheme";
         public const string AuthServerKey = "authserver";
+        public const string AuthSessionLengthKey = "authserver.session.minutes";
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
         public const string SocketServerHostnameKey = "websocket.server.hostname";
@@ -53,6 +54,11 @@ namespace MVCFrontend.Helpers
         public static string Scheme()
         {
             return ConfigurationManager.AppSettings.Get(SchemeKey);
+        }
+
+        public static int AuthSessionLengthMinutes()
+        {
+            return Convert.ToInt16(ConfigurationManager.AppSettings.Get(AuthSessionLengthKey));
         }
         public static string SocketServerHostname()
         {
