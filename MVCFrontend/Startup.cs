@@ -96,7 +96,9 @@ namespace MVCFrontend
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            notification.ProtocolMessage.MaxAge = (60 * Helpers.Appsettings.AuthSessionLengthMinutes() * Helpers.IdSrv3.SessionSetting).ToString();
+                            var max_age = (60 * Helpers.Appsettings.AuthSessionLengthMinutes() * Helpers.IdSrv3.SessionSetting).ToString();
+                            _logger.Debug("Setting notification.ProtocolMessage.MaxAge to ", max_age);
+                            notification.ProtocolMessage.MaxAge = max_age;
                         }
 
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
@@ -115,9 +117,8 @@ namespace MVCFrontend
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
                 Authority = Helpers.Appsettings.AuthUrl(),
-                ValidationMode = ValidationMode.ValidationEndpoint, 
-                RequiredScopes = new[] { Helpers.IdSrv3.ScopeMcvFrontEnd },
-                ValidationResultCacheDuration= TimeSpan.FromMinutes(15)
+                ValidationMode = ValidationMode.Local, 
+                RequiredScopes = new[] { Helpers.IdSrv3.ScopeMcvFrontEnd }
             });
 
             _logger.Info("startup executed");
