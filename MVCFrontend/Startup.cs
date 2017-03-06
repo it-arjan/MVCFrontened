@@ -20,11 +20,11 @@ namespace MVCFrontend
 {
     public class Startup
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(Startup));
+        private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Helpers.Appsettings.LogLevel());
         private void CheckHealth()
         {
-            _logger.Debug("Checking config settings..");
-
+            _logger.Info("Checking config settings..");
+            _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
             if (Helpers.Appsettings.Scheme() == null) throw new Exception(Helpers.Appsettings.SchemeKey + " is not present in app.config");
             if (Helpers.Appsettings.Hostname() == null) throw new Exception(Helpers.Appsettings.HostnameKey + " is not present in app.config");
 
@@ -33,11 +33,11 @@ namespace MVCFrontend
             if (Helpers.Appsettings.SiliconClientSecret() == null) throw new Exception(Helpers.Appsettings.SiliconClientSecretKey + " is not present in app.config");
             if (Helpers.Appsettings.FrontendClientId() == null) throw new Exception(Helpers.Appsettings.FrontendClientIdKey + " is not present in app.config");
 
-            _logger.Debug("config setting seem ok..");
-            _logger.Debug("Url = {0}", Helpers.Appsettings.HostUrl());
-            _logger.Debug("Socket server Url = {0}", Helpers.Appsettings.SocketServerUrl());
-            _logger.Debug("Auth server Url= {0}", Helpers.Appsettings.AuthUrl());
-            _logger.Debug("..done with config checks");
+            _logger.Info("config setting seem ok..");
+            _logger.Info("Url = {0}", Helpers.Appsettings.HostUrl());
+            _logger.Info("Socket server Url = {0}", Helpers.Appsettings.SocketServerUrl());
+            _logger.Info("Auth server Url= {0}", Helpers.Appsettings.AuthUrl());
+            _logger.Info("..done with config checks.");
         }
         public void Configuration(IAppBuilder app)
         {
@@ -57,9 +57,10 @@ namespace MVCFrontend
                     {
                         if (!IsAjaxRequest(ctx.Request))
                         {
+                            _logger.Debug("CookieAuthenticationProvider: redirecting non-Ajax request to {0}", ctx.RedirectUri);
                             ctx.Response.Redirect(ctx.RedirectUri);
                         }
-                        else _logger.Debug("Ajax call not redirected..");
+                        else _logger.Debug("CookieAuthenticationProvider: Ajax request not redirected..");
                     }
                 }
             });
@@ -79,10 +80,10 @@ namespace MVCFrontend
                 {
                     SecurityTokenValidated = notification => /* Anonymous function */
                     {
+                        _logger.Debug("SecurityTokenValidated notfication detected");
                         var identity = notification.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
-
                         // not sure why this is needed, disable it
                         //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
@@ -93,11 +94,12 @@ namespace MVCFrontend
                         //notification.ProtocolMessage.RedirectUri = appBaseUrl + SettingsHelper.LoginRedirectRelativeUri;
                         //notification.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl + SettingsHelper.LogoutRedirectRelativeUri;
 
+                        _logger.Debug("RedirectToIdentityProvider notfication detected");
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
                             var max_age = (60 * Helpers.Appsettings.AuthSessionLengthMinutes() * Helpers.IdSrv3.SessionSetting).ToString();
-                            _logger.Debug("Setting notification.ProtocolMessage.MaxAge to ", max_age);
+                            _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0}", max_age);
                             notification.ProtocolMessage.MaxAge = max_age;
                         }
 

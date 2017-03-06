@@ -22,7 +22,7 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class MessageController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController));
+        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel());
         // GET: Message
         public ActionResult Index()
         {
@@ -55,7 +55,6 @@ namespace MVCFrontend.Controllers
                     var apiUrl = Helpers.Appsettings.QueueApiUrl();
 
                     var auth_header = string.Format("bearer {0}", token.AccessToken);
-                    //_logger.Debug(string.Format("Calling {0} with token: {1}", apiUrl, auth_header));
 
                     var easyHttp = new HttpClient();
                      
@@ -99,19 +98,18 @@ namespace MVCFrontend.Controllers
         private TokenResponse NewSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Helpers.Appsettings.AuthUrl());
-            _logger.Debug("Getting a silicon client token at {0}", tokenUrl);
+            _logger.Info("Getting a silicon client token at {0}", tokenUrl);
             var client = new TokenClient(tokenUrl, Helpers.Appsettings.SiliconClientId(), Helpers.Appsettings.SiliconClientSecret());
 
             var token = client.RequestClientCredentialsAsync(scope).Result;
             if (token.IsError) _logger.Error("Error getting Token for silicon Client: {0} ", token.Error);
-            else _logger.Debug("Token obtained");
 
             return token;
         }
         [HttpPost]
         public ActionResult Postback(PostbackData data)
         {
-           _logger.Debug("Some data is being posted back:  '{0}'", JsonConvert.SerializeObject(data));
+           _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(data));
             try
             {
                 // ETF handles the data scurity
@@ -127,7 +125,7 @@ namespace MVCFrontend.Controllers
                     msg = string.Format("{0} \n{1}", msg, ex.InnerException.Message);
                     ex = ex.InnerException;
                 }
-                _logger.Debug("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(data));
+                _logger.Error("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(data));
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
             

@@ -15,7 +15,7 @@ namespace MVCFrontend.Controllers
         private ILogger _logger = LogManager.CreateLogger(typeof(HomeController));
         public ActionResult Index()
         {
-            _logger.Debug("homepage Index hit!");
+            _logger.Info("homepage Index hit!");
             return View();
         }
         [Authorize]

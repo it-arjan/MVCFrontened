@@ -24,6 +24,8 @@ namespace MVCFrontend.Helpers
 
         public const string FrontendClientIdKey = "FrontendClientId";
 
+        public const string LogLevelKey = "log.level";
+
         public static string AuthUrl()
         {
             return string.Format("{0}://{1}", Scheme(), AuthServer());
@@ -91,6 +93,11 @@ namespace MVCFrontend.Helpers
         public static string FrontendClientId()
         {
             return ConfigurationManager.AppSettings.Get(FrontendClientIdKey);
+        }
+
+        public static string LogLevel()
+        {
+            return ConfigurationManager.AppSettings.Get(LogLevelKey);
         }
 
         private static string GetWithSlash(string key)
