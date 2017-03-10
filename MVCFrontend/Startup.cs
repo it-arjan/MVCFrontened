@@ -13,6 +13,7 @@ using Microsoft.Owin.Security;
 using Microsoft.IdentityModel.Protocols;
 using System.Configuration;
 using IdentityServer3.AccessTokenValidation;
+using System.Net;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -41,6 +42,12 @@ namespace MVCFrontend
         }
         public void Configuration(IAppBuilder app)
         {
+            if (Helpers.Appsettings.AzureIgnoreCertificateErrors())
+            {
+                ServicePointManager.ServerCertificateValidationCallback +=
+                            (sender, cert, chain, sslPolicyErrors) => true;
+            }
+
             _logger.Info("startup starting");
 
             CheckHealth();

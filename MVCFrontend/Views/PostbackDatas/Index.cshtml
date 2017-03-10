@@ -26,7 +26,7 @@
                 @Html.DisplayNameFor(model => model.Started)
             </th>
         </tr>
-        @if (Model.Any())
+        @if (!Model.Any())
         {
         <tr>
             <td colspan="3">-No messages sent by @username on @DateTime.Today.Date.ToString("dddd, MMMM d")-</td>

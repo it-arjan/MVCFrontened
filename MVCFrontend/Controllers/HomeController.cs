@@ -12,7 +12,7 @@ namespace MVCFrontend.Controllers
 {
     public class HomeController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(HomeController));
+        private ILogger _logger = LogManager.CreateLogger(typeof(HomeController), Helpers.Appsettings.LogLevel());
         public ActionResult Index()
         {
             _logger.Info("homepage Index hit!");

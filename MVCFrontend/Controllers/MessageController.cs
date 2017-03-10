@@ -40,6 +40,7 @@ namespace MVCFrontend.Controllers
             return "Silicon token valid";
         }
 
+
         [HttpPost]
         public string ToRemoteQueue(string message, string socketToken, string doneToken)
         {
@@ -110,6 +111,7 @@ namespace MVCFrontend.Controllers
         public ActionResult Postback(PostbackData data)
         {
            _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(data));
+            //Task.Delay(10).Wait();
             try
             {
                 // ETF handles the data scurity
@@ -130,10 +132,7 @@ namespace MVCFrontend.Controllers
             }
             
         }
-        private async Task Wait()
-        {
-            await Task.Delay(10);
-        }
+        
         private class EntryQApiResult
         {
             public string message { get; set; }

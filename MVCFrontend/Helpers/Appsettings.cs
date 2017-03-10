@@ -25,6 +25,7 @@ namespace MVCFrontend.Helpers
         public const string FrontendClientIdKey = "FrontendClientId";
 
         public const string LogLevelKey = "log.level";
+        public const string AzureIgnoreCertificateErrorsKey = "azure.ignore.cert.errors";
 
         public static string AuthUrl()
         {
@@ -98,6 +99,13 @@ namespace MVCFrontend.Helpers
         public static string LogLevel()
         {
             return ConfigurationManager.AppSettings.Get(LogLevelKey);
+        }
+        // IgnoreSslErrorsKey
+        public static bool AzureIgnoreCertificateErrors()
+        {
+            if (ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey) != null)
+                return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey));
+            return false;
         }
 
         private static string GetWithSlash(string key)
