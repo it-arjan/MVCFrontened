@@ -12,6 +12,7 @@ namespace MVCFrontend.DAL
     {
         public FrontendDbContext() : base("FrontendDbContext")
         {
+            Configuration.AutoDetectChangesEnabled = false;
         }
 
         public DbSet<PostbackData> Postbacks { get; set; }

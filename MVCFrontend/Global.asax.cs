@@ -11,6 +11,8 @@ namespace MVCFrontend
 {
     public class MvcApplication : System.Web.HttpApplication
     {
+        // adding an empty Session_Start solves a cookie issue causing endless redict on auth success
+        protected void Session_Start() { }
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();

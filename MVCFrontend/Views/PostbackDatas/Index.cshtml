@@ -17,19 +17,19 @@
     <table class="tttable">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.MessageId)
+                Id
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UserName)
+                @Html.DisplayNameFor(model => model.Duration)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Started)
+               Arrived
             </th>
         </tr>
         @if (!Model.Any())
         {
         <tr>
-            <td colspan="3">-No messages sent by @username on @DateTime.Today.Date.ToString("dddd, MMMM d")-</td>
+            <td colspan="3">-No actions by @username on @DateTime.Today.Date.ToString("dddd, MMMM d")-</td>
         </tr>
         }
     @foreach (var item in Model) {
@@ -38,10 +38,10 @@
                 @Html.DisplayFor(modelItem => item.MessageId)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UserName)
+                @Html.DisplayFor(modelItem => item.Duration)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Started)
+                @Html.DisplayFor(modelItem => item.End)
             </td>
             <td>
                 @*@Html.ActionLink("Show log", "Details", new { id = item.Id })*@ 

@@ -4,81 +4,113 @@
 @{
     ViewBag.Title = "About";
     var hasRights = ClaimsPrincipal.Current.HasClaim("role", "SendMessage") || ClaimsPrincipal.Current.isAdmin();
+    var url = Appsettings.SocketServerUrl();
 }
 <h2>@ViewBag.Title.</h2>
 <h3>Welcome @Model.UserName! The following roles are assigned to you: @Model.Roles</h3>
 @if (hasRights)
 {
-    <div>
-        <p>Please enter a string identifying your message to the remote queue. </p>
-        <p> For security reasons, everything that is not a "[0-9a-zA-Z-_]" will be stripped from this ID-string.</p>
-        <form id="msgForm" action="" method="post">
-            <input type="text" name="message" /> <br />
-            <input type="submit" value="Send" />
-        </form>
-    </div>
-
-    <div id="apiResult">
-        <p>Api Result</p>
-    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <p>Please enter a string identifying your message to the remote queue. </p>
+            <p>Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from this input, spaces stay.</p>
+            <form id="msgForm" action="" method="post">
+                <input type="text" name="message" /> <br />
+                <input type="submit" value="Send" /> <span id="apiResult"></span>
+            </form>
+        </div>
+        <div class="col-md-4"><br /><button id="toggleQueue">Sequential/ Parallell</button> <span id="toggleResult"></span></div>
+        <div class="col-md-4"></div>
+     </div>
     <hr />
     <div class="row">
-        <div class="col-md-8">Remote socketChat (=socket chat). <a class="allButtons" href="#" id="InitializeChat" >Re-Initialize</a></div>
-        <div class="col-md-4">@Model.UserName's processed messages of today. <a href="#" id="QueryPostbackData" class="allButtons">Refresh</a></div>
+        <div class="col-md-8">Remote socketChat (=socket chat). <a class="allButtons" href="#" id="initializeChat" >Re-Initialize</a></div>
+        <div class="col-md-4">@Model.UserName's actions of today. <a href="#" id="queryPostbackData" class="allButtons">Refresh</a></div>
     </div>
     <div class="row">
         <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
-        <div id="postback" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
+        <div id="postbackResult" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="~/Scripts/Custom/secure-utils.js"></script>
     <script>
-            $(document).ready(function () {
-                $('#msgForm').submit(function (event) {
-                    event.preventDefault();
-                    CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxAccessToken', "#apiResult");
-                });
-                $('#QueryPostbackData').click(function (event) {
-                    event.preventDefault();
-                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postback");
-                });
-                $('#InitializeChat').click(function (event) {
-                    event.preventDefault();
-                    InitializeChat()
-                });
-                //call these on page load
-                QueryPostbackData('@Model.AjaxAccessToken', '#postback');
-                InitializeChat();
+        $(document).ready(function () {
+            $('#msgForm').submit(function (event) {
+                event.preventDefault();
+                CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxAccessToken', "#apiResult", $('input[name=message]').val());
             });
+            $('#queryPostbackData').click(function (event) {
+                event.preventDefault();
+                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postbackResult");
+            });
+            $('#initializeChat').click(function (event) {
+                event.preventDefault();
+                InitializeChat()
+            });
+            $('#toggleQueue').click(function (event) {
+                event.preventDefault();
+                ToggleQueueStatus('@Model.AjaxQueueAccessToken', "#toggleResult");
+            });
+            //call these on page load
+            ToggleQueueStatus('@Model.AjaxQueueAccessToken', "#toggleResult");
+            QueryPostbackData('@Model.AjaxAccessToken', '#postbackResult');
+            InitializeChat();
+        });
 
-            function InitializeChat() {
-                $("#socketChat").empty();
-                ConnectToSocketServer();
-            }
+        function InitializeChat() {
+            $("#socketChat").empty();
+            ConnectToSocketServer();
+        }
+        function ToggleQueueStatus(ajaxAccessToken, resultDivId) {
+            var formData = {
+                'MessageId': 'not needed',
+                'PostBackUrl': "",
+                'socketToken': "@Model.SocketToken",
+                'doneToken': "not needed",
+                'UserName': ''
+            };
+            $.ajax({
+                type: 'PUT',
+                url: '@Appsettings.QueueApiUrl()',
+                data: formData,
+                dataType: 'text',
+                encode: true,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                    xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+                },
+            })
+            .done(function (data) {
+                $(resultDivId).text(data);
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                $(resultDivId).append("<br/>ToggleQueuestatus failed: error= " + errorThrown);
+            })
+        }
+        function Submit(ajaxAccessToken, resultDivId, data) {
+            var formData = {
+                'message': data,
+                'socketToken': "@Model.SocketToken",
+                'doneToken': "@Model.DoneToken"
+            };
 
-            function Submit(ajaxAccessToken, resultDivId) {
-                var formData = {
-                    'message': $('input[name=message]').val(),
-                    'socketToken': "@Model.SocketToken",
-                    'doneToken':"@Model.DoneToken"                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/Message/ToRemoteQueue',
-                    data: formData,
-                    dataType: 'text',
-                    encode: true,
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                    },
-                })
-                .done(function (data) {
-                    $(resultDivId).text(data);
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
-                    $(resultDivId).append("<br/>Call to queue manager failed: error= " + errorThrown);
-                })
-            }
+            $.ajax({
+                type: 'POST',
+                url: '/Message/ToRemoteQueue',
+                data: formData,
+                dataType: 'text',
+                encode: true,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                },
+            })
+            .done(function (data) {
+                $(resultDivId).text(data);
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                $(resultDivId).append("<br/>Call to queue manager failed: error= " + errorThrown);
+            })
+        }
     </script>
     //postback data view stuff in this script
     <script>
@@ -124,7 +156,7 @@
                                 var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
                                 if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
                                     LogMessage("Done token received, auto-refreshing postbacks...");
-                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postback");
+                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postbackResult");
                                 }
                                 else {
                                     LogMessage(msgWithoutToken);

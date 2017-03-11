@@ -22,12 +22,13 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class MessageController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel());
+        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel(), "c:\\temp");
         // GET: Message
         public ActionResult Index()
         {
             var model = new MessageViewModel();
             model.AjaxAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
+            model.AjaxQueueAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi).AccessToken;
             model.SocketToken = Guid.NewGuid().ToString();
             model.DoneToken = Guid.NewGuid().ToString();
             model.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
@@ -39,7 +40,6 @@ namespace MVCFrontend.Controllers
         {
             return "Silicon token valid";
         }
-
 
         [HttpPost]
         public string ToRemoteQueue(string message, string socketToken, string doneToken)
@@ -110,6 +110,7 @@ namespace MVCFrontend.Controllers
         [HttpPost]
         public ActionResult Postback(PostbackData data)
         {
+            PostbackData protect = new PostbackData(data);
            _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(data));
             //Task.Delay(10).Wait();
             try

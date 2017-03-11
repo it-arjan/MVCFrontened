@@ -24,12 +24,12 @@ namespace MVCFrontend.Controllers
             //principal.g
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.Postbacks.OrderByDescending(c=>c.Started).ToList());
+                return PartialView(db.Postbacks.OrderByDescending(c=>c.Start).ToList());
             }
             else
             {
                 var userName = ClaimsPrincipal.Current.Claims.Where(c => c.Type == "given_name").Select(c => c.Value).FirstOrDefault();
-                return PartialView(db.Postbacks.Where(p => p.UserName == userName && p.Started >= DateTime.Today).OrderByDescending(c => c.Started).ToList());
+                return PartialView(db.Postbacks.Where(p => p.UserName == userName && p.Start >= DateTime.Today).OrderByDescending(c => c.End).ToList());
             }
         }
 
@@ -59,7 +59,7 @@ namespace MVCFrontend.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,StartTime,Duration,UserName,Content")] PostbackData postbackData)
+        public ActionResult Create([Bind(Include = "Id,Duration,UserName,Content")] PostbackData postbackData)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace MVCFrontend.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,StartTime,Duration,UserName,Content")] PostbackData postbackData)
+        public ActionResult Edit([Bind(Include = "Id,Duration,UserName,Content")] PostbackData postbackData)
         {
             if (ModelState.IsValid)
             {

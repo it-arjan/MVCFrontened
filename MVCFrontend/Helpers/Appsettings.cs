@@ -15,15 +15,11 @@ namespace MVCFrontend.Helpers
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
         public const string SocketServerHostnameKey = "websocket.server.hostname";
-        
         public const string HostnameKey = "hostname";
         public const string QueueApiUrlKey = "queue.deliver.api";
-
         public const string SiliconClientIdKey = "SiliconClientId";
         public const string SiliconClientSecretKey = "SiliconClientSecret";
-
         public const string FrontendClientIdKey = "FrontendClientId";
-
         public const string LogLevelKey = "log.level";
         public const string AzureIgnoreCertificateErrorsKey = "azure.ignore.cert.errors";
 
