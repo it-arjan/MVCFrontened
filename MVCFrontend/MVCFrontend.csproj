@@ -222,6 +222,7 @@
     <Compile Include="Models\ApiResultModel.cs" />
     <Compile Include="Models\PostbackData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestLogModule.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

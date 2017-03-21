@@ -6,11 +6,17 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using MVCFrontend.DAL;
+using MVCFrontend;
 
+[assembly: PreApplicationStartMethod(typeof(MvcApplication), "RegisterAdditionalModules")]
 namespace MVCFrontend
 {
     public class MvcApplication : System.Web.HttpApplication
     {
+        public static void RegisterAdditionalModules()
+        {
+            HttpApplication.RegisterModule(typeof(RequestLogModule));
+        }
         // adding an empty Session_Start solves a cookie issue causing endless redict on auth success
         protected void Session_Start() { }
         protected void Application_Start()

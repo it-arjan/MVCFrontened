@@ -31,7 +31,7 @@ button.xbutton {
 div.detailDiv {
     background-color:beige;
 }
-.allButtons {
+.fancyButtons {
 	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bddbfa), color-stop(1, #80b5ea));
 	background:-moz-linear-gradient(top, #bddbfa 5%, #80b5ea 100%);
 	background:-webkit-linear-gradient(top, #bddbfa 5%, #80b5ea 100%);
@@ -55,7 +55,7 @@ div.detailDiv {
 	text-decoration:none;
 	text-shadow:0px 1px 0px #528ecc;
 }
-.allButtons:hover {
+.fancyButtons:hover {
 	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #80b5ea), color-stop(1, #bddbfa));
 	background:-moz-linear-gradient(top, #80b5ea 5%, #bddbfa 100%);
 	background:-webkit-linear-gradient(top, #80b5ea 5%, #bddbfa 100%);
@@ -65,7 +65,7 @@ div.detailDiv {
 	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#80b5ea', endColorstr='#bddbfa',GradientType=0);
 	background-color:#80b5ea;
 }
-.allButtons:active {
+.fancyButtons:active {
 	position:relative;
 	top:1px;
 }

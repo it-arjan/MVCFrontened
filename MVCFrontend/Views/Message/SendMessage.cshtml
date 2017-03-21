@@ -19,13 +19,12 @@
                 <input type="submit" value="Send" /> <span id="apiResult"></span>
             </form>
         </div>
-        <div class="col-md-4"><br /><button id="toggleQueue">Sequential/ Parallell</button> <span id="toggleResult"></span></div>
-        <div class="col-md-4"></div>
+        <div class="col-md-8"><br /><button id="toggleQueue" class="fancyButtons" >Toggle Queue processing mode</button> <span id="toggleResult"></span></div>
      </div>
     <hr />
     <div class="row">
-        <div class="col-md-8">Remote socketChat (=socket chat). <a class="allButtons" href="#" id="initializeChat" >Re-Initialize</a></div>
-        <div class="col-md-4">@Model.UserName's actions of today. <a href="#" id="queryPostbackData" class="allButtons">Refresh</a></div>
+        <div class="col-md-8">Remote socketChat (=socket chat). <a class="fancyButtons" href="#" id="initializeChat" >Re-Initialize</a></div>
+        <div class="col-md-4">@Model.UserName's actions of today. <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a></div>
     </div>
     <div class="row">
         <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
@@ -81,7 +80,8 @@
                 },
             })
             .done(function (data) {
-                $(resultDivId).text(data);
+                var obj = JSON.parse(data);
+                $(resultDivId).text("Queue manager now runs " + obj.message);
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
                 $(resultDivId).append("<br/>ToggleQueuestatus failed: error= " + errorThrown);

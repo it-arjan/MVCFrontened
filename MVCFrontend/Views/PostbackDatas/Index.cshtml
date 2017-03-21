@@ -9,10 +9,6 @@
 }
 <div>
     <p>
-        @if (ClaimsPrincipal.Current.isAdmin())
-        {
-            @Html.ActionLink("Create New", "Create")
-        }
     </p>
     <table class="tttable">
         <tr>
@@ -45,11 +41,10 @@
             </td>
             <td>
                 @*@Html.ActionLink("Show log", "Details", new { id = item.Id })*@ 
-                    <a href="#" id="openPopupDetails" class="allButtons" onclick="event.preventDefault();openPopupDetails(@item.Id);">Show log</a>
+                    <a href="#" id="openPopupDetails" class="fancyButtons" onclick="event.preventDefault();openPopupDetails(@item.Id);">Show log</a>
                     @if (ClaimsPrincipal.Current.isAdmin())
                 {
-                        @Html.ActionLink("Edit", "Edit", new { id = item.Id })
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                        <a href="#" id="deletePostback" class="txtButton" onclick="event.preventDefault();deletePostback(@item.Id);">Delete</a>
                     }
 </td>
         </tr>
@@ -66,15 +61,35 @@
             $('#PostbackDetails').hide(); //slideToggle gets confused when called here
         }
     });
-    function closePopupDetails() {
-        //console.log('->closePopupDetails');
+    function togglePopupDetails() {
+        //console.log('->togglePopupDetails');
         $('#PostbackDetails').slideToggle();
     }
+    function deletePostback(id) {
+        CallFuncWhenAxjaxTokenValid(DeletePostbackAjax, g_AjaxAccessToken4Details, "#postbackResult", id);
+    }
+    function DeletePostbackAjax(ajaxAccessToken, resultDivId, id) {
+        $.ajax({
+            type: 'Post',
+            dataType: 'html',
+            url: '/Postbackdatas/Delete/' + id,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+            },
+        })
+        .done(function (data) {
+            $(resultDivId).html(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>Querying postback details failed: error= " + errorThrown);
+        })
+    }
     function openPopupDetails(id) {
-        closePopupDetails();
         CallFuncWhenAxjaxTokenValid(QueryDetails, g_AjaxAccessToken4Details, "#PostbackDetails", id);
     }
     function QueryDetails(ajaxAccessToken, resultDivId, id) {
+        $('#PostbackDetails').hide();
+        togglePopupDetails();
         $(resultDivId).html("<h3>Loading details ... </h3>");
         $.ajax({
             type: 'Get',
@@ -85,7 +100,7 @@
             },
         })
         .done(function (data) {
-            var buttonHtml = "<button id='xbutton' class='xbutton' onclick='closePopupDetails();'>X</button>";
+            var buttonHtml = "<button id='xbutton' class='xbutton' onclick='togglePopupDetails();'>X</button>";
             $(resultDivId).html(buttonHtml + data);
         })
         .fail(function (jqXHR, textStatus, errorThrown) {

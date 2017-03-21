@@ -102,27 +102,13 @@ namespace MVCFrontend.Controllers
             return View(postbackData);
         }
 
-        // GET: PostbackDatas/Delete/5
-        public ActionResult Delete(string id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            PostbackData postbackData = db.Postbacks.Find(id);
-            if (postbackData == null)
-            {
-                return HttpNotFound();
-            }
-            return View(postbackData);
-        }
-
         // POST: PostbackDatas/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
-            PostbackData postbackData = db.Postbacks.Find(id);
+            int intPk = Convert.ToInt16(id);
+            PostbackData postbackData = db.Postbacks.Find(intPk);
             db.Postbacks.Remove(postbackData);
             db.SaveChanges();
             return RedirectToAction("Index");

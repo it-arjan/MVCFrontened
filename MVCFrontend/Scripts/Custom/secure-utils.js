@@ -1,4 +1,4 @@
-﻿function CallFuncWhenAxjaxTokenValid(func, ajaxAccessToken, resultDivId, data) {
+﻿function CallFuncWhenAxjaxTokenValid(func, ajaxAccessToken, resultDivId, funcData) {
     
     $.ajax({
         type: 'GET',
@@ -7,10 +7,10 @@
             xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
         },
     })
-    .done(function (data) {
+    .done(function (authPingResult) {
         $(resultDivId).append("OAUTH2 token check succeeded, proceeding to fetch your data..");
-        if (typeof data === "undefined") func(ajaxAccessToken, resultDivId);
-        else func(ajaxAccessToken, resultDivId, data);
+        if (typeof funcData === "undefined") func(ajaxAccessToken, resultDivId);
+        else func(ajaxAccessToken, resultDivId, funcData);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         $(resultDivId).text("OAUTH2 Silicon Token expired, refresh the page.");

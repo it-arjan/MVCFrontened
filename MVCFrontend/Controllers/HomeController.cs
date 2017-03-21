@@ -15,9 +15,17 @@ namespace MVCFrontend.Controllers
         private ILogger _logger = LogManager.CreateLogger(typeof(HomeController), Helpers.Appsettings.LogLevel());
         public ActionResult Index()
         {
-            _logger.Info("homepage Index hit!");
             return View();
         }
+
+        public ActionResult Logout()
+        {
+            if (User.Identity.IsAuthenticated)
+                Request.GetOwinContext().Authentication.SignOut(); //need to provide the token in order to get back here
+
+            return Redirect("/");
+        }
+
         [Authorize]
         public ActionResult About()
         {
@@ -28,21 +36,6 @@ namespace MVCFrontend.Controllers
             model.Claims = claimsprincipal.Claims;
 
             return View(model);
-        }
-
-
-        [Authorize]
-        public ActionResult Logout()
-        {
-            Request.GetOwinContext().Authentication.SignOut(); //need to provide the token in order to get back here
-
-            return Redirect("/");
-        }
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page is public.";
-
-            return View();
         }
     }
 }

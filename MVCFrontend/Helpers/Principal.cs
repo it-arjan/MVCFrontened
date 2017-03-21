@@ -12,6 +12,11 @@ namespace MVCFrontend.Helpers
         {
             return cp.HasClaim(c => c.Type == "role" && c.Value == "admin");
         }
-
+        public static string NameClaim(this ClaimsPrincipal cp)
+        {
+            if (cp.Claims.Where(c => c.Type == "name").Any())
+                return cp.Claims.Where(c => c.Type == "name").First().Value;
+            return "name claim not set (yet)";
+        }
     }
 }
