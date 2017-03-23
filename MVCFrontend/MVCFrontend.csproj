@@ -241,8 +241,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Properties\PublishProfiles\Disk.pubxml" />
-    <None Include="Properties\PublishProfiles\MessageQueueFrontEnd - Web Deploy %282%29.pubxml" />
-    <None Include="Properties\PublishProfiles\MessageQueueFrontEnd - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\Azure Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\Custom\secure-utils.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />

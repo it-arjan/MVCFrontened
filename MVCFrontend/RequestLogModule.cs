@@ -25,14 +25,15 @@ namespace MVCFrontend
         {
             if (HttpContext.Current.CurrentNotification == RequestNotification.LogRequest)
             {
-                if ((MvcHandler)HttpContext.Current.Handler != null)
+                var mvcHandler = HttpContext.Current.Handler as MvcHandler;
+                if (mvcHandler != null)
                 {
                     string username = HttpContext.Current.Request.IsAuthenticated 
                                         ? ClaimsPrincipal.Current.NameClaim()
                                         : "Anonymous";
 
                     _logger.Info("Request for {0} by {1}", 
-                                                HttpContext.Current.Request.Url, username);
+                                                HttpContext.Current.Request.Path, username);
                 }
 
             }

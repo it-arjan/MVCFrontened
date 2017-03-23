@@ -22,7 +22,7 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class MessageController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel(), "c:\\temp");
+        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel());
         // GET: Message
         public ActionResult Index()
         {
@@ -53,7 +53,7 @@ namespace MVCFrontend.Controllers
                 if (!token.IsError)
                 {
 
-                    var apiUrl = Helpers.Appsettings.QueueApiUrl();
+                    var apiUrl = string.Format("{0}/Drop",Helpers.Appsettings.QueueApiUrl());
 
                     var auth_header = string.Format("bearer {0}", token.AccessToken);
 
@@ -73,8 +73,11 @@ namespace MVCFrontend.Controllers
                     easyHttp.Post(apiUrl, data, "application/json");
 
                     model.ApiResult = new ApiResultModel();
-                    model.ApiResult.Message = string.Format("Queue Api returned {0} and '{1}'", easyHttp.Response.StatusCode, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
-                    
+                    var errorText = easyHttp.Response.StatusCode != HttpStatusCode.OK
+                        ? string.Format("Queue Api returned {0} and ",easyHttp.Response.StatusCode)
+                        : string.Empty;
+
+                    model.ApiResult.Message = string.Format("{0} '{1}'", errorText, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
                 }
                 else
                 {

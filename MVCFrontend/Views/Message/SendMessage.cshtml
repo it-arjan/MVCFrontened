@@ -69,8 +69,8 @@
                 'UserName': ''
             };
             $.ajax({
-                type: 'PUT',
-                url: '@Appsettings.QueueApiUrl()',
+                type: 'POST',
+                url: '@Appsettings.QueueApiUrl()' + 'Toggle',
                 data: formData,
                 dataType: 'text',
                 encode: true,
@@ -84,7 +84,7 @@
                 $(resultDivId).text("Queue manager now runs " + obj.message);
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
-                $(resultDivId).append("<br/>ToggleQueuestatus failed: error= " + errorThrown);
+                $(resultDivId).text("ToggleQueuestatus failed: code=" + jqXHR.status + ", error= " + jqXHR.statusText);
             })
         }
         function Submit(ajaxAccessToken, resultDivId, data) {

@@ -8,7 +8,6 @@
         },
     })
     .done(function (authPingResult) {
-        $(resultDivId).append("OAUTH2 token check succeeded, proceeding to fetch your data..");
         if (typeof funcData === "undefined") func(ajaxAccessToken, resultDivId);
         else func(ajaxAccessToken, resultDivId, funcData);
     })

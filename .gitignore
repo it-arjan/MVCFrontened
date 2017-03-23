@@ -16,7 +16,7 @@ packages/
 *.cache
 *.user
 *.log
-
+*.pubxml
 ============================
 
 # Windows image file caches
