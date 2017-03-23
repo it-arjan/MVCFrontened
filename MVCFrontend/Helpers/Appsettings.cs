@@ -55,10 +55,6 @@ namespace MVCFrontend.Helpers
             return ConfigurationManager.AppSettings.Get(SchemeKey);
         }
 
-        public static int AuthSessionLengthMinutes()
-        {
-            return Convert.ToInt16(ConfigurationManager.AppSettings.Get(AuthSessionLengthKey));
-        }
         public static string SocketServerHostname()
         {
             return ConfigurationManager.AppSettings.Get(SocketServerHostnameKey);

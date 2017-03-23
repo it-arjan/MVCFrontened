@@ -29,8 +29,16 @@ button.xbutton {
      position:absolute;
      right:0;
  }
-div.detailDiv {
+div.postback-detail-div {
     background-color:beige;
+}
+table.postback-overview th,table.postback-overview td {
+    text-align:center;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+dl.postback-detail{
+    padding: 10px;
 }
 .fancyButtons {
 	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bddbfa), color-stop(1, #80b5ea));

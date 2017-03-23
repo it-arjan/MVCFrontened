@@ -216,7 +216,8 @@
     </Compile>
     <Compile Include="Helpers\Appsettings.cs" />
     <Compile Include="Helpers\Constants.cs" />
-    <Compile Include="Helpers\Principal.cs" />
+    <Compile Include="Extensions\Principal.cs" />
+    <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Models\MessageViewModel.cs" />
     <Compile Include="Models\AboutModel.cs" />
     <Compile Include="Models\ApiResultModel.cs" />

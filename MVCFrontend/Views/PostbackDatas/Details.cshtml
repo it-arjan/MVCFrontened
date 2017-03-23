@@ -7,7 +7,7 @@
 }
 <div>
     <div>
-        <dl class="dl-horizontal">
+        <dl class="postback-detail">
             <dt>
                 @Html.DisplayNameFor(model => model.MessageId)
             </dt>
@@ -42,10 +42,4 @@
 
         </dl>
     </div>
-    <p>
-        @if (ClaimsPrincipal.Current.isAdmin())
-        {
-            @Html.ActionLink("Edit", "Edit", new { id = Model.Id })
-        }
-    </p>
 </div>

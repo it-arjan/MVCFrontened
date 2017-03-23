@@ -16,21 +16,27 @@ using Newtonsoft.Json;
 using System.Security.Permissions;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MVCFrontend.Helpers;
 
 namespace MVCFrontend.Controllers
 {
     [Authorize]
     public class MessageController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Helpers.Appsettings.LogLevel());
+        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Appsettings.LogLevel());
         // GET: Message
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            model.AjaxAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeMcvFrontEnd).AccessToken;
-            model.AjaxQueueAccessToken = NewSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi).AccessToken;
+            model.AjaxBackendToken = NewSiliconClientToken(IdSrv3.ScopeMcvFrontEnd).AccessToken;
+            model.AjaxBackendTokenExpsecs = Utils.JwtRemainingseconds(model.AjaxBackendToken);
+
+            model.AjaxDirectQueueToken = NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi).AccessToken;
+            model.AjaxDirectQueueTokenExpsecs = Utils.JwtRemainingseconds(model.AjaxDirectQueueToken);
+
             model.SocketToken = Guid.NewGuid().ToString();
             model.DoneToken = Guid.NewGuid().ToString();
+
             model.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
             model.Roles = string.Join(", ", GetClaimValuesFromPrincipal("role"));
             return View("SendMessage", model);
@@ -49,11 +55,11 @@ namespace MVCFrontend.Controllers
             if (!string.IsNullOrEmpty(message.Trim()))
             {
                 // btw: Request.Headers.Authorization.Parameter == null?
-                var token = NewSiliconClientToken(Helpers.IdSrv3.ScopeEntryQueueApi); 
+                var token = NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi); 
                 if (!token.IsError)
                 {
 
-                    var apiUrl = string.Format("{0}/Drop",Helpers.Appsettings.QueueApiUrl());
+                    var apiUrl = string.Format("{0}/Drop",Appsettings.QueueApiUrl());
 
                     var auth_header = string.Format("bearer {0}", token.AccessToken);
 
@@ -64,7 +70,7 @@ namespace MVCFrontend.Controllers
 
                     var data = new QueuePostdata();
                     data.MessageId = message;
-                    data.PostBackUrl = string.Format("{0}/Message/Postback", Helpers.Appsettings.HostUrl());
+                    data.PostBackUrl = string.Format("{0}/Message/Postback", Appsettings.HostUrl());
                     data.SocketToken = socketToken;
                     data.DoneToken = doneToken;
                     // Note: Claims still contain the human values because this tokens scope is a resource scope
@@ -101,9 +107,9 @@ namespace MVCFrontend.Controllers
 
         private TokenResponse NewSiliconClientToken(string scope)
         {
-            var tokenUrl = string.Format("{0}connect/token", Helpers.Appsettings.AuthUrl());
+            var tokenUrl = string.Format("{0}connect/token", Appsettings.AuthUrl());
             _logger.Info("Getting a silicon client token at {0}", tokenUrl);
-            var client = new TokenClient(tokenUrl, Helpers.Appsettings.SiliconClientId(), Helpers.Appsettings.SiliconClientSecret());
+            var client = new TokenClient(tokenUrl, Appsettings.SiliconClientId(), Appsettings.SiliconClientSecret());
 
             var token = client.RequestClientCredentialsAsync(scope).Result;
             if (token.IsError) _logger.Error("Error getting Token for silicon Client: {0} ", token.Error);

@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Protocols;
 using System.Configuration;
 using IdentityServer3.AccessTokenValidation;
 using System.Net;
+using MVCFrontend.Helpers;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -21,28 +22,28 @@ namespace MVCFrontend
 {
     public class Startup
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Helpers.Appsettings.LogLevel());
+        private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Appsettings.LogLevel());
         private void CheckHealth()
         {
             _logger.Info("Checking config settings..");
             _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
-            if (Helpers.Appsettings.Scheme() == null) throw new Exception(Helpers.Appsettings.SchemeKey + " is not present in app.config");
-            if (Helpers.Appsettings.Hostname() == null) throw new Exception(Helpers.Appsettings.HostnameKey + " is not present in app.config");
+            if (Appsettings.Scheme() == null) throw new Exception(Appsettings.SchemeKey + " is not present in app.config");
+            if (Appsettings.Hostname() == null) throw new Exception(Appsettings.HostnameKey + " is not present in app.config");
 
-            if (Helpers.Appsettings.AuthServer() == null) throw new Exception(Helpers.Appsettings.AuthServerKey + " is not present in app.config");
-            if (Helpers.Appsettings.SiliconClientId() == null) throw new Exception(Helpers.Appsettings.SiliconClientIdKey + " is not present in app.config");
-            if (Helpers.Appsettings.SiliconClientSecret() == null) throw new Exception(Helpers.Appsettings.SiliconClientSecretKey + " is not present in app.config");
-            if (Helpers.Appsettings.FrontendClientId() == null) throw new Exception(Helpers.Appsettings.FrontendClientIdKey + " is not present in app.config");
+            if (Appsettings.AuthServer() == null) throw new Exception(Appsettings.AuthServerKey + " is not present in app.config");
+            if (Appsettings.SiliconClientId() == null) throw new Exception(Appsettings.SiliconClientIdKey + " is not present in app.config");
+            if (Appsettings.SiliconClientSecret() == null) throw new Exception(Appsettings.SiliconClientSecretKey + " is not present in app.config");
+            if (Appsettings.FrontendClientId() == null) throw new Exception(Appsettings.FrontendClientIdKey + " is not present in app.config");
 
             _logger.Info("config setting seem ok..");
-            _logger.Info("Url = {0}", Helpers.Appsettings.HostUrl());
-            _logger.Info("Socket server Url = {0}", Helpers.Appsettings.SocketServerUrl());
-            _logger.Info("Auth server Url= {0}", Helpers.Appsettings.AuthUrl());
+            _logger.Info("Url = {0}", Appsettings.HostUrl());
+            _logger.Info("Socket server Url = {0}", Appsettings.SocketServerUrl());
+            _logger.Info("Auth server Url= {0}", Appsettings.AuthUrl());
             _logger.Info("..done with config checks.");
         }
         public void Configuration(IAppBuilder app)
         {
-            if (Helpers.Appsettings.AzureIgnoreCertificateErrors())
+            if (Appsettings.AzureIgnoreCertificateErrors())
             {
                 ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
@@ -56,7 +57,7 @@ namespace MVCFrontend
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                ExpireTimeSpan = TimeSpan.FromMinutes(15 * Helpers.IdSrv3.SessionSetting),
+                ExpireTimeSpan = TimeSpan.FromMinutes(IdSrv3.CookieTimeoutSecs),
                 Provider = new CookieAuthenticationProvider
                 {
                     // do not redirect the ajax call from send message
@@ -74,13 +75,13 @@ namespace MVCFrontend
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
             {
-                ClientId = Helpers.Appsettings.FrontendClientId(),
-                Authority = Helpers.Appsettings.AuthUrl(),
-                RedirectUri = Helpers.Appsettings.HostUrl(),
+                ClientId = Appsettings.FrontendClientId(),
+                Authority = Appsettings.AuthUrl(),
+                RedirectUri = Appsettings.HostUrl(),
                 ResponseType = "token id_token",
-                Scope = "openid roles " + Helpers.IdSrv3.ScopeMcvFrontEndHuman, 
+                Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman, 
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                PostLogoutRedirectUri = Helpers.Appsettings.HostUrl(),
+                PostLogoutRedirectUri = Appsettings.HostUrl(),
 
                 UseTokenLifetime =false, 
                 Notifications = new OpenIdConnectAuthenticationNotifications
@@ -105,7 +106,7 @@ namespace MVCFrontend
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            var max_age = (60 * Helpers.Appsettings.AuthSessionLengthMinutes() * Helpers.IdSrv3.SessionSetting).ToString();
+                            var max_age = (IdSrv3.SessionRefreshTimeoutSecs).ToString();
                             _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0}", max_age);
                             notification.ProtocolMessage.MaxAge = max_age;
                         }
@@ -125,9 +126,9 @@ namespace MVCFrontend
             // silicon client authorization
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
-                Authority = Helpers.Appsettings.AuthUrl(),
+                Authority = Appsettings.AuthUrl(),
                 ValidationMode = ValidationMode.Local, 
-                RequiredScopes = new[] { Helpers.IdSrv3.ScopeMcvFrontEnd }
+                RequiredScopes = new[] { IdSrv3.ScopeMcvFrontEnd }
             });
 
             _logger.Info("startup executed");

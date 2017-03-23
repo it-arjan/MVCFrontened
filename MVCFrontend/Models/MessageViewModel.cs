@@ -7,8 +7,11 @@ namespace MVCFrontend.Models
 {
     public class MessageViewModel
     {
-        public string AjaxAccessToken;
-        public string AjaxQueueAccessToken;
+        public string AjaxBackendToken;
+        public int AjaxBackendTokenExpsecs;
+        public string AjaxDirectQueueToken;
+        public int AjaxDirectQueueTokenExpsecs;
+
         public string SocketToken;
         public string DoneToken;
         public ApiResultModel ApiResult;

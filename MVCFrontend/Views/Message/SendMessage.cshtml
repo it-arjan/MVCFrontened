@@ -36,11 +36,11 @@
         $(document).ready(function () {
             $('#msgForm').submit(function (event) {
                 event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxAccessToken', "#apiResult", $('input[name=message]').val());
+                CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxBackendToken', "#apiResult", $('input[name=message]').val());
             });
             $('#queryPostbackData').click(function (event) {
                 event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postbackResult");
+                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxBackendToken', "#postbackResult");
             });
             $('#initializeChat').click(function (event) {
                 event.preventDefault();
@@ -48,11 +48,11 @@
             });
             $('#toggleQueue').click(function (event) {
                 event.preventDefault();
-                ToggleQueueStatus('@Model.AjaxQueueAccessToken', "#toggleResult");
+                ToggleQueueStatus('@Model.AjaxDirectQueueToken', "#toggleResult");
             });
             //call these on page load
-            ToggleQueueStatus('@Model.AjaxQueueAccessToken', "#toggleResult");
-            QueryPostbackData('@Model.AjaxAccessToken', '#postbackResult');
+            ToggleQueueStatus('@Model.AjaxDirectQueueToken', "#toggleResult");
+            QueryPostbackData('@Model.AjaxBackendToken', '#postbackResult');
             InitializeChat();
         });
 
@@ -125,7 +125,7 @@
                 },
             })
             .done(function (data) {
-                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(Model.AjaxAccessToken)'; <" + "/script>";
+                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(Model.AjaxBackendToken)'; <" + "/script>";
                 $(resultDivId).html(data + scriptArg);
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
@@ -156,7 +156,7 @@
                                 var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
                                 if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
                                     LogMessage("Done token received, auto-refreshing postbacks...");
-                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxAccessToken', "#postbackResult");
+                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxBackendToken', "#postbackResult");
                                 }
                                 else {
                                     LogMessage(msgWithoutToken);
