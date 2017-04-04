@@ -28,6 +28,19 @@
             <span>@key :</span><span>@Session[key].ToString()</span>
         }
     </p>
+    <h3>Token & cookie values</h3>
+    <p>
+        <span>Token Session start </span><span>@Model.TokenSessionStart</span>
+    </p>
+    <p>
+        <span>Token Session End </span><span>@Model.TokenSessionEnd</span>
+    </p>
+    <p>
+        <span>Token Expire (secs) </span><span>@Model.TokenExpireSecs</span>
+    </p>
+    <p>
+        <span>Cookie Expire (secs) </span><span>@Model.CookieExpireSecs</span>
+    </p>
     <h3>All claims</h3>
     @foreach (var claim in Model.Claims)
     {

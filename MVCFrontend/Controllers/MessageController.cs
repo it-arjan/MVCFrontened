@@ -28,11 +28,11 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            model.AjaxBackendToken = NewSiliconClientToken(IdSrv3.ScopeMcvFrontEnd).AccessToken;
-            model.AjaxBackendTokenExpsecs = Utils.JwtRemainingseconds(model.AjaxBackendToken);
+            model.AjaxBackendToken = NewSiliconClientToken(IdSrv3.ScopeMvcFrontEnd).AccessToken;
+            //model.AjaxBackendTokenExpsecs = Utils.GetExpFromToken(model.AjaxBackendToken);
 
             model.AjaxDirectQueueToken = NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi).AccessToken;
-            model.AjaxDirectQueueTokenExpsecs = Utils.JwtRemainingseconds(model.AjaxDirectQueueToken);
+            //model.AjaxDirectQueueTokenExpsecs = Utils.GetExpFromToken(model.AjaxDirectQueueToken);
 
             model.SocketToken = Guid.NewGuid().ToString();
             model.DoneToken = Guid.NewGuid().ToString();
@@ -108,11 +108,11 @@ namespace MVCFrontend.Controllers
         private TokenResponse NewSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Appsettings.AuthUrl());
-            _logger.Info("Getting a silicon client token at {0}", tokenUrl);
+            _logger.Info("Getting a silicon client token({1}) at {0}", tokenUrl, scope);
             var client = new TokenClient(tokenUrl, Appsettings.SiliconClientId(), Appsettings.SiliconClientSecret());
 
             var token = client.RequestClientCredentialsAsync(scope).Result;
-            if (token.IsError) _logger.Error("Error getting Token for silicon Client: {0} ", token.Error);
+            if (token.IsError) _logger.Error("Error getting Token({1}) for silicon Client: {0} ", token.Error, scope);
 
             return token;
         }

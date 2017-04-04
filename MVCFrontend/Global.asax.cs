@@ -7,18 +7,29 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using MVCFrontend.DAL;
 using MVCFrontend;
+using MVCFrontend.Helpers;
+using NLogWrapper;
 
-[assembly: PreApplicationStartMethod(typeof(MvcApplication), "RegisterAdditionalModules")]
+[assembly: PreApplicationStartMethod(typeof(MvcApplication), "PreAppStartRegisterModules")]
 namespace MVCFrontend
 {
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static void RegisterAdditionalModules()
+        private static ILogger _logger = LogManager.CreateLogger(typeof(MvcApplication), Appsettings.LogLevel());
+
+        public static void PreAppStartRegisterModules()
         {
-            HttpApplication.RegisterModule(typeof(RequestLogModule));
+            RegisterModule(typeof(RequestLogModule));
         }
         // adding an empty Session_Start solves a cookie issue causing endless redict on auth success
-        protected void Session_Start() { }
+        protected void Session_Start() {
+            Session["SessionStartTime"]= DateTime.Now;
+        }
+        protected void Session_End()
+        {
+            _logger.Debug("Session_End: Clearing the session");
+            Session.Clear();
+        }
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();

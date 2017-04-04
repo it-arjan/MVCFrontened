@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using NLogWrapper;
 using System.Security.Claims;
-
+using MVCFrontend.Helpers;
 using MVCFrontend.Models;
 
 namespace MVCFrontend.Controllers
@@ -32,9 +32,15 @@ namespace MVCFrontend.Controllers
             ViewBag.Message = "You are logged on.";
 
             var model = new AboutModel();
-            var claimsprincipal = User as ClaimsPrincipal;
-            model.Claims = claimsprincipal.Claims;
-
+            model.Claims = ClaimsPrincipal.Current.Claims;
+            model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaim("auth_time"));
+            model.TokenSessionEnd = Utils.ConvertUnixTimestampToCetTime(
+                Utils.GetExpFromToken(
+                    ClaimsPrincipal.Current.GetClaim("access_token")
+                        ).ToString()
+                    );
+            //model.TokenExpireSecs = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaim("auth_time"));
+            model.CookieExpireSecs = Convert.ToInt64(IdSrv3.GetRemainingSessionSecsFromAppCookie());
             return View(model);
         }
     }

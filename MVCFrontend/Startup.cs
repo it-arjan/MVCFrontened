@@ -35,7 +35,7 @@ namespace MVCFrontend
             if (Appsettings.SiliconClientSecret() == null) throw new Exception(Appsettings.SiliconClientSecretKey + " is not present in app.config");
             if (Appsettings.FrontendClientId() == null) throw new Exception(Appsettings.FrontendClientIdKey + " is not present in app.config");
 
-            _logger.Info("config setting seem ok..");
+            _logger.Info("all requried config settings present..");
             _logger.Info("Url = {0}", Appsettings.HostUrl());
             _logger.Info("Socket server Url = {0}", Appsettings.SocketServerUrl());
             _logger.Info("Auth server Url= {0}", Appsettings.AuthUrl());
@@ -60,7 +60,8 @@ namespace MVCFrontend
                 ExpireTimeSpan = TimeSpan.FromMinutes(IdSrv3.CookieTimeoutSecs),
                 Provider = new CookieAuthenticationProvider
                 {
-                    // do not redirect the ajax call from send message
+                    // do not redirect the ajax call from send message, 
+                    // TODO, check why code never seems to get here
                     OnApplyRedirect = ctx =>
                     {
                         if (!IsAjaxRequest(ctx.Request))
@@ -83,7 +84,7 @@ namespace MVCFrontend
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Appsettings.HostUrl(),
 
-                UseTokenLifetime =false, 
+                UseTokenLifetime = true, // #TODO figure out strange identityserver behavior when session expiration is linked to the asp.net cookie
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
                     SecurityTokenValidated = notification => /* Anonymous function */
@@ -92,6 +93,7 @@ namespace MVCFrontend
                         var identity = notification.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
+
                         // not sure why this is needed, disable it
                         //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
@@ -106,7 +108,7 @@ namespace MVCFrontend
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            var max_age = (IdSrv3.SessionRefreshTimeoutSecs).ToString();
+                            var max_age = IdSrv3.SessionRefreshTimeoutSecs.ToString();
                             _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0}", max_age);
                             notification.ProtocolMessage.MaxAge = max_age;
                         }
@@ -128,7 +130,7 @@ namespace MVCFrontend
             {
                 Authority = Appsettings.AuthUrl(),
                 ValidationMode = ValidationMode.Local, 
-                RequiredScopes = new[] { IdSrv3.ScopeMcvFrontEnd }
+                RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
             });
 
             _logger.Info("startup executed");

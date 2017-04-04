@@ -29,7 +29,7 @@ namespace MVCFrontend
                 if (mvcHandler != null)
                 {
                     string username = HttpContext.Current.Request.IsAuthenticated 
-                                        ? ClaimsPrincipal.Current.NameClaim()
+                                        ? ClaimsPrincipal.Current.GetClaim("name")
                                         : "Anonymous";
 
                     _logger.Info("Request for {0} by {1}", 
