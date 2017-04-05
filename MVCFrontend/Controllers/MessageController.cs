@@ -59,7 +59,7 @@ namespace MVCFrontend.Controllers
                 if (!token.IsError)
                 {
 
-                    var apiUrl = string.Format("{0}/Drop",Appsettings.QueueApiUrl());
+                    var apiUrl = string.Format("{0}/api/entryqueue/", Appsettings.EntrypointUrl());
 
                     var auth_header = string.Format("bearer {0}", token.AccessToken);
 

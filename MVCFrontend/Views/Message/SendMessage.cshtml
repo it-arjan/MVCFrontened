@@ -70,7 +70,7 @@
             };
             $.ajax({
                 type: 'POST',
-                url: '@Appsettings.QueueApiUrl()' + 'Toggle',
+                url: '@Appsettings.EntrypointUrl()' +'api/cmdqueue',
                 data: formData,
                 dataType: 'text',
                 encode: true,

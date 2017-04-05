@@ -10,13 +10,13 @@ namespace MVCFrontend.Helpers
     public static class Appsettings
     {
         public const string SchemeKey = "scheme";
-        public const string AuthServerKey = "authserver";
+        public const string AuthServerKey = "auth.server";
         public const string AuthSessionLengthKey = "authserver.session.minutes";
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
         public const string SocketServerHostnameKey = "websocket.server.hostname";
         public const string HostnameKey = "hostname";
-        public const string QueueApiUrlKey = "queue.deliver.api";
+        public const string EntrypointKey = "entrypoint.server";
         public const string SiliconClientIdKey = "SiliconClientId";
         public const string SiliconClientSecretKey = "SiliconClientSecret";
         public const string FrontendClientIdKey = "FrontendClientId";
@@ -36,13 +36,13 @@ namespace MVCFrontend.Helpers
         {
             return string.Format("{0}://{1}/", Scheme(), Hostname());
         }
-        public static string QueueApiUrl()
+        public static string EntrypointUrl()
         {
-            return string.Format("{0}://{1}", Scheme(), QueueApi());
+            return string.Format("{0}://{1}", Scheme(), Entrypoint());
         }
-        public static string QueueApi()
+        public static string Entrypoint()
         {
-            return GetWithSlash(QueueApiUrlKey);
+            return GetWithSlash(EntrypointKey);
         }
 
         public static string SocketServerUrl()
