@@ -1,0 +1,53 @@
+﻿@model MVCFrontend.Models.ServiceSelectionModel
+@{
+    int i = 1;
+}
+<div id="serviceSelectDiv">
+    <form id="Cfg">
+        <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); ConfigureSettingsAjax('x', '#serviceSelectDiv')">Select</a>
+        @foreach (var service in Model.Services)
+        {
+            var selected = @service.Selected ? "checked" : string.Empty;
+            var inputId = string.Format("service{0}", @service.Id);
+            <label>@service.Prompt: </label><input id="@inputId" name="service" type="checkbox" value="@service.Id" @selected />
+            if (i > 0 && i % 4 == 0)
+            {<br />}
+            i++;
+
+        }
+       
+    </form>
+</div>
+<script>
+    function ConfigureSettingsAjax(ajaxAccessToken, resultDivId, data) {
+        var formData = {
+            'cmdType': "SetServiceConfig",
+            'service1': $("#service1").is(':checked'),
+            'service2': $("#service2").is(':checked'),
+            'service3': $("#service3").is(':checked'),
+            'service4': $("#service4").is(':checked'),
+            'service5': $("#service5").is(':checked'),
+            'service6': $("#service6").is(':checked'),
+            'service7': $("#service7").is(':checked'),
+            'service8': $("#service8").is(':checked'),
+            'socketToken': '@Session["SocketToken"]',
+        };
+        $(resultDivId).text("loading...");
+        $.ajax({
+            type: 'POST',
+            url: '/ServiceSelection/Submit',
+            data: formData,
+            dataType: 'text',
+            encode: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+            },
+        })
+        .done(function (result) {
+            $(resultDivId).html(result);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>call to change Settings failed: error= " + errorThrown);
+        })
+    }
+</script>

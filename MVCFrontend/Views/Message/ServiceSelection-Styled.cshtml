@@ -1,0 +1,23 @@
+﻿@model MVCFrontend.Models.ServiceSelectionModel
+@{
+    int i = 1;
+}
+<form id="Cfg">
+    @foreach (var service in Model.Services)
+    {
+        <section title="@service.Prompt">
+            <div class="slideThree">
+                @{
+                    var inputId = string.Format("slideThree{0}", i);
+                    var selected = @service.Selected ? "checked" : string.Empty;
+                }
+                <input type="checkbox" value="@service.Id" id="@inputId" name="service" @selected />
+                <label for="@inputId"></label>
+                @{i++;
+                }
+            </div>
+        </section>
+    }
+    @*<a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault();AjaxSendForm()">Send</a>*@
+</form>
+
