@@ -10,8 +10,5 @@ namespace MVCFrontend.Models
         public IEnumerable<System.Security.Claims.Claim> Claims { get; set; }
         public DateTime TokenSessionStart;
         public DateTime TokenSessionEnd;
-        
-        public int TokenExpireSecs;
-        public Int64 CookieExpireSecs;
     }
 }

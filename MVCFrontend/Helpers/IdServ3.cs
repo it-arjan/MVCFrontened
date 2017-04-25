@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IdentityModel.Client;
+using NLogWrapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -18,17 +20,22 @@ namespace MVCFrontend.Helpers
 
         public static string UniqueClaimOfAntiForgeryToken = "given_name";
 
-        public static int CookieTimeoutSecs = 60; 
-        public static int SessionRefreshTimeoutSecs = 120;
+        public static int CookieTimeoutSecs = 3600; 
+        public static int SessionRefreshTimeoutSecs = 3600;
 
-        public static double GetRemainingSessionSecsFromAppCookie()
+        private static ILogger _logger = LogManager.CreateLogger(typeof(IdSrv3));
+
+        public static string NewSiliconClientToken(string scope)
         {
-            double val = -17;
-            if (HttpContext.Current.Request.Cookies[".AspNet.ApplicationCookie"] != null)
-            {
-                val = CookieTimeoutSecs - (DateTime.Now - HttpContext.Current.Request.Cookies[".AspNet.ApplicationCookie"].Expires).TotalSeconds;
-            }
-            return val;
+            var tokenUrl = string.Format("{0}connect/token", Appsettings.AuthUrl());
+            _logger.Debug("Getting a new Client Token for scope {1} at {0} ", tokenUrl, scope );
+
+            var client = new TokenClient(tokenUrl, Appsettings.SiliconClientId(), Appsettings.SiliconClientSecret());
+
+            var token = client.RequestClientCredentialsAsync(scope).Result;
+            if (token.IsError) return "Error Getting a Silicon Token for scope " + scope;
+            return token.AccessToken;
         }
+
     }
 }

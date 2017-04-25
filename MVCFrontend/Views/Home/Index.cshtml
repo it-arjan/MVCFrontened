@@ -5,40 +5,24 @@
 <div class="jumbotron">
     <h1>ASP.NET</h1>
     <p class="lead">
+        <span>This site works with self signed certificates to enable a secure https. <br />
+        To make it work, download this <a href="~/Content/download/it-arjan-root-CS.cer">root certificate</a> and add it to the trusted Root Certification Authorities in your local certificate store. <br />
+        Then click Private (menu above) to access the secured area of this website.</span>
         @if (User.Identity.IsAuthenticated)
             {
             <span>You are logged on, click Private again to access the secured area.</span>
         }
         else
         {
-            <span>You are not logged on, click Private (menu above) to be redirected to the authorization server.</span>
+            <span>You are not logged on. </span>
         }
         <p>
             <h2>Session variables</h2>
             @foreach (string key in Session.Keys)
             {
-                <span>@key :</span><span>@Session[key].ToString()</span>
+                <span><b>@key :</b></span><span>@Session[key].ToString()</span><br/>
             }
         </p>
     </p>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-
-
-            <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>

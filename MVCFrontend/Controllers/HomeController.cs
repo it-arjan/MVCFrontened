@@ -22,7 +22,7 @@ namespace MVCFrontend.Controllers
         {
             if (User.Identity.IsAuthenticated)
                 Request.GetOwinContext().Authentication.SignOut(); //need to provide the token in order to get back here
-
+            Session.Clear();
             return Redirect("/");
         }
 
@@ -35,12 +35,10 @@ namespace MVCFrontend.Controllers
             model.Claims = ClaimsPrincipal.Current.Claims;
             model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaim("auth_time"));
             model.TokenSessionEnd = Utils.ConvertUnixTimestampToCetTime(
-                Utils.GetExpFromToken(
-                    ClaimsPrincipal.Current.GetClaim("access_token")
-                        ).ToString()
+                    Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp")
                     );
-            //model.TokenExpireSecs = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaim("auth_time"));
-            model.CookieExpireSecs = Convert.ToInt64(IdSrv3.GetRemainingSessionSecsFromAppCookie());
+
+
             return View(model);
         }
     }

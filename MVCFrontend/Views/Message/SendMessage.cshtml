@@ -10,17 +10,34 @@
 <h3>Welcome @Model.UserName! The following roles are assigned to you: @Model.Roles</h3>
 @if (hasRights)
 {
+    <div class="row tab">
+        <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Send Message</button>
+        <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
+    </div>
     <div class="row">
-        <div class="col-md-4">
-            <p>Please enter a string identifying your message to the remote queue. </p>
-            <p>Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from this input, spaces stay.</p>
-            <form id="msgForm" action="" method="post">
-                <input type="text" name="message" /> <br />
-                <input type="submit" value="Send" /> <span id="apiResult"></span>
-            </form>
+        <div id="SendMessage" class="tabcontent">
+            <div class="col-md-12">
+                <h3>Drop message into MSMQ</h3> 
+                <p>Please enter a string identifying your message to the remote queue. Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from this input. (spaces stay)</p>
+                <form id="msgForm" action="" method="post">
+                    <input type="text" name="message" /> <br />
+                    <input type="submit" value="Send" /> <span id="apiResult"></span>
+                </form>
+            </div>
         </div>
-        <div class="col-md-8"><br /><button id="toggleQueue" class="fancyButtons" >Toggle Queue processing mode</button> <span id="toggleResult"></span></div>
-     </div>
+        <div id="ServerConfig" class="tabcontent">
+                <div class="col-md-3">
+                <h4>Queue processing mode</h4>
+                    <button id="toggleQueue" class="fancyButtons">Toggle</button> 
+                    <span id="toggleResult"></span>
+                </div>
+            <div class="col-md-9">
+                <h4>Select webservices</h4>
+                @Html.Action("Index", "ServiceSelection")
+                <div>The first 3 selected webservices will be called</div>
+            </div>
+        </div>     
+    </div>
     <hr />
     <div class="row">
         <div class="col-md-8">Remote socketChat (=socket chat). <a class="fancyButtons" href="#" id="initializeChat" >Re-Initialize</a></div>
@@ -36,11 +53,11 @@
         $(document).ready(function () {
             $('#msgForm').submit(function (event) {
                 event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(Submit, '@Model.AjaxBackendToken', "#apiResult", $('input[name=message]').val());
+                CallFuncWhenAxjaxTokenValid(DropIntoQueue, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#apiResult", $('input[name=message]').val());
             });
             $('#queryPostbackData').click(function (event) {
                 event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxBackendToken', "#postbackResult");
+                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
             });
             $('#initializeChat').click(function (event) {
                 event.preventDefault();
@@ -48,29 +65,46 @@
             });
             $('#toggleQueue').click(function (event) {
                 event.preventDefault();
-                ToggleQueueStatus('@Model.AjaxDirectQueueToken', "#toggleResult");
+                ToggleQueueStatus('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
             });
+
             //call these on page load
-            ToggleQueueStatus('@Model.AjaxDirectQueueToken', "#toggleResult");
-            QueryPostbackData('@Model.AjaxBackendToken', '#postbackResult');
+            document.getElementById("openOnLoad").click();
+            GetQueueStatus('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
+            QueryPostbackData('@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', '#postbackResult');
             InitializeChat();
         });
 
+        function openTab(evt, tabId) {
+            $(".tabcontent").hide();
+            $(".tablinks").removeClass("active");
+            $("#" + tabId).show();
+            evt.currentTarget.className += " active";
+        }
         function InitializeChat() {
             $("#socketChat").empty();
             ConnectToSocketServer();
         }
+        function GetQueueStatus(ajaxAccessToken, resultDivId) {
+            var formData = {
+                'cmdType': "GetModus",
+                'socketToken': '@Session["SocketToken"]'
+            };
+
+            SendCmd(formData, ajaxAccessToken, resultDivId);
+        }
         function ToggleQueueStatus(ajaxAccessToken, resultDivId) {
             var formData = {
-                'MessageId': 'not needed',
-                'PostBackUrl': "",
-                'socketToken': "@Model.SocketToken",
-                'doneToken': "not needed",
-                'UserName': ''
+                'cmdType': 'ToggleModus',
+                'socketToken': '@Session["SocketToken"]'
             };
+
+            SendCmd(formData, ajaxAccessToken, resultDivId);
+        }
+        function SendCmd(formData, ajaxAccessToken, resultDivId) {
             $.ajax({
                 type: 'POST',
-                url: '@Appsettings.EntrypointUrl()' +'api/cmdqueue',
+                url: '@Appsettings.EntrypointUrl()' + 'api/cmdqueue',
                 data: formData,
                 dataType: 'text',
                 encode: true,
@@ -81,17 +115,18 @@
             })
             .done(function (data) {
                 var obj = JSON.parse(data);
-                $(resultDivId).text("Queue manager now runs " + obj.message);
+                $(resultDivId).text(obj.Message);
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
                 $(resultDivId).text("ToggleQueuestatus failed: code=" + jqXHR.status + ", error= " + jqXHR.statusText);
             })
         }
-        function Submit(ajaxAccessToken, resultDivId, data) {
+
+        function DropIntoQueue(ajaxAccessToken, resultDivId, data) {
             var formData = {
                 'message': data,
-                'socketToken': "@Model.SocketToken",
-                'doneToken': "@Model.DoneToken"
+                'socketToken': '@Session["SocketToken"]',
+                'doneToken': "@Session["DoneToken"]"
             };
 
             $.ajax({
@@ -125,7 +160,7 @@
                 },
             })
             .done(function (data) {
-                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(Model.AjaxBackendToken)'; <" + "/script>";
+                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(ClaimsPrincipal.Current.GetClaim("ajax_backend_token"))'; <" + "/script>";
                 $(resultDivId).html(data + scriptArg);
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
@@ -141,8 +176,8 @@
 
         function ConnectToSocketServer() {
             if ("WebSocket" in window) {
-                var socketToken = '@Model.SocketToken';
-                var doneToken = '@Model.DoneToken';
+                var socketToken = '@Session["SocketToken"]';
+                var doneToken = '@Session["DoneToken"]';
                 if (socketToken.length > 0) {
                     try {
                         if (_gSocket != null) {
@@ -156,7 +191,7 @@
                                 var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
                                 if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
                                     LogMessage("Done token received, auto-refreshing postbacks...");
-                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@Model.AjaxBackendToken', "#postbackResult");
+                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
                                 }
                                 else {
                                     LogMessage(msgWithoutToken);

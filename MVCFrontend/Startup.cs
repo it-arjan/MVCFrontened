@@ -93,7 +93,7 @@ namespace MVCFrontend
                         var identity = notification.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
-
+                        _logger.Debug("Notification(SecurityTokenValidated): access token = {0}", notification.ProtocolMessage.AccessToken);
                         // not sure why this is needed, disable it
                         //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant

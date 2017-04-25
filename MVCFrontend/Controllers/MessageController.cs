@@ -28,14 +28,14 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            model.AjaxBackendToken = NewSiliconClientToken(IdSrv3.ScopeMvcFrontEnd).AccessToken;
-            //model.AjaxBackendTokenExpsecs = Utils.GetExpFromToken(model.AjaxBackendToken);
+            ClaimsPrincipal.Current.AddUpdateClaim("ajax_backend_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeMvcFrontEnd));
+            ClaimsPrincipal.Current.AddUpdateClaim("ajax_remote_queue_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
+             
+            model.AjaxBackendTokenExpTime = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_backend_token").ToString(), "exp");
+            model.AjaxDirectQueueTokenExpTime = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token").ToString(), "exp");
 
-            model.AjaxDirectQueueToken = NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi).AccessToken;
-            //model.AjaxDirectQueueTokenExpsecs = Utils.GetExpFromToken(model.AjaxDirectQueueToken);
-
-            model.SocketToken = Guid.NewGuid().ToString();
-            model.DoneToken = Guid.NewGuid().ToString();
+            Session["SocketToken"] = Guid.NewGuid().ToString();
+            Session["DoneToken"] = Guid.NewGuid().ToString();
 
             model.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
             model.Roles = string.Join(", ", GetClaimValuesFromPrincipal("role"));
@@ -55,42 +55,34 @@ namespace MVCFrontend.Controllers
             if (!string.IsNullOrEmpty(message.Trim()))
             {
                 // btw: Request.Headers.Authorization.Parameter == null?
-                var token = NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi); 
-                if (!token.IsError)
-                {
+                _logger.Info("Getting a silicon client token");
 
-                    var apiUrl = string.Format("{0}/api/entryqueue/", Appsettings.EntrypointUrl());
+                var apiUrl = string.Format("{0}/api/entryqueue/", Appsettings.EntrypointUrl());
 
-                    var auth_header = string.Format("bearer {0}", token.AccessToken);
+                var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"));
 
-                    var easyHttp = new HttpClient();
+                var easyHttp = new HttpClient();
                      
-                    easyHttp.Request.AddExtraHeader("Authorization", auth_header);
-                    easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
+                easyHttp.Request.AddExtraHeader("Authorization", auth_header);
+                easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
 
-                    var data = new QueuePostdata();
-                    data.MessageId = message;
-                    data.PostBackUrl = string.Format("{0}/Message/Postback", Appsettings.HostUrl());
-                    data.SocketToken = socketToken;
-                    data.DoneToken = doneToken;
-                    // Note: Claims still contain the human values because this tokens scope is a resource scope
-                    data.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
+                var data = new QueuePostdata();
+                data.MessageId = message;
+                data.PostBackUrl = string.Format("{0}/Message/Postback", Appsettings.HostUrl());
+                data.SocketToken = socketToken;
+                data.DoneToken = doneToken;
+                // Note: Claims still contain the human values because this tokens scope is a resource scope
+                data.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
 
-                    easyHttp.Post(apiUrl, data, "application/json");
+                easyHttp.Post(apiUrl, data, "application/json");
 
-                    model.ApiResult = new ApiResultModel();
-                    var errorText = easyHttp.Response.StatusCode != HttpStatusCode.OK
-                        ? string.Format("Queue Api returned {0} and ",easyHttp.Response.StatusCode)
-                        : string.Empty;
+                model.ApiResult = new ApiResultModel();
+                var errorText = easyHttp.Response.StatusCode != HttpStatusCode.OK
+                    ? string.Format("Queue Api returned {0} and ",easyHttp.Response.StatusCode)
+                    : string.Empty;
 
-                    model.ApiResult.Message = string.Format("{0} '{1}'", errorText, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
-                }
-                else
-                {
-                    _logger.Error("Error getting the silicon client token: {0}", token.Error);
-                    model.ApiResult = new ApiResultModel();
-                    model.ApiResult.Message = "Error getting token for the the silicon client, Queue Api not called ";
-                }
+                model.ApiResult.Message = string.Format("{0} '{1}'", errorText, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
+
                 result = model.ApiResult.Message;
             }
             else result= "Please enter a Message";
@@ -105,17 +97,6 @@ namespace MVCFrontend.Controllers
                         .Select(c => c.Value).ToList();
         }
 
-        private TokenResponse NewSiliconClientToken(string scope)
-        {
-            var tokenUrl = string.Format("{0}connect/token", Appsettings.AuthUrl());
-            _logger.Info("Getting a silicon client token({1}) at {0}", tokenUrl, scope);
-            var client = new TokenClient(tokenUrl, Appsettings.SiliconClientId(), Appsettings.SiliconClientSecret());
-
-            var token = client.RequestClientCredentialsAsync(scope).Result;
-            if (token.IsError) _logger.Error("Error getting Token({1}) for silicon Client: {0} ", token.Error, scope);
-
-            return token;
-        }
         [HttpPost]
         public ActionResult Postback(PostbackData data)
         {
