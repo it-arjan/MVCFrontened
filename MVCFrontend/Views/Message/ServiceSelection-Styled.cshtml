@@ -2,22 +2,62 @@
 @{
     int i = 1;
 }
-<form id="Cfg">
-    @foreach (var service in Model.Services)
-    {
-        <section title="@service.Prompt">
-            <div class="slideThree">
-                @{
-                    var inputId = string.Format("slideThree{0}", i);
-                    var selected = @service.Selected ? "checked" : string.Empty;
-                }
-                <input type="checkbox" value="@service.Id" id="@inputId" name="service" @selected />
-                <label for="@inputId"></label>
-                @{i++;
-                }
-            </div>
-        </section>
-    }
-    @*<a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault();AjaxSendForm()">Send</a>*@
-</form>
+<div id="serviceSelectDiv">
+    <span class='tourTip ttScreen'>Partial View</span>
 
+    <form id="Cfg">
+        <div class="wrapper">
+            <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); ConfigureSettingsAjax('token-not-used', '#serviceSelectDiv')">Select</a>
+            @foreach (var service in Model.Services)
+            {
+                <fieldset class="fldset">
+
+                    <legend class="fldset-lgnd">@service.Prompt</legend>
+                    <div class="slideThree">
+                        @{
+                            var inputId = string.Format("service{0}", i);
+                            var selected = @service.Selected ? "checked" : string.Empty;
+                        }
+                        <input type="checkbox" value="@service.Id" id="@inputId" name="service" @selected />
+                        <label for="@inputId"></label>
+                        @{i++;
+                        }
+                    </div>
+                </fieldset>
+                }
+        </div>
+</form>
+</div>
+<script>
+    function ConfigureSettingsAjax(ajaxAccessToken, resultDivId, data) {
+        var formData = {
+            'cmdType': "SetServiceConfig",
+            'service1': $("#service1").is(':checked'),
+            'service2': $("#service2").is(':checked'),
+            'service3': $("#service3").is(':checked'),
+            'service4': $("#service4").is(':checked'),
+            'service5': $("#service5").is(':checked'),
+            'service6': $("#service6").is(':checked'),
+            'service7': $("#service7").is(':checked'),
+            'service8': $("#service8").is(':checked'),
+            'socketToken': '@Session["SocketToken"]',
+        };
+        $(resultDivId).text("The first 3 selected webservices will be selected...");
+        $.ajax({
+            type: 'POST',
+            url: '/ServiceSelection/Submit',
+            data: formData,
+            dataType: 'text',
+            encode: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+            },
+        })
+        .done(function (result) {
+            $(resultDivId).html(result);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>call to change Settings failed: error= " + errorThrown);
+        })
+    }
+</script>

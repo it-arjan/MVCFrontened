@@ -8,8 +8,7 @@
 
 }
 <div>
-    <p>
-    </p>
+    <span class="tourTip ttScreen">Partial View</span>
     <table class="postback-overview">
         <tr>
             <th>
@@ -66,7 +65,7 @@
         $('#PostbackDetails').slideToggle();
     }
     function deletePostback(id) {
-        CallFuncWhenAxjaxTokenValid(DeletePostbackAjax, g_AjaxAccessToken4Details, "#postbackResult", id);
+        CallFuncWhenCookieStillValid(DeletePostbackAjax, 'token-not-used', "#postbackResult", id);
     }
     function DeletePostbackAjax(ajaxAccessToken, resultDivId, id) {
         $.ajax({
@@ -85,7 +84,7 @@
         })
     }
     function openPopupDetails(id) {
-        CallFuncWhenAxjaxTokenValid(QueryDetails, g_AjaxAccessToken4Details, "#PostbackDetails", id);
+        CallFuncWhenCookieStillValid(QueryDetails, 'token-not-used', "#PostbackDetails", id);
     }
     function QueryDetails(ajaxAccessToken, resultDivId, id) {
         $('#PostbackDetails').hide();

@@ -44,12 +44,12 @@
         <span>Human Token Expire (secs) </span><span>@Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp");</span>
     </p>
     <p>
-        <span>AjaxBackendToken Expire (secs) </span><span>@Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_backend_token"), "exp");</span>
-    </p>
-    <p>
         <span>AjaxQueueToken Expire (secs) </span><span>@Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");</span>
     </p>
-
+    <p>
+        <span>Cookie timeout </span><span>@{ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout"); }</span>
+    </p>
+    
     <h3>All claims</h3>
     @foreach (var claim in Model.Claims)
     {

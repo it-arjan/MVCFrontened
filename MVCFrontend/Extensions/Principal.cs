@@ -13,12 +13,20 @@ namespace MVCFrontend.Helpers
         {
             return cp.HasClaim(c => c.Type == "role" && c.Value == "admin");
         }
+
         public static string GetClaim(this ClaimsPrincipal cp, string claimType)
         {
             if (cp.Claims.Where(c => c.Type == claimType).Any())
                 return cp.Claims.Where(c => c.Type == claimType).First().Value;
-            return claimType + " claim not set (yet)";
+            return claimType + " not set (yet)";
         }
+
+        public static List<string> GetAllClaims(this ClaimsPrincipal cp, string claimType)
+        {
+            return cp.Claims.Where(c => c.Type == claimType)
+                     .Select(c => c.Value).ToList();
+        }
+
         public static void AddUpdateClaim(this ClaimsPrincipal currentPrincipal, string key, string value)
         {
             var identity = currentPrincipal.Identity as ClaimsIdentity;

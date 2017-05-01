@@ -17,6 +17,7 @@ using System.Security.Permissions;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using MVCFrontend.Helpers;
+using System.Xml;
 
 namespace MVCFrontend.Controllers
 {
@@ -28,73 +29,19 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             var model = new MessageViewModel();
-            ClaimsPrincipal.Current.AddUpdateClaim("ajax_backend_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeMvcFrontEnd));
+
             ClaimsPrincipal.Current.AddUpdateClaim("ajax_remote_queue_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-             
-            model.AjaxBackendTokenExpTime = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_backend_token").ToString(), "exp");
-            model.AjaxDirectQueueTokenExpTime = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token").ToString(), "exp");
+            Session["exp_cors_token_date"] = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token").ToString(), "exp");
+            Session["exp_cookie_date"] = XmlConvert.ToDateTime(ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout"), XmlDateTimeSerializationMode.Local);
 
-            Session["SocketToken"] = Guid.NewGuid().ToString();
-            Session["DoneToken"] = Guid.NewGuid().ToString();
-
-            model.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
-            model.Roles = string.Join(", ", GetClaimValuesFromPrincipal("role"));
+            model.UserName = ClaimsPrincipal.Current.GetClaim("given_name");
+            model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
             return View("SendMessage", model);
         }
         [HttpGet]
         public string AuthPing()
         {
             return "Silicon token valid";
-        }
-
-        [HttpPost]
-        public string ToRemoteQueue(string message, string socketToken, string doneToken)
-        {
-            string result = null;
-            var model = new MessageViewModel();
-            if (!string.IsNullOrEmpty(message.Trim()))
-            {
-                // btw: Request.Headers.Authorization.Parameter == null?
-                _logger.Info("Getting a silicon client token");
-
-                var apiUrl = string.Format("{0}/api/entryqueue/", Appsettings.EntrypointUrl());
-
-                var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"));
-
-                var easyHttp = new HttpClient();
-                     
-                easyHttp.Request.AddExtraHeader("Authorization", auth_header);
-                easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
-
-                var data = new QueuePostdata();
-                data.MessageId = message;
-                data.PostBackUrl = string.Format("{0}/Message/Postback", Appsettings.HostUrl());
-                data.SocketToken = socketToken;
-                data.DoneToken = doneToken;
-                // Note: Claims still contain the human values because this tokens scope is a resource scope
-                data.UserName = GetClaimValuesFromPrincipal("given_name").FirstOrDefault();
-
-                easyHttp.Post(apiUrl, data, "application/json");
-
-                model.ApiResult = new ApiResultModel();
-                var errorText = easyHttp.Response.StatusCode != HttpStatusCode.OK
-                    ? string.Format("Queue Api returned {0} and ",easyHttp.Response.StatusCode)
-                    : string.Empty;
-
-                model.ApiResult.Message = string.Format("{0} '{1}'", errorText, JsonConvert.DeserializeObject<EntryQApiResult>(easyHttp.Response.RawText).message);
-
-                result = model.ApiResult.Message;
-            }
-            else result= "Please enter a Message";
-
-            return result;
-        }
-
-        private List<string> GetClaimValuesFromPrincipal(string claimType)
-        {
-            return ClaimsPrincipal.Current
-                        .Claims.Where(c => c.Type == claimType)
-                        .Select(c => c.Value).ToList();
         }
 
         [HttpPost]

@@ -4,7 +4,9 @@
 }
 <div id="serviceSelectDiv">
     <form id="Cfg">
-        <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); ConfigureSettingsAjax('x', '#serviceSelectDiv')">Select</a>
+        <div class="wrapper">
+            <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); ConfigureSettingsAjax('x', '#serviceSelectDiv')">Select</a><span class="tourButtonTip">AJAX Partial View</span>
+        </div>
         @foreach (var service in Model.Services)
         {
             var selected = @service.Selected ? "checked" : string.Empty;
@@ -15,8 +17,8 @@
             i++;
 
         }
-       
-    </form>
+
+</form>
 </div>
 <script>
     function ConfigureSettingsAjax(ajaxAccessToken, resultDivId, data) {

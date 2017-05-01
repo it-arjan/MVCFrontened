@@ -20,7 +20,6 @@ namespace MVCFrontend.Helpers
 
         public static string UniqueClaimOfAntiForgeryToken = "given_name";
 
-        public static int CookieTimeoutSecs = 3600; 
         public static int SessionRefreshTimeoutSecs = 3600;
 
         private static ILogger _logger = LogManager.CreateLogger(typeof(IdSrv3));

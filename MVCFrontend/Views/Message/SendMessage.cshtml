@@ -2,236 +2,329 @@
 @using System.Security.Claims;
 @model MVCFrontend.Models.MessageViewModel
 @{
-    ViewBag.Title = "About";
+    ViewBag.Title = "Send";
     var hasRights = ClaimsPrincipal.Current.HasClaim("role", "SendMessage") || ClaimsPrincipal.Current.isAdmin();
     var url = Appsettings.SocketServerUrl();
 }
 <h2>@ViewBag.Title.</h2>
-<h3>Welcome @Model.UserName! The following roles are assigned to you: @Model.Roles</h3>
+<h3>Welcome @Model.UserName! The following roles are listed as claims in your identity: @Model.Roles</h3>
 @if (hasRights)
 {
     <div class="row tab">
         <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Send Message</button>
         <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
+        <button class="tablinks" onclick="openTab(event, 'SystemLayout')">System Layout</button>
+        <button class="tablinks"></button>
+        <button id="exp_cookie" class="tablinks"></button>
+        <button id="exp_cors_token" class="tablinks"></button>
     </div>
     <div class="row">
         <div id="SendMessage" class="tabcontent">
             <div class="col-md-12">
-                <h3>Drop message into MSMQ</h3> 
+                <h3>Drop message into MSMQ</h3>
                 <p>Please enter a string identifying your message to the remote queue. Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from this input. (spaces stay)</p>
                 <form id="msgForm" action="" method="post">
                     <input type="text" name="message" /> <br />
-                    <input type="submit" value="Send" /> <span id="apiResult"></span>
+                    <div class="wrapper"><input type="submit" value="Send" /><span class="tourTip ttButton">Ajax CORS</span></div><span id="apiResult"></span>
                 </form>
             </div>
         </div>
         <div id="ServerConfig" class="tabcontent">
-                <div class="col-md-3">
+            <div class="col-md-3">
                 <h4>Queue processing mode</h4>
-                    <button id="toggleQueue" class="fancyButtons">Toggle</button> 
+                <div class="wrapper">
+                    <button id="toggleQueue" class="fancyButtons">Toggle</button><span class="tourTip ttButton">Ajax CORS</span>
                     <span id="toggleResult"></span>
                 </div>
-            <div class="col-md-9">
-                <h4>Select webservices</h4>
-                @Html.Action("Index", "ServiceSelection")
-                <div>The first 3 selected webservices will be called</div>
             </div>
-        </div>     
-    </div>
-    <hr />
-    <div class="row">
-        <div class="col-md-8">Remote socketChat (=socket chat). <a class="fancyButtons" href="#" id="initializeChat" >Re-Initialize</a></div>
-        <div class="col-md-4">@Model.UserName's actions of today. <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a></div>
-    </div>
-    <div class="row">
-        <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
-        <div id="postbackResult" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="~/Scripts/Custom/secure-utils.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#msgForm').submit(function (event) {
-                event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(DropIntoQueue, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#apiResult", $('input[name=message]').val());
-            });
-            $('#queryPostbackData').click(function (event) {
-                event.preventDefault();
-                CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
-            });
-            $('#initializeChat').click(function (event) {
-                event.preventDefault();
-                InitializeChat()
-            });
-            $('#toggleQueue').click(function (event) {
-                event.preventDefault();
-                ToggleQueueStatus('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
-            });
+            <div class="col-md-9">
+                <h4>Select 3 webservices</h4><span class="tourTip ttScreen">Ajax Partial View</span>
+                @Html.Action("Index", "ServiceSelection")
+            </div>
+        </div>
+        <div id="SystemLayout" class="tabcontent">
+            <div class="col-md-12" style="position:absolute;background-color:white;opacity:0.8;z-index:8">System Layout
+                <br />
+                <br />System Layout
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />System Layout
+                <br />
+                <br />System Layout
+                <br />
+                <br />System Layout
+                <br />
+                <br />
+                <br />System Layout
+                <br />
+                <br />
+                <br />
+                <br />System Layout
+                <br />System LayoutSystem Layout   System Layout    System Layout
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+            </div>
+        </div>
+        </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-8">Remote socketChat (=socket chat). <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span></div></div>
+                <div class="col-md-4"><div class="wrapper">@Model.UserName actions of today. <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
+            </div>
+            <div class="row">
+                <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
+                <div id="postbackResult" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
+            </div>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+            <script src="~/Scripts/Custom/secure-utils.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $('#msgForm').submit(function (event) {
+                        event.preventDefault();
+                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#apiResult", $('input[name=message]').val());
+                    });
+                    $('#queryPostbackData').click(function (event) {
+                        event.preventDefault();
+                        CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
+                    });
+                    $('#initializeChat').click(function (event) {
+                        event.preventDefault();
+                        InitializeChat()
+                    });
+                    $('#toggleQueue').click(function (event) {
+                        event.preventDefault();
+                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
+                    });
 
-            //call these on page load
-            document.getElementById("openOnLoad").click();
-            GetQueueStatus('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
-            QueryPostbackData('@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', '#postbackResult');
-            InitializeChat();
-        });
+                    //call these on page load
+                    document.getElementById("openOnLoad").click();
+                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
+                    QueryPostbackData('token-not-used', '#postbackResult');
+                    InitializeChat();
+                });
 
-        function openTab(evt, tabId) {
-            $(".tabcontent").hide();
-            $(".tablinks").removeClass("active");
-            $("#" + tabId).show();
-            evt.currentTarget.className += " active";
-        }
-        function InitializeChat() {
-            $("#socketChat").empty();
-            ConnectToSocketServer();
-        }
-        function GetQueueStatus(ajaxAccessToken, resultDivId) {
-            var formData = {
-                'cmdType': "GetModus",
-                'socketToken': '@Session["SocketToken"]'
-            };
+                function openTab(evt, tabId) {
+                    $(".tabcontent").hide();
+                    $(".tablinks").removeClass("active");
+                    $("#" + tabId).show();
+                    evt.currentTarget.className += " active";
+                }
+                function InitializeChat() {
+                    $("#socketChat").empty();
+                    $("#socketChat").prepend("<span class='tourTip ttScreen'>Js WebSocket</span>");
+                    ConnectToSocketServer();
+                }
+                function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
+                    var formData = {
+                        'cmdType': "GetModus",
+                        'socketToken': '@Session["SocketToken"]'
+                    };
 
-            SendCmd(formData, ajaxAccessToken, resultDivId);
-        }
-        function ToggleQueueStatus(ajaxAccessToken, resultDivId) {
-            var formData = {
-                'cmdType': 'ToggleModus',
-                'socketToken': '@Session["SocketToken"]'
-            };
+                    SendCmd(formData, ajaxAccessToken, resultDivId);
+                }
+                function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
+                    var formData = {
+                        'cmdType': 'ToggleModus',
+                        'socketToken': '@Session["SocketToken"]'
+                    };
 
-            SendCmd(formData, ajaxAccessToken, resultDivId);
-        }
-        function SendCmd(formData, ajaxAccessToken, resultDivId) {
-            $.ajax({
-                type: 'POST',
-                url: '@Appsettings.EntrypointUrl()' + 'api/cmdqueue',
-                data: formData,
-                dataType: 'text',
-                encode: true,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                    xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-                },
-            })
-            .done(function (data) {
-                var obj = JSON.parse(data);
-                $(resultDivId).text(obj.Message);
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
-                $(resultDivId).text("ToggleQueuestatus failed: code=" + jqXHR.status + ", error= " + jqXHR.statusText);
-            })
-        }
+                    SendCmd(formData, ajaxAccessToken, resultDivId);
+                }
+                function SendCmd(formData, ajaxAccessToken, resultDivId) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Appsettings.EntrypointUrl()' + 'api/cmdqueue',
+                        data: formData,
+                        dataType: 'text',
+                        encode: true,
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                            xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+                        },
+                    })
+                    .done(function (data) {
+                        var obj = JSON.parse(data);
+                        $(resultDivId).text(obj.Message);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        $(resultDivId).text("Sending command failed: code=" + jqXHR.status + ", error= " + jqXHR.statusText);
+                    })
+                }
 
-        function DropIntoQueue(ajaxAccessToken, resultDivId, data) {
-            var formData = {
-                'message': data,
-                'socketToken': '@Session["SocketToken"]',
-                'doneToken': "@Session["DoneToken"]"
-            };
+                function DropIntoQueueCors(ajaxAccessToken, resultDivId, data) {
+                    var formData = {
+                        'MessageId': data,
+                        'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
+                        'socketToken':'@ClaimsPrincipal.Current.GetClaim("socket_token")',
+                        'doneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
+                        'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")'
+                    };
 
-            $.ajax({
-                type: 'POST',
-                url: '/Message/ToRemoteQueue',
-                data: formData,
-                dataType: 'text',
-                encode: true,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                },
-            })
-            .done(function (data) {
-                $(resultDivId).text(data);
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
-                $(resultDivId).append("<br/>Call to queue manager failed: error= " + errorThrown);
-            })
-        }
-    </script>
-    //postback data view stuff in this script
-    <script>
-        function QueryPostbackData(ajaxAccessToken, resultDivId) {
-            $(resultDivId).html("<h3>Loading messages... </h3>");
-            $.ajax({
-                type: 'Get',
-                dataType: 'html',
-                url: '/Postbackdatas/',
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                },
-            })
-            .done(function (data) {
-                var scriptArg = "<script>var g_AjaxAccessToken4Details = '@(ClaimsPrincipal.Current.GetClaim("ajax_backend_token"))'; <" + "/script>";
-                $(resultDivId).html(data + scriptArg);
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
-                $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
-            })
-        }
-    </script>
-    //Socket stuff in this script
-    <script>
-        // Create SocketIO instance, connect
-        var _gSocket = null;
-        var serverUrl = '@Appsettings.SocketServerUrl()';
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Appsettings.EntrypointUrl()' + 'api/entryqueue',
+                        data: formData,
+                        dataType: 'text',
+                        encode: true,
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                            xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+                        },
+                    })
+                    .done(function (data) {
+                        var obj = JSON.parse(data);
+                        $(resultDivId).text(obj.Message);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        $(resultDivId).append("<br/>Dropping item into queue failed, error= " + errorThrown);
+                    })
+                }
+            </script>
+    // Session expiration counter stuff
+            <script>
+                // Update the CookieCounter every 1 second
+                var CookieCounter = setInterval(function () {
+                    var expDateStr = '@Session["exp_cookie_date"]';
+                    var resultId = '#exp_cookie';
+                    var secs = new Date(expDateStr).getTime() - new Date().getTime();
 
-        function ConnectToSocketServer() {
-            if ("WebSocket" in window) {
-                var socketToken = '@Session["SocketToken"]';
-                var doneToken = '@Session["DoneToken"]';
-                if (socketToken.length > 0) {
-                    try {
-                        if (_gSocket != null) {
-                            //alert('closing existing socket..');
-                            _gSocket.close();
+                    if (secs < 0) {
+                        setExpiredAndStop(CookieCounter, resultId);
+                    }
+                    else {
+                        var msg = getCounterDisplayMsg(secs);
+                        // Display the result in the element with id="demo"
+                        $(resultId).text(msg);
+                    }
+                }, 1000);
+
+                // Update the tokenCounter every 1 second
+                var tokenCounter = setInterval(function () {
+                    var expDateStr = '@Session["exp_cors_token_date"]';
+                    var resultId = '#exp_cors_token';
+                    var secs = new Date(expDateStr).getTime() - new Date().getTime();
+                    //console.log(resultId + " Secs: " + secs)
+
+                    if (secs < 0) {
+                        setExpiredAndStop(tokenCounter, resultId);
+                    }
+                    else {
+                        var msg = getCounterDisplayMsg(secs);
+                        //console.log("Msg: " + msg)
+                        // Display the result in the element with id="demo"
+                        $(resultId).text(msg);
+                    }
+                }, 1000);
+
+                function getCounterDisplayMsg(secs) {
+                    var hours = Math.floor((secs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((secs % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((secs % (1000 * 60)) / 1000);
+
+                    return hours + "h " + minutes + "m " + seconds + "s ";
+                }
+
+                function setExpiredAndStop(intervalRef, resultId) {
+                    clearInterval(intervalRef);
+                    $(resultId).text("EXPIRED");
+                    $(resultId).text().fontcolor("red");
+                }
+            </script>
+            //postback data view stuff in this script
+            <script>
+                function QueryPostbackData(ajaxAccessToken, resultDivId) {
+                    $(resultDivId).html("<h3>Loading actions.. </h3>");
+                    $.ajax({
+                        type: 'Get',
+                        dataType: 'html',
+                        url: '/Postbackdatas/',
+                        // Whether i set this or not, cookie.timeout determines the auth
+                        //beforeSend: function (xhr) {
+                        //    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                        //},
+                    })
+                    .done(function (partialView) {
+                        $(resultDivId).html(partialView);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
+                    })
+                }
+            </script>
+            //Socket stuff in this script
+            <script>
+                // Create SocketIO instance, connect
+                var _gSocket = null;
+                var serverUrl = '@Appsettings.SocketServerUrl()';
+
+                function ConnectToSocketServer() {
+                    if ("WebSocket" in window) {
+                        var socketToken = '@ClaimsPrincipal.Current.GetClaim("socket_token")';
+                        var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_token")';
+                        if (socketToken.length > 0) {
+                            try {
+                                if (_gSocket != null) {
+                                    //alert('closing existing socket..');
+                                    _gSocket.close();
+                                }
+                                _gSocket = new WebSocket(serverUrl);
+                                // Add a message listener
+                                _gSocket.onmessage = function (msg) {
+                                    if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
+                                        var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
+                                        if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
+                                            LogMessage("Done token received, auto-refreshing postbacks...");
+                                            CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
+                                        }
+                                        else {
+                                            LogMessage(msgWithoutToken);
+                                        }
+                                    }
+                                    else {
+                                        LogMessage("This message seems from another session. - " + msg.data);
+                                    }
+
+                                };
+                                _gSocket.onerror = function (msg) {
+                                    LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                                };
+
+                                LogMessage("..chat log initialized.\n");
+                            }
+                            catch (ex) {
+                                LogMessage("Exception connecting to socket server: " + serverUrl);
+                                LogMessage(ex.message);
+                            }
                         }
-                        _gSocket = new WebSocket(serverUrl);
-                        // Add a message listener
-                        _gSocket.onmessage = function (msg) {
-                            if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
-                                var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
-                                if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
-                                    LogMessage("Done token received, auto-refreshing postbacks...");
-                                    CallFuncWhenAxjaxTokenValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
-                                }
-                                else {
-                                    LogMessage(msgWithoutToken);
-                                }
-                            }
-                            else {
-                                LogMessage("This message seems from another session. - " + msg.data);
-                            }
-
-                        };
-                        _gSocket.onerror = function (msg) {
-                            LogMessage("_gSocket.onerror is triggered: " + msg.data);
-                        };
-
-                        LogMessage("..chat log initialized.\n");
+                        else {
+                            LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+                        }
                     }
-                    catch (ex) {
-                        LogMessage("Exception connecting to socket server: " + serverUrl);
-                        LogMessage(ex.message);
+                    else {
+                        LogMessage("webSockets are not supported on this browser, the chat log will not work.");
                     }
                 }
-                else {
-                    LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+
+                function socketDisconnected(socketArg) {
+                    return socketArg.ready == 0;
                 }
-            }
-            else {
-                LogMessage("webSockets are not supported on this browser, the chat log will not work.");
-            }
-        }
 
-        function socketDisconnected(socketArg) {
-            return socketArg.ready == 0;
-        }
-
-        function LogMessage(msg) {
-            $("#socketChat").prepend("<p>" + msg + "</p>");
-        }
-    </script>
-    }
-    else
-    {
-    <p>Your assigned roles do not allow for sending messages.</p>
-    }
+                function LogMessage(msg) {
+                    $("#socketChat").prepend("<p>" + msg + "</p>");
+                }
+            </script>
+            }
+            else
+            {
+            <p>Your assigned roles do not allow for sending messages.</p>
+            }

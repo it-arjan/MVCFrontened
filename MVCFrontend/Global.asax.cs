@@ -40,5 +40,6 @@ namespace MVCFrontend
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;
         }
+        
     }
 }

@@ -12,6 +12,11 @@ namespace MVCFrontend.Helpers
         public const string SchemeKey = "scheme";
         public const string AuthServerKey = "auth.server";
         public const string AuthSessionLengthKey = "authserver.session.minutes";
+        public const string CookieTimeoutKey = "cookie.timeout.minutes";
+        public const string CookieSlidingExpirationKey = "cookie.sliding.expire";
+
+        public const string SessionMaxAgeKey = "session.maxage.minutes";
+        
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
         public const string SocketServerHostnameKey = "websocket.server.hostname";
@@ -92,12 +97,32 @@ namespace MVCFrontend.Helpers
         {
             return ConfigurationManager.AppSettings.Get(LogLevelKey);
         }
-        // IgnoreSslErrorsKey
+
         public static bool AzureIgnoreCertificateErrors()
         {
             if (ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey) != null)
                 return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey));
             return false;
+        }
+
+        public static int CookieTimeoutMinutes()
+        {
+            if (ConfigurationManager.AppSettings.Get(CookieTimeoutKey) != null)
+                return Convert.ToInt16(ConfigurationManager.AppSettings.Get(CookieTimeoutKey));
+            return 0;
+        }
+        public static bool CookieSlidingExpiration()
+        {
+            if (ConfigurationManager.AppSettings.Get(CookieSlidingExpirationKey) != null)
+                return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(CookieSlidingExpirationKey));
+            return false;
+        }
+        
+        public static int SessionMaxAgeMinutes()
+        {
+            if (ConfigurationManager.AppSettings.Get(SessionMaxAgeKey) != null)
+                return Convert.ToInt16(ConfigurationManager.AppSettings.Get(SessionMaxAgeKey));
+            return 0;
         }
 
         private static string GetWithSlash(string key)

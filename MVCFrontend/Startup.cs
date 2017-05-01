@@ -15,6 +15,7 @@ using System.Configuration;
 using IdentityServer3.AccessTokenValidation;
 using System.Net;
 using MVCFrontend.Helpers;
+using System.Xml;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -57,21 +58,8 @@ namespace MVCFrontend
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                ExpireTimeSpan = TimeSpan.FromMinutes(IdSrv3.CookieTimeoutSecs),
-                Provider = new CookieAuthenticationProvider
-                {
-                    // do not redirect the ajax call from send message, 
-                    // TODO, check why code never seems to get here
-                    OnApplyRedirect = ctx =>
-                    {
-                        if (!IsAjaxRequest(ctx.Request))
-                        {
-                            _logger.Debug("CookieAuthenticationProvider: redirecting non-Ajax request to {0}", ctx.RedirectUri);
-                            ctx.Response.Redirect(ctx.RedirectUri);
-                        }
-                        else _logger.Debug("CookieAuthenticationProvider: Ajax request not redirected..");
-                    }
-                }
+                ExpireTimeSpan = TimeSpan.FromMinutes(Appsettings.CookieTimeoutMinutes()),
+                SlidingExpiration = Appsettings.CookieSlidingExpiration(),
             });
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
@@ -83,19 +71,28 @@ namespace MVCFrontend
                 Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman, 
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Appsettings.HostUrl(),
+                UseTokenLifetime = false, 
 
-                UseTokenLifetime = true, // #TODO figure out strange identityserver behavior when session expiration is linked to the asp.net cookie
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
                     SecurityTokenValidated = notification => /* Anonymous function */
                     {
                         _logger.Debug("SecurityTokenValidated notfication detected");
+
                         var identity = notification.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
-                        _logger.Debug("Notification(SecurityTokenValidated): access token = {0}", notification.ProtocolMessage.AccessToken);
-                        // not sure why this is needed, disable it
-                        //notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
+
+                        var expDate = DateTime.Now.AddMinutes(Appsettings.CookieTimeoutMinutes());
+                        var expdateXml = System.Xml.XmlConvert.ToString(expDate, XmlDateTimeSerializationMode.Local);
+                        identity.AddClaim(new Claim("auth_cookie_timeout", expdateXml)); // store it here
+                        _logger.Debug("Notification(SecurityTokenValidated): cookie exp = {0}", expdateXml);
+
+                        identity.AddClaim(new Claim("socket_token", Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim("msg_done_token", Guid.NewGuid().ToString()));
+
+                        // not sure why this is needed
+                        notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
                     },
                     RedirectToIdentityProvider = notification =>
@@ -104,13 +101,13 @@ namespace MVCFrontend
                         //notification.ProtocolMessage.RedirectUri = appBaseUrl + SettingsHelper.LoginRedirectRelativeUri;
                         //notification.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl + SettingsHelper.LogoutRedirectRelativeUri;
 
-                        _logger.Debug("RedirectToIdentityProvider notfication detected");
+                        _logger.Debug("RedirectToIdentityProvider notification detected");
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            var max_age = IdSrv3.SessionRefreshTimeoutSecs.ToString();
-                            _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0}", max_age);
-                            notification.ProtocolMessage.MaxAge = max_age;
+                            var max_age = Appsettings.SessionMaxAgeMinutes() * 60;
+                            _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
+                            notification.ProtocolMessage.MaxAge = max_age.ToString();
                         }
 
                         if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
@@ -129,7 +126,7 @@ namespace MVCFrontend
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
                 Authority = Appsettings.AuthUrl(),
-                ValidationMode = ValidationMode.Local, 
+                ValidationMode = ValidationMode.Both, 
                 RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
             });
 

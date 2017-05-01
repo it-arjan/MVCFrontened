@@ -24,7 +24,7 @@ namespace MVCFrontend.Controllers
             var result = ServiceConfig(HttpMethod.GET);
             var model = CreateModel(result);
 
-            return PartialView("~/views/Message/ServiceSelection.cshtml", model);
+            return PartialView("~/views/Message/ServiceSelection-Styled.cshtml", model);
         }
         private void LogValues(FormCollection values)
         {
@@ -59,7 +59,7 @@ namespace MVCFrontend.Controllers
             }
             var model = CreateModel(result);
 
-            return PartialView("~/views/Message/ServiceSelection.cshtml", model);
+            return PartialView("~/views/Message/ServiceSelection-Styled.cshtml", model);
         }
 
         private List<string> GetFirstThreeSelectedvalues(FormCollection values)
@@ -112,7 +112,7 @@ namespace MVCFrontend.Controllers
             var result = new List<int>();
 
             var apiUrl = method == HttpMethod.GET
-                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), Session["SocketToken"])
+                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaim("socket_token") )
                 : string.Format("{0}/api/CmdQueue", Appsettings.EntrypointUrl());
 
             var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"));

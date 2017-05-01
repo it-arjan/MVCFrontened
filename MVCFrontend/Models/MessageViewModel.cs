@@ -8,7 +8,7 @@ namespace MVCFrontend.Models
     public class MessageViewModel
     {
         //public string AjaxBackendToken;
-        public DateTime AjaxBackendTokenExpTime;
+        public DateTime CookieExpTime;
         //public string AjaxDirectQueueToken;
         public DateTime AjaxDirectQueueTokenExpTime;
 
