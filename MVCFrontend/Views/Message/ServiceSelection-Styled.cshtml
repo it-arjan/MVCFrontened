@@ -7,7 +7,8 @@
 
     <form id="Cfg">
         <div class="wrapper">
-            <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); ConfigureSettingsAjax('token-not-used', '#serviceSelectDiv')">Select</a>
+            <a href="#" id="SendServiceConfig" class="fancyButtons" onclick="event.preventDefault(); CallFuncWhenCookieStillValid(ConfigureSettingsAjax, 'token-not-used', '#serviceSelectDiv')">Select</a>
+            <span class="tourTip ttButton">Ajax</span>
             @foreach (var service in Model.Services)
             {
                 <fieldset class="fldset">

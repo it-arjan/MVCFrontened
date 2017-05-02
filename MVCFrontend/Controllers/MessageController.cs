@@ -31,13 +31,35 @@ namespace MVCFrontend.Controllers
             var model = new MessageViewModel();
 
             ClaimsPrincipal.Current.AddUpdateClaim("ajax_remote_queue_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-            Session["exp_cors_token_date"] = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token").ToString(), "exp");
-            Session["exp_cookie_date"] = XmlConvert.ToDateTime(ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout"), XmlDateTimeSerializationMode.Local);
+            Session["exp_cors_token_time"] = Utils.GetDateTimeClaimFromToken(
+                                                        ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")
+                                                        , "exp");
+            Session["exp_cookie_time"] = XmlConvert.ToDateTime(
+                                            ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout")
+                                            , XmlDateTimeSerializationMode.Local);
 
             model.UserName = ClaimsPrincipal.Current.GetClaim("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
+
+            ViewBag.Message = CheckSessionSettings();
             return View("SendMessage", model);
         }
+
+        private string CheckSessionSettings()
+        {
+            var msg = string.Empty;
+            msg += string.Format("<span class='Info'>Idsrv3.UseTokenLifetime={0}</span><br/>", Appsettings.UseTokenLifetime());
+            //msg += string.Format("<span class='Info'>Idsrv3.SessionMaxAgeMinutes={0}</span><br/>", Appsettings.SessionMaxAgeMinutes());
+            msg += string.Format("<span class='Info'>Cookie.Auth.SlidingExp={0}</span><br/>", Appsettings.CookieSlidingExpiration());
+            //Appsettings.SessionMaxAgeMinutes();
+
+            if (Convert.ToDateTime(Session["asp_session_exp_time"]) <= Convert.ToDateTime(Session["exp_cookie_time"]))
+                msg += string.Format("<span class='Warn'>Warning: Asp session {0} expires before the auth cookie {1}, this config does not work well!</span><br/>", 
+                    Session["asp_session_exp_time"], Session["exp_cookie_time"]);
+
+            return msg;
+        }
+
         [HttpGet]
         public string AuthPing()
         {

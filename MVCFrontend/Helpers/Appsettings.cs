@@ -15,7 +15,8 @@ namespace MVCFrontend.Helpers
         public const string CookieTimeoutKey = "cookie.timeout.minutes";
         public const string CookieSlidingExpirationKey = "cookie.sliding.expire";
 
-        public const string SessionMaxAgeKey = "session.maxage.minutes";
+        public const string SessionMaxAgeKey = "idsrv3.session.maxage.minutes";
+        public const string UseTokenLifetimeKey = "idsrv3.use.token.lifetime";
         
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
@@ -43,11 +44,11 @@ namespace MVCFrontend.Helpers
         }
         public static string EntrypointUrl()
         {
-            return string.Format("{0}://{1}", Scheme(), Entrypoint());
+            return string.Format("{0}://{1}/", Scheme(), Entrypoint());
         }
         public static string Entrypoint()
         {
-            return GetWithSlash(EntrypointKey);
+            return ConfigurationManager.AppSettings.Get(EntrypointKey);
         }
 
         public static string SocketServerUrl()
@@ -100,31 +101,40 @@ namespace MVCFrontend.Helpers
 
         public static bool AzureIgnoreCertificateErrors()
         {
-            if (ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey) != null)
-                return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(AzureIgnoreCertificateErrorsKey));
-            return false;
+            return GetBoolSetting(AzureIgnoreCertificateErrorsKey);
         }
 
         public static int CookieTimeoutMinutes()
         {
-            if (ConfigurationManager.AppSettings.Get(CookieTimeoutKey) != null)
-                return Convert.ToInt16(ConfigurationManager.AppSettings.Get(CookieTimeoutKey));
-            return 0;
+            return GetIntSetting(CookieTimeoutKey);
         }
         public static bool CookieSlidingExpiration()
         {
-            if (ConfigurationManager.AppSettings.Get(CookieSlidingExpirationKey) != null)
-                return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(CookieSlidingExpirationKey));
-            return false;
+            return GetBoolSetting(CookieSlidingExpirationKey);
         }
-        
-        public static int SessionMaxAgeMinutes()
+        public static bool UseTokenLifetime()
         {
-            if (ConfigurationManager.AppSettings.Get(SessionMaxAgeKey) != null)
-                return Convert.ToInt16(ConfigurationManager.AppSettings.Get(SessionMaxAgeKey));
-            return 0;
+            return GetBoolSetting(UseTokenLifetimeKey);
         }
 
+        public static int SessionMaxAgeMinutes()
+        {
+            return GetIntSetting(SessionMaxAgeKey);
+        }
+        
+        private static bool GetBoolSetting(string key)
+        {
+            if (ConfigurationManager.AppSettings.Get(key) != null)
+                return Convert.ToBoolean(ConfigurationManager.AppSettings.Get(key));
+            return false;
+        }
+
+        private static int GetIntSetting(string key)
+        {
+            if (ConfigurationManager.AppSettings.Get(key) != null)
+                return Convert.ToInt16(ConfigurationManager.AppSettings.Get(key));
+            return 0;
+        }
         private static string GetWithSlash(string key)
         {
             var value = ConfigurationManager.AppSettings.Get(key);

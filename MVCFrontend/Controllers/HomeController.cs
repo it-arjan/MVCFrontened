@@ -20,9 +20,10 @@ namespace MVCFrontend.Controllers
 
         public ActionResult Logout()
         {
-            if (User.Identity.IsAuthenticated)
-                Request.GetOwinContext().Authentication.SignOut(); //need to provide the token in order to get back here
             Session.Clear();
+            if (User.Identity.IsAuthenticated)
+                Request.GetOwinContext().Authentication.SignOut();
+            //else
             return Redirect("/");
         }
 

@@ -68,10 +68,10 @@ namespace MVCFrontend
                 Authority = Appsettings.AuthUrl(),
                 RedirectUri = Appsettings.HostUrl(),
                 ResponseType = "token id_token",
-                Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman, 
+                Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman,
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Appsettings.HostUrl(),
-                UseTokenLifetime = false, 
+                UseTokenLifetime = Appsettings.UseTokenLifetime(), 
 
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
@@ -85,6 +85,7 @@ namespace MVCFrontend
 
                         var expDate = DateTime.Now.AddMinutes(Appsettings.CookieTimeoutMinutes());
                         var expdateXml = System.Xml.XmlConvert.ToString(expDate, XmlDateTimeSerializationMode.Local);
+
                         identity.AddClaim(new Claim("auth_cookie_timeout", expdateXml)); // store it here
                         _logger.Debug("Notification(SecurityTokenValidated): cookie exp = {0}", expdateXml);
 
@@ -118,7 +119,7 @@ namespace MVCFrontend
                         }
 
                         return Task.FromResult(0);
-                    }   
+                    }
                 }
             });
 

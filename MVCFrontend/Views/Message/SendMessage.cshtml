@@ -7,7 +7,11 @@
     var url = Appsettings.SocketServerUrl();
 }
 <h2>@ViewBag.Title.</h2>
-<h3>Welcome @Model.UserName! The following roles are listed as claims in your identity: @Model.Roles</h3>
+<h3>Welcome @Model.UserName!</h3>
+<p>
+    The following roles are listed as claims in your identity: @Model.Roles
+    @Html.Raw(ViewBag.Message.Replace("\n", "<br/>"))
+</p>
 @if (hasRights)
 {
     <div class="row tab">
@@ -127,7 +131,7 @@
                 function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': "GetModus",
-                        'socketToken': '@Session["SocketToken"]'
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -135,7 +139,7 @@
                 function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': 'ToggleModus',
-                        'socketToken': '@Session["SocketToken"]'
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -165,8 +169,8 @@
                     var formData = {
                         'MessageId': data,
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
-                        'socketToken':'@ClaimsPrincipal.Current.GetClaim("socket_token")',
-                        'doneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
+                        'SocketToken':'@ClaimsPrincipal.Current.GetClaim("socket_token")',
+                        'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
                         'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")'
                     };
 
@@ -190,11 +194,13 @@
                     })
                 }
             </script>
-    // Session expiration counter stuff
             <script>
+                //
+                // Session expiration counter stuff
+                //
                 // Update the CookieCounter every 1 second
                 var CookieCounter = setInterval(function () {
-                    var expDateStr = '@Session["exp_cookie_date"]';
+                    var expDateStr = '@Session["exp_cookie_time"]';
                     var resultId = '#exp_cookie';
                     var secs = new Date(expDateStr).getTime() - new Date().getTime();
 
@@ -210,7 +216,7 @@
 
                 // Update the tokenCounter every 1 second
                 var tokenCounter = setInterval(function () {
-                    var expDateStr = '@Session["exp_cors_token_date"]';
+                    var expDateStr = '@Session["exp_cors_token_time"]';
                     var resultId = '#exp_cors_token';
                     var secs = new Date(expDateStr).getTime() - new Date().getTime();
                     //console.log(resultId + " Secs: " + secs)
@@ -248,10 +254,6 @@
                         type: 'Get',
                         dataType: 'html',
                         url: '/Postbackdatas/',
-                        // Whether i set this or not, cookie.timeout determines the auth
-                        //beforeSend: function (xhr) {
-                        //    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                        //},
                     })
                     .done(function (partialView) {
                         $(resultDivId).html(partialView);
@@ -291,7 +293,7 @@
                                         }
                                     }
                                     else {
-                                        LogMessage("This message seems from another session. - " + msg.data);
+                                        LogMessage("Receiving messages for other sessions...");
                                     }
 
                                 };

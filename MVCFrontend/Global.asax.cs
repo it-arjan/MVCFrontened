@@ -21,15 +21,24 @@ namespace MVCFrontend
         {
             RegisterModule(typeof(RequestLogModule));
         }
+
         // adding an empty Session_Start solves a cookie issue causing endless redict on auth success
-        protected void Session_Start() {
-            Session["SessionStartTime"]= DateTime.Now;
+        protected void Session_Start()
+        {
+            Session["asp_session_start_time"]= DateTime.Now;
+            Session["asp_session_exp_time"] = DateTime.Now.AddMinutes(Session.Timeout);
         }
+
         protected void Session_End()
         {
-            _logger.Debug("Session_End: Clearing the session");
+            var start = Convert.ToDateTime(Session["asp_session_start_time"]);
+            var end = DateTime.Now;
+            _logger.Debug("Session_End: It started {0} and ends now {1}, diff (secs) = {2}", 
+                start.ToLongTimeString(), end.ToLongTimeString(), (end-start).TotalSeconds
+                );
             Session.Clear();
         }
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();

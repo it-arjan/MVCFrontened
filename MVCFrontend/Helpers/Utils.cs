@@ -23,7 +23,7 @@ namespace MVCFrontend.Helpers
         public static string GetClaimFromToken(string jwt, string claim_type)
         {
             if (string.IsNullOrEmpty(jwt)) return "0";
-            if (jwt.Contains("claim not set")) return "0";
+            if (jwt.Contains("not set (yet)")) return "0";
 
             //=> Retrieve the 2nd part of the JWT token (this the JWT payload)
             var payloadEncoded = jwt.Split('.')[1];
