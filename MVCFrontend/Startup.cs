@@ -81,12 +81,12 @@ namespace MVCFrontend
             CheckHealth();
 
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
-            app.Use(async (Context, next) =>
-            {
-                _logger.Debug("OWIN DEBUG::1 ==>Before cookie, before OIDC");
-                await next.Invoke();
-                _logger.Debug("OWIN DEBUG::6 ==>after cookie, after Bearer");
-            });
+            //app.Use(async (Context, next) =>
+            //{
+            //    _logger.Debug("OWIN DEBUG::1 ==>Before cookie, before OIDC");
+            //    await next.Invoke();
+            //    _logger.Debug("OWIN DEBUG::6 ==>after cookie, after Bearer");
+            //});
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -119,12 +119,12 @@ namespace MVCFrontend
                 }
             });
 
-            app.Use(async (Context, next) =>
-            {
-                _logger.Debug("OWIN DEBUG::2 ==>after cookie, before OIDC");
-                await next.Invoke();
-                _logger.Debug("OWIN DEBUG:: ", Context.Response.StatusCode != 200 ? "3. Intervention from OIDC" : "5. after Bearer");
-            });
+            //app.Use(async (Context, next) =>
+            //{
+            //    _logger.Debug("OWIN DEBUG::2 ==>after cookie, before OIDC");
+            //    await next.Invoke();
+            //    _logger.Debug("OWIN DEBUG:: ", Context.Response.StatusCode != 200 ? "3. Intervention from OIDC" : "5. after Bearer");
+            //});
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
             {

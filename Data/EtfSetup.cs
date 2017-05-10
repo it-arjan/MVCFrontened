@@ -10,7 +10,7 @@ namespace Data
     {
         public static void InitDB()
         {
-            Database.SetInitializer(new System.Data.Entity.DropCreateDatabaseAlways<FrontendDbContext>());
+            Database.SetInitializer(new System.Data.Entity.DropCreateDatabaseIfModelChanges<FrontendDbContext>());
             // To not init db, use Database.SetInitializer<SchoolContext>(null);
             using (var db = new FrontendDbContext())
             {
