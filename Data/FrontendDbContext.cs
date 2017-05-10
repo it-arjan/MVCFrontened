@@ -4,9 +4,10 @@ using System.Linq;
 using System.Web;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using MVCFrontend.Models;
+using Data.Models;
+using System.Data.Entity.Infrastructure;
 
-namespace MVCFrontend.DAL
+namespace Data
 {
     public class FrontendDbContext : DbContext
     {
@@ -16,7 +17,8 @@ namespace MVCFrontend.DAL
         }
 
         public DbSet<PostbackData> Postbacks { get; set; }
-
+        public DbSet<RequestLogEntry> RequestLogEntries { get; set; }
+        
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             // possibility to set some conventions

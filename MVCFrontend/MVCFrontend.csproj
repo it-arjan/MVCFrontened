@@ -209,9 +209,8 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\PostbackDatasController.cs" />
+    <Compile Include="Controllers\RequestLogEntriesController.cs" />
     <Compile Include="Controllers\ServiceSelectionController.cs" />
-    <Compile Include="DAL\EtfSetup.cs" />
-    <Compile Include="DAL\FrontendDbContext.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -221,8 +220,6 @@
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Models\MessageViewModel.cs" />
     <Compile Include="Models\AboutModel.cs" />
-    <Compile Include="Models\ApiResultModel.cs" />
-    <Compile Include="Models\PostbackData.cs" />
     <Compile Include="Models\ServiceSelectionModel.cs" />
     <Compile Include="Models\WebService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -245,7 +242,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Properties\PublishProfiles\Disk.pubxml" />
-    <None Include="Properties\PublishProfiles\Azure Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\Custom\secure-utils.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
@@ -283,6 +279,10 @@
     <Content Include="Views\PostbackDatas\Index.cshtml" />
     <Content Include="Views\Message\ServiceSelection.cshtml" />
     <Content Include="Views\Message\ServiceSelection-Styled.cshtml" />
+    <Content Include="Views\Docu\SystemLayout.cshtml" />
+    <Content Include="Views\RequestLogEntries\Delete.cshtml" />
+    <Content Include="Views\RequestLogEntries\Details.cshtml" />
+    <Content Include="Views\RequestLogEntries\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -297,6 +297,12 @@
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Data\Data.csproj">
+      <Project>{079e9340-73e8-4a69-86a0-c64ca5e11f5c}</Project>
+      <Name>Data</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

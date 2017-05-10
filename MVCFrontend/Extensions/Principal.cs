@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web;
 
-namespace MVCFrontend.Helpers
+namespace MVCFrontend.Extentions
 {
     public static class Principal
     {

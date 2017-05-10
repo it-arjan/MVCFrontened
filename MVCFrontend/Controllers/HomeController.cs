@@ -7,6 +7,7 @@ using NLogWrapper;
 using System.Security.Claims;
 using MVCFrontend.Helpers;
 using MVCFrontend.Models;
+using MVCFrontend.Extentions;
 
 namespace MVCFrontend.Controllers
 {
@@ -20,7 +21,7 @@ namespace MVCFrontend.Controllers
 
         public ActionResult Logout()
         {
-            Session.Clear();
+            Session.Abandon();
             if (User.Identity.IsAuthenticated)
                 Request.GetOwinContext().Authentication.SignOut();
             //else

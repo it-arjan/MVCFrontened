@@ -1,5 +1,7 @@
 ﻿@using MVCFrontend.Helpers
-@using System.Security.Claims;
+@using MVCFrontend.Extentions
+@using MVCFrontend.Helpers
+@using System.Security.Claims
 @model MVCFrontend.Models.AboutModel
 @{
     ViewBag.Title = "About";
@@ -41,13 +43,13 @@
         <span>Token Session end</span><span>@Model.TokenSessionEnd</span>
     </p>
     <p>
-        <span>Human Token Expire (secs) </span><span>@Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp");</span>
+        <span>Human Token Expire (server time) </span><span>@Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("access_token"), "exp");</span>
     </p>
     <p>
-        <span>AjaxQueueToken Expire (secs) </span><span>@Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");</span>
+        <span>AjaxQueueToken Expire (server time) </span><span>@Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");</span>
     </p>
     <p>
-        <span>Cookie timeout </span><span>@{ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout"); }</span>
+        <span>Auth Cookie timeout </span><span>@ClaimsPrincipal.Current.GetClaim("auth_cookie_exp")</span>
     </p>
     
     <h3>All claims</h3>
@@ -64,12 +66,12 @@
                 <div> <strong>@claim.Type</strong><span>,  </span>@claimDate</div>
                 if (claim.Type == "exp")
                 {
-                    claimDateUtils = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp").ToLongTimeString();
+                    claimDateUtils = Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("access_token"), "exp").ToLongTimeString();
                     <div> <strong>From Token:</strong><span>,  </span>@Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp")<span> , </span> @claimDateUtils</div>
                 }
                 else if (claim.Type == "auth_time")
                 {
-                    claimDateUtils = Utils.GetDateTimeClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp").ToLongTimeString();
+                    claimDateUtils = Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("access_token"), "exp").ToLongTimeString();
                     <div> <strong>From Token:</strong><span>,  </span>@Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "auth_time")<span> , </span> @claimDateUtils</div>
                 }
 

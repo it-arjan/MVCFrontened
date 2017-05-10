@@ -16,6 +16,7 @@ using IdentityServer3.AccessTokenValidation;
 using System.Net;
 using MVCFrontend.Helpers;
 using System.Xml;
+using Microsoft.AspNet.Identity.Owin;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -42,6 +43,31 @@ namespace MVCFrontend
             _logger.Info("Auth server Url= {0}", Appsettings.AuthUrl());
             _logger.Info("..done with config checks.");
         }
+
+        private static Task GetAuthCookieExp(CookieValidateIdentityContext context)
+        {
+            if (!IsAjaxRequest(context.Request))
+            {
+                // here we get the cookie expiry time
+                var ticksUntil_1970 = new DateTime(1970, 1, 1).Ticks;
+                var expireUtc = (context.Properties.ExpiresUtc.Value.UtcTicks - ticksUntil_1970) / 10000000;
+
+                // add the expiry time back to cookie as one of the claims, called 'myExpireUtc'
+                // to ensure that the claim has latest value, we must keep only one claim
+                // otherwise we will be having multiple claims with same type but different values
+                var claimType = "auth_cookie_exp";
+                var identity = context.Identity;
+                if (identity.HasClaim(c => c.Type == claimType))
+                {
+                    var existingClaim = identity.FindFirst(claimType);
+                    identity.RemoveClaim(existingClaim);
+                }
+                var newClaim = new Claim(claimType, expireUtc.ToString());
+                context.Identity.AddClaim(newClaim);
+            }
+            return Task.FromResult(0);
+        }
+
         public void Configuration(IAppBuilder app)
         {
             if (Appsettings.AzureIgnoreCertificateErrors())
@@ -55,11 +81,49 @@ namespace MVCFrontend
             CheckHealth();
 
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+            app.Use(async (Context, next) =>
+            {
+                _logger.Debug("OWIN DEBUG::1 ==>Before cookie, before OIDC");
+                await next.Invoke();
+                _logger.Debug("OWIN DEBUG::6 ==>after cookie, after Bearer");
+            });
+
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 ExpireTimeSpan = TimeSpan.FromMinutes(Appsettings.CookieTimeoutMinutes()),
                 SlidingExpiration = Appsettings.CookieSlidingExpiration(),
+                Provider = new CookieAuthenticationProvider
+                {
+                    OnValidateIdentity = GetAuthCookieExp,
+                    OnApplyRedirect = ctx =>
+                    {
+                        // doesn't hit, UseOpenIdConnectAuthentication is doing the redirection
+                        if (!IsAjaxRequest(ctx.Request))
+                        {
+                            ctx.Response.Redirect(ctx.RedirectUri);
+                        }
+                    },
+                    OnResponseSignIn = ctx => {
+                        if (true) { }
+                    },
+                    OnException = ctx => {
+                        if (true) { }
+                    },
+                    OnResponseSignedIn = ctx => {
+                        if (true) { }
+                    },
+                    OnResponseSignOut = ctx => {
+                        if (true) { }
+                    },
+                }
+            });
+
+            app.Use(async (Context, next) =>
+            {
+                _logger.Debug("OWIN DEBUG::2 ==>after cookie, before OIDC");
+                await next.Invoke();
+                _logger.Debug("OWIN DEBUG:: ", Context.Response.StatusCode != 200 ? "3. Intervention from OIDC" : "5. after Bearer");
             });
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
@@ -75,55 +139,63 @@ namespace MVCFrontend
 
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    SecurityTokenValidated = notification => /* Anonymous function */
+                    SecurityTokenValidated = n => /* Anonymous function */
                     {
                         _logger.Debug("SecurityTokenValidated notfication detected");
 
-                        var identity = notification.AuthenticationTicket.Identity;
-                        identity.AddClaim(new Claim("id_token", notification.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
-                        identity.AddClaim(new Claim("access_token", notification.ProtocolMessage.AccessToken)); //access_token is for commnication with api
-
-                        var expDate = DateTime.Now.AddMinutes(Appsettings.CookieTimeoutMinutes());
-                        var expdateXml = System.Xml.XmlConvert.ToString(expDate, XmlDateTimeSerializationMode.Local);
-
-                        identity.AddClaim(new Claim("auth_cookie_timeout", expdateXml)); // store it here
-                        _logger.Debug("Notification(SecurityTokenValidated): cookie exp = {0}", expdateXml);
+                        var identity = n.AuthenticationTicket.Identity;
+                        identity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
+                        identity.AddClaim(new Claim("access_token", n.ProtocolMessage.AccessToken)); //access_token is for commnication with api
 
                         identity.AddClaim(new Claim("socket_token", Guid.NewGuid().ToString()));
                         identity.AddClaim(new Claim("msg_done_token", Guid.NewGuid().ToString()));
 
-                        // not sure why this is needed
-                        notification.AuthenticationTicket = new AuthenticationTicket(identity, notification.AuthenticationTicket.Properties);
+                        // not sure why creating a new AuthenticationTicket is needed
+                        n.AuthenticationTicket = new AuthenticationTicket(identity, n.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
                     },
-                    RedirectToIdentityProvider = notification =>
+                    RedirectToIdentityProvider = n =>
                     {
-                        //string appBaseUrl = notification.Request.Scheme + "://" + notification.Request.Host + notification.Request.PathBase;
-                        //notification.ProtocolMessage.RedirectUri = appBaseUrl + SettingsHelper.LoginRedirectRelativeUri;
-                        //notification.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl + SettingsHelper.LogoutRedirectRelativeUri;
-
                         _logger.Debug("RedirectToIdentityProvider notification detected");
-                        if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
+                        if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
                             var max_age = Appsettings.SessionMaxAgeMinutes() * 60;
-                            _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
-                            notification.ProtocolMessage.MaxAge = max_age.ToString();
+                           // _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
+                            //notification.ProtocolMessage.MaxAge = max_age.ToString();
                         }
 
-                        if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
+                        if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
                         {
                             //set the tokenHint (not the token) to the actual token .. very inuitive ;)
-                            var IdTokenclaim = notification.OwinContext.Authentication.User.FindFirst("id_token");
-                            notification.ProtocolMessage.IdTokenHint = IdTokenclaim != null ?IdTokenclaim.Value:"";
+                            var IdTokenclaim = n.OwinContext.Authentication.User.FindFirst("id_token");
+                            n.ProtocolMessage.IdTokenHint = IdTokenclaim != null ?IdTokenclaim.Value:"";
                         }
 
                         return Task.FromResult(0);
-                    }
+                    },
+                    AuthenticationFailed = n => 
+                    {
+                        return Task.FromResult(0);
+                    },
+                    AuthorizationCodeReceived = n =>
+                    {
+                        return Task.FromResult(0);
+                    },
+                    MessageReceived = n=>
+                    {
+                        return Task.FromResult(0);
+                    },
+                    SecurityTokenReceived = n=>
+                    {
+                        return Task.FromResult(0);
+                    },
+
+
                 }
             });
 
-            // silicon client authorization
+              // silicon client authorization
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
                 Authority = Appsettings.AuthUrl(),
@@ -133,6 +205,8 @@ namespace MVCFrontend
 
             _logger.Info("startup executed");
         }
+
+
 
         private static bool IsAjaxRequest(IOwinRequest request)
         {

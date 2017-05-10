@@ -1,0 +1,105 @@
+﻿@model IEnumerable<Data.Models.RequestLogEntry>
+
+@{
+    Layout = null;
+}
+
+<div>
+    @Html.AntiForgeryToken()
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Timestamp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Ip)
+            </th>
+            <th>
+               Postbacks
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Path)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Method)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ContentType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th></th>
+        </tr>
+    
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Timestamp)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ip)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RecentContributions)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Path)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Method)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContentType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.User)
+            </td>
+            <td>
+                <a href="#" class="txtButton" onclick="event.preventDefault();detailsLogentry(@item.Id);">Details</a> |
+                <a href="#" class="txtButton" onclick="event.preventDefault();deleteLogentry(@item.Id);">Delete</a>
+            </td>
+        </tr>
+    }
+    
+    </table>
+</div>
+<script>
+    function deleteLogentry(id) {
+        CallFuncWhenCookieStillValid(DeleteLogentryAjax, 'cookie-auth-used', "#RequestLog", id);
+    }
+    function detailsLogentry(id) {
+        CallFuncWhenCookieStillValid(DetailsLogentryAjax, 'cookie-auth-used', "#RequestLog", id);
+    }
+    function DetailsLogentryAjax(ajaxAccessToken, resultDivId, id) {
+        $.ajax({
+            type: 'Get',
+            dataType: 'html',
+            url: '/requestlogentries/Details/' + id,
+        })
+        .done(function (data) {
+            $(resultDivId).html(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>Details on request log failed: error= " + errorThrown);
+        })
+    }
+    function DeleteLogentryAjax(ajaxAccessToken, resultDivId, id) {
+        var formData = {
+            __RequestVerificationToken: $("input[name='__RequestVerificationToken']").attr("value")
+        };
+        console.log( $("input[name='__RequestVerificationToken']").attr("value"));
+        $.ajax({
+            type: 'Post',
+            dataType: 'html',
+            url: '/requestlogentries/Delete/' + id,
+            data: formData
+        })
+        .done(function (data) {
+            $(resultDivId).html(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>Querying request log failed: error= " + errorThrown);
+        })
+    }
+</script>

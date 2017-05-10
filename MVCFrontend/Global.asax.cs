@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using MVCFrontend.DAL;
+using Data;
 using MVCFrontend;
 using MVCFrontend.Helpers;
 using NLogWrapper;
@@ -25,6 +25,7 @@ namespace MVCFrontend
         // adding an empty Session_Start solves a cookie issue causing endless redict on auth success
         protected void Session_Start()
         {
+            _logger.Debug("Session_Start!");
             Session["asp_session_start_time"]= DateTime.Now;
             Session["asp_session_exp_time"] = DateTime.Now.AddMinutes(Session.Timeout);
         }
@@ -33,7 +34,7 @@ namespace MVCFrontend
         {
             var start = Convert.ToDateTime(Session["asp_session_start_time"]);
             var end = DateTime.Now;
-            _logger.Debug("Session_End: It started {0} and ends now {1}, diff (secs) = {2}", 
+            _logger.Debug("Session_End: Session started {0} and ends '{1}', diff (secs) = '{2}'", 
                 start.ToLongTimeString(), end.ToLongTimeString(), (end-start).TotalSeconds
                 );
             Session.Clear();

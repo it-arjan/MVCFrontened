@@ -11,15 +11,16 @@ namespace MVCFrontend.Helpers
     public static class Utils
     {
         static ILogger _logger = LogManager.CreateLogger(typeof(Utils));
-        public static DateTime GetDateTimeClaimFromToken(string jwt, string claim_type)
+
+        public static DateTime GetTimeClaimFromToken(TimeSpan offset, string jwt, string claim_type)
         {
-            var UnixExpUtc = Convert.ToUInt64(GetClaimFromToken(jwt, claim_type));
-            var difference = DateTime.Now - DateTime.UtcNow;
-
-            DateTime UnoxStartDateLocalTime = new DateTime(1970, 1, 1).AddHours(difference.TotalHours);
-            return UnoxStartDateLocalTime.AddSeconds(UnixExpUtc);
+            return TimestampToTime(offset, GetClaimFromToken(jwt, claim_type));
         }
-
+        public static DateTime TimestampToTime(TimeSpan offset, string timestamp)
+        {
+            var UnixExpUtc = Convert.ToUInt64(timestamp);
+            return new DateTime(1970, 1, 1).AddHours(offset.TotalHours).AddSeconds(UnixExpUtc);
+        }
         public static string GetClaimFromToken(string jwt, string claim_type)
         {
             if (string.IsNullOrEmpty(jwt)) return "0";

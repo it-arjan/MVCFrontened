@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Security.Claims;
+using MVCFrontend.Extentions;
 
 namespace MVCFrontend.Controllers
 {

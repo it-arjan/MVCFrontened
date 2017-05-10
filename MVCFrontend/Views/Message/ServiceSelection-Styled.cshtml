@@ -1,4 +1,6 @@
-﻿@model MVCFrontend.Models.ServiceSelectionModel
+﻿@using System.Security.Claims
+@using MVCFrontend.Extentions
+@model MVCFrontend.Models.ServiceSelectionModel
 @{
     int i = 1;
 }
@@ -41,7 +43,7 @@
             'service6': $("#service6").is(':checked'),
             'service7': $("#service7").is(':checked'),
             'service8': $("#service8").is(':checked'),
-            'socketToken': '@Session["SocketToken"]',
+            'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
         };
         $(resultDivId).text("The first 3 selected webservices will be selected...");
         $.ajax({

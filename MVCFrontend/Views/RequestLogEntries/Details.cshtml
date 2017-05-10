@@ -1,0 +1,89 @@
+﻿@model Data.Models.RequestLogEntry
+
+@{
+    Layout = null;
+}
+
+<div>
+        <h4>RequestLog Entry</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Timestamp)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Timestamp)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.Ip)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.Ip)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.RecentContributions)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.RecentContributions)
+            </dd>   
+            <dt>
+                @Html.DisplayNameFor(model => model.Path)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.Path)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.Method)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.Method)
+            </dd>
+    
+            <dt>
+                @Html.DisplayNameFor(model => model.ContentType)
+            </dt>
+    
+            <dd>
+                @Html.DisplayFor(model => model.ContentType)
+            </dd>
+    
+
+            <dt>
+                @Html.DisplayNameFor(model => model.User)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.User)
+            </dd>
+  
+    
+        </dl>
+    <p>
+        <a href="#" class="txtButton" onclick="event.preventDefault();indexLogentry();">Back to List</a>
+    </p>
+</div>
+<script>
+    function indexLogentry() {
+        CallFuncWhenCookieStillValid(DetailsLogentryAjax, 'cookie-auth-used', "#RequestLog");
+    }
+    function DetailsLogentryAjax(ajaxAccessToken, resultDivId, id) {
+        $.ajax({
+            type: 'Get',
+            dataType: 'html',
+            url: '/requestlogentries/',
+        })
+        .done(function (data) {
+            $(resultDivId).html(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).append("<br/>Back to request log index failed: error= " + errorThrown);
+        })
+    }
+</script>

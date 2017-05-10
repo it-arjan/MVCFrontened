@@ -1,88 +1,97 @@
 ﻿@using MVCFrontend.Helpers
-@using System.Security.Claims;
+@using System.Security.Claims
+@using MVCFrontend.Extentions
 @model MVCFrontend.Models.MessageViewModel
 @{
-    ViewBag.Title = "Send";
+    ViewBag.Title = "Control Panel";
     var hasRights = ClaimsPrincipal.Current.HasClaim("role", "SendMessage") || ClaimsPrincipal.Current.isAdmin();
     var url = Appsettings.SocketServerUrl();
 }
-<h2>@ViewBag.Title.</h2>
-<h3>Welcome @Model.UserName!</h3>
+<h2>@Model.UserName @ViewBag.Title</h2>
 <p>
-    The following roles are listed as claims in your identity: @Model.Roles
-    @Html.Raw(ViewBag.Message.Replace("\n", "<br/>"))
+    Welcome, the following roles are listed as claims in your identity: @Model.Roles
 </p>
-@if (hasRights)
-{
-    <div class="row tab">
-        <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Send Message</button>
-        <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
-        <button class="tablinks" onclick="openTab(event, 'SystemLayout')">System Layout</button>
-        <button class="tablinks"></button>
-        <button id="exp_cookie" class="tablinks"></button>
-        <button id="exp_cors_token" class="tablinks"></button>
+<div class="row">
+    <div class="col-md-6"></div>
+
     </div>
-    <div class="row">
-        <div id="SendMessage" class="tabcontent">
-            <div class="col-md-12">
-                <h3>Drop message into MSMQ</h3>
-                <p>Please enter a string identifying your message to the remote queue. Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from this input. (spaces stay)</p>
-                <form id="msgForm" action="" method="post">
-                    <input type="text" name="message" /> <br />
-                    <div class="wrapper"><input type="submit" value="Send" /><span class="tourTip ttButton">Ajax CORS</span></div><span id="apiResult"></span>
-                </form>
-            </div>
+    @if (hasRights)
+    {
+        <div class="row tab">
+            <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Drop a Message</button>
+            <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
+            <button class="tablinks" onclick="openTab(event, 'SystemLayout')">System Layout</button>
+            <button class="tablinks"  onclick="openTab(event, 'RequestLog')">Request Log</button>
+            <button class="tablinks"></button>
+            <button class="tablinks"></button>
         </div>
-        <div id="ServerConfig" class="tabcontent">
-            <div class="col-md-3">
-                <h4>Queue processing mode</h4>
-                <div class="wrapper">
-                    <button id="toggleQueue" class="fancyButtons">Toggle</button><span class="tourTip ttButton">Ajax CORS</span>
-                    <span id="toggleResult"></span>
+        <div class="row">
+            <div id="SendMessage" class="tabcontent">
+                <div class="col-md-6">
+                    <p>&nbsp;</p>
+                    <p>
+                        Dropped messages land in a remote Message Queue, where they get picked up by a Queue Manager. This manager will use MSMQ to offer your input to 3 configured Web Services.
+                        The output of these 3 web services is collected and posted back here. Visible in the list on the right hand side.
+                        <br><br>Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from your input, spaces stay.
+                        <br><br>Goodluck! ;)
+                    </p>
+                    <form id="msgForm" action="" method="post">
+                        <input type="text" name="message" /> <br />
+                        <div class="wrapper"><input type="submit" value="Drop" /><span class="tourTip ttButton">Ajax CORS</span></div><span id="apiResult"></span>
+                    </form>
+                </div>
+                <div class="col-md-3">
+                    <h4>Timeout Settings</h4>
+                    <span class='Info'>Auth.Cookie.SlidingExp=@Appsettings.CookieSlidingExpiration()</span><br />
+                    <span class='Info'>Use.Token.Lifetime=@Appsettings.UseTokenLifetime()</span><br />
+                </div>
+                <div class="col-md-3">
+                    <h4>Timeouts </h4>
+                    <div>
+                        <span>ASP Session </span><span id="exp_asp"></span>
+                    </div>
+                    <div>
+                        <span>Auth Cookie </span><span id="exp_cookie"></span>
+                    </div>
+                    <div>
+                        <span>Cors Token </span><span id="exp_cors_token"></span>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-9">
-                <h4>Select 3 webservices</h4><span class="tourTip ttScreen">Ajax Partial View</span>
-                @Html.Action("Index", "ServiceSelection")
+            <div id="ServerConfig" class="tabcontent">
+                <div class="col-md-4">
+                    <h4>Queue processing mode</h4>
+                    <div class="wrapper">
+                        <button id="toggleQueue" class="fancyButtons">Toggle</button><span class="tourTip ttButton">Ajax CORS</span>
+                        <span id="toggleResult"></span>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h4>Select 3 webservices</h4><span class="tourTip ttScreen">Ajax Partial View</span>
+                    @Html.Action("Index", "ServiceSelection")
+                </div>
+            </div>
+            <div id="SystemLayout" class="tabcontent">
+                <div class="col-md-12" style="position:absolute;background-color:white;opacity:0.8;z-index:8">
+                    @Html.Partial("~/Views/Docu/SystemLayout.cshtml")
+                </div>
+            </div>
+            <div id="RequestLog" class="tabcontent">
+                <div class="col-md-12">
+                    @if (ClaimsPrincipal.Current.isAdmin())
+                    {
+                        @Html.Action("Index", "RequestLogEntries")
+                    }
+                    else
+                    {
+                        <p>You need the admin role to view this page..</p>
+                    }
+                </div>
             </div>
         </div>
-        <div id="SystemLayout" class="tabcontent">
-            <div class="col-md-12" style="position:absolute;background-color:white;opacity:0.8;z-index:8">System Layout
-                <br />
-                <br />System Layout
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />System Layout
-                <br />
-                <br />System Layout
-                <br />
-                <br />System Layout
-                <br />
-                <br />
-                <br />System Layout
-                <br />
-                <br />
-                <br />
-                <br />System Layout
-                <br />System LayoutSystem Layout   System Layout    System Layout
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-            </div>
-        </div>
-        </div>
-            <hr />
+        <hr />
             <div class="row">
-                <div class="col-md-8">Remote socketChat (=socket chat). <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span></div></div>
+                <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
                 <div class="col-md-4"><div class="wrapper">@Model.UserName actions of today. <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
             </div>
             <div class="row">
@@ -169,7 +178,7 @@
                     var formData = {
                         'MessageId': data,
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
-                        'SocketToken':'@ClaimsPrincipal.Current.GetClaim("socket_token")',
+                        'SocketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
                         'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
                         'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")'
                     };
@@ -194,32 +203,64 @@
                     })
                 }
             </script>
+        //
+        // Session expiration counter stuff
+        //
             <script>
-                //
-                // Session expiration counter stuff
-                //
-                // Update the CookieCounter every 1 second
+                // the Asp Counter
+                var AspCounter = setInterval(function () {
+                    var resultId = '#exp_asp';
+                    var expDateStr = '@DateTime.UtcNow.AddMinutes(Session.Timeout)';
+
+                    var clientLocalNow = new Date();
+                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
+                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
+                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
+
+                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
+
+                    if (secs < 0) {
+                        setExpiredAndStop(AspCounter, resultId);
+                    }
+                    else {
+                        var msg = getCounterDisplayMsg(secs);
+                        // Display the result
+                        $(resultId).text(msg);
+                    }
+                }, 1000);
+                // auth Cookie Counter
                 var CookieCounter = setInterval(function () {
-                    var expDateStr = '@Session["exp_cookie_time"]';
                     var resultId = '#exp_cookie';
-                    var secs = new Date(expDateStr).getTime() - new Date().getTime();
+
+                    var expDateStr = '@Session["exp_cookie_time_utc"]';
+                    var clientLocalNow = new Date();
+                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
+                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
+                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
+
+                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
 
                     if (secs < 0) {
                         setExpiredAndStop(CookieCounter, resultId);
                     }
                     else {
                         var msg = getCounterDisplayMsg(secs);
-                        // Display the result in the element with id="demo"
+                        // Display the result
                         $(resultId).text(msg);
                     }
                 }, 1000);
 
-                // Update the tokenCounter every 1 second
+                // Cors Token Counter
                 var tokenCounter = setInterval(function () {
-                    var expDateStr = '@Session["exp_cors_token_time"]';
                     var resultId = '#exp_cors_token';
-                    var secs = new Date(expDateStr).getTime() - new Date().getTime();
-                    //console.log(resultId + " Secs: " + secs)
+
+                    var expDateStr = '@Session["exp_cors_token_time_utc"]';
+                    var clientLocalNow = new Date();
+                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
+                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
+                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
+
+                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
 
                     if (secs < 0) {
                         setExpiredAndStop(tokenCounter, resultId);
@@ -227,7 +268,7 @@
                     else {
                         var msg = getCounterDisplayMsg(secs);
                         //console.log("Msg: " + msg)
-                        // Display the result in the element with id="demo"
+                        // Display the result
                         $(resultId).text(msg);
                     }
                 }, 1000);
@@ -246,87 +287,87 @@
                     $(resultId).text().fontcolor("red");
                 }
             </script>
-            //postback data view stuff in this script
-            <script>
-                function QueryPostbackData(ajaxAccessToken, resultDivId) {
-                    $(resultDivId).html("<h3>Loading actions.. </h3>");
-                    $.ajax({
-                        type: 'Get',
-                        dataType: 'html',
-                        url: '/Postbackdatas/',
-                    })
-                    .done(function (partialView) {
-                        $(resultDivId).html(partialView);
-                    })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
-                    })
-                }
-            </script>
-            //Socket stuff in this script
-            <script>
-                // Create SocketIO instance, connect
-                var _gSocket = null;
-                var serverUrl = '@Appsettings.SocketServerUrl()';
+        //postback data view stuff in this script
+        <script>
+            function QueryPostbackData(ajaxAccessToken, resultDivId) {
+                $(resultDivId).html("<h3>Loading actions.. </h3>");
+                $.ajax({
+                    type: 'Get',
+                    dataType: 'html',
+                    url: '/Postbackdatas/',
+                })
+                .done(function (partialView) {
+                    $(resultDivId).html(partialView);
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
+                })
+            }
+        </script>
+        //Socket stuff in this script
+        <script>
+            // Create SocketIO instance, connect
+            var _gSocket = null;
+            var serverUrl = '@Appsettings.SocketServerUrl()';
 
-                function ConnectToSocketServer() {
-                    if ("WebSocket" in window) {
-                        var socketToken = '@ClaimsPrincipal.Current.GetClaim("socket_token")';
-                        var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_token")';
-                        if (socketToken.length > 0) {
-                            try {
-                                if (_gSocket != null) {
-                                    //alert('closing existing socket..');
-                                    _gSocket.close();
-                                }
-                                _gSocket = new WebSocket(serverUrl);
-                                // Add a message listener
-                                _gSocket.onmessage = function (msg) {
-                                    if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
-                                        var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
-                                        if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
-                                            LogMessage("Done token received, auto-refreshing postbacks...");
-                                            CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
-                                        }
-                                        else {
-                                            LogMessage(msgWithoutToken);
-                                        }
+            function ConnectToSocketServer() {
+                if ("WebSocket" in window) {
+                    var socketToken = '@ClaimsPrincipal.Current.GetClaim("socket_token")';
+                    var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_token")';
+                    if (socketToken.length > 0) {
+                        try {
+                            if (_gSocket != null) {
+                                //alert('closing existing socket..');
+                                _gSocket.close();
+                            }
+                            _gSocket = new WebSocket(serverUrl);
+                            // Add a message listener
+                            _gSocket.onmessage = function (msg) {
+                                if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
+                                    var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
+                                    if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
+                                        LogMessage("Done token received, auto-refreshing postbacks...");
+                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
                                     }
                                     else {
-                                        LogMessage("Receiving messages for other sessions...");
+                                        LogMessage(msgWithoutToken);
                                     }
+                                }
+                                else {
+                                    LogMessage("Receiving messages for other sessions...");
+                                }
 
-                                };
-                                _gSocket.onerror = function (msg) {
-                                    LogMessage("_gSocket.onerror is triggered: " + msg.data);
-                                };
+                            };
+                            _gSocket.onerror = function (msg) {
+                                LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                            };
 
-                                LogMessage("..chat log initialized.\n");
-                            }
-                            catch (ex) {
-                                LogMessage("Exception connecting to socket server: " + serverUrl);
-                                LogMessage(ex.message);
-                            }
+                            LogMessage("..chat log initialized.\n");
                         }
-                        else {
-                            LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+                        catch (ex) {
+                            LogMessage("Exception connecting to socket server: " + serverUrl);
+                            LogMessage(ex.message);
                         }
                     }
                     else {
-                        LogMessage("webSockets are not supported on this browser, the chat log will not work.");
+                        LogMessage("Socket Token not set, the chat will not work, refresh the page.");
                     }
                 }
-
-                function socketDisconnected(socketArg) {
-                    return socketArg.ready == 0;
+                else {
+                    LogMessage("webSockets are not supported on this browser, the chat log will not work.");
                 }
+            }
 
-                function LogMessage(msg) {
-                    $("#socketChat").prepend("<p>" + msg + "</p>");
-                }
-            </script>
+            function socketDisconnected(socketArg) {
+                return socketArg.ready == 0;
             }
-            else
-            {
-            <p>Your assigned roles do not allow for sending messages.</p>
+
+            function LogMessage(msg) {
+                $("#socketChat").prepend("<p>" + msg + "</p>");
             }
+        </script>
+    }
+    else
+    {
+        <p>Your assigned roles do not allow for sending messages.</p>
+    }

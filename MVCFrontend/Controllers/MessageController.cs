@@ -1,4 +1,5 @@
-﻿using MVCFrontend.Models;
+﻿using Data;
+using Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using MVCFrontend.Helpers;
 using System.Xml;
+using MVCFrontend.Extentions;
+using System.Configuration;
+using MVCFrontend.Models;
 
 namespace MVCFrontend.Controllers
 {
@@ -28,15 +32,19 @@ namespace MVCFrontend.Controllers
         // GET: Message
         public ActionResult Index()
         {
+            //Session.Abandon();
             var model = new MessageViewModel();
 
             ClaimsPrincipal.Current.AddUpdateClaim("ajax_remote_queue_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-            Session["exp_cors_token_time"] = Utils.GetDateTimeClaimFromToken(
-                                                        ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")
-                                                        , "exp");
-            Session["exp_cookie_time"] = XmlConvert.ToDateTime(
-                                            ClaimsPrincipal.Current.GetClaim("auth_cookie_timeout")
-                                            , XmlDateTimeSerializationMode.Local);
+            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");
+            Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
+                                                        ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");
+
+            Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaim("auth_cookie_exp");
+            Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
+                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("auth_cookie_exp")).AddSeconds(Appsettings.CookieTimeoutExpireOffset())
+                : DateTime.Now.AddHours(-5);
+
 
             model.UserName = ClaimsPrincipal.Current.GetClaim("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
@@ -48,14 +56,10 @@ namespace MVCFrontend.Controllers
         private string CheckSessionSettings()
         {
             var msg = string.Empty;
-            msg += string.Format("<span class='Info'>Idsrv3.UseTokenLifetime={0}</span><br/>", Appsettings.UseTokenLifetime());
-            //msg += string.Format("<span class='Info'>Idsrv3.SessionMaxAgeMinutes={0}</span><br/>", Appsettings.SessionMaxAgeMinutes());
-            msg += string.Format("<span class='Info'>Cookie.Auth.SlidingExp={0}</span><br/>", Appsettings.CookieSlidingExpiration());
-            //Appsettings.SessionMaxAgeMinutes();
 
-            if (Convert.ToDateTime(Session["asp_session_exp_time"]) <= Convert.ToDateTime(Session["exp_cookie_time"]))
-                msg += string.Format("<span class='Warn'>Warning: Asp session {0} expires before the auth cookie {1}, this config does not work well!</span><br/>", 
-                    Session["asp_session_exp_time"], Session["exp_cookie_time"]);
+            if (Convert.ToDateTime(Session["asp_session_exp_time"]) <= Convert.ToDateTime(Session["exp_cookie_time_utc"]))
+                msg += string.Format("<span class='Warn'>Warning: Asp session ({0}) expires before the auth cookie ({1}), this config does not work well!</span><br/>", 
+                    Session["asp_session_exp_time"], Session["exp_cookie_time_utc"]);
 
             return msg;
         }
@@ -75,8 +79,8 @@ namespace MVCFrontend.Controllers
             try
             {
                 // ETF handles the data scurity
-                var db = new DAL.FrontendDbContext();
-                db.Postbacks.Add(data);
+                var db = DbFactory.Db();
+                db.Add(data);
                 db.SaveChanges();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
             }

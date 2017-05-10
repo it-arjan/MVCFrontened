@@ -12,6 +12,6 @@
         else func(ajaxAccessToken, resultDivId, funcData);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
-        $(resultDivId).text("Cookietimeout expired, refresh the page.");
+        $(resultDivId).text("Auth cookie expired, refresh the page.");
     });
 }

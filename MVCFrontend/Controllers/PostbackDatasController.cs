@@ -6,30 +6,30 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using MVCFrontend.DAL;
-using MVCFrontend.Models;
+using Data;
+using Data.Models;
 using System.Security.Claims;
-using MVCFrontend.Helpers;
+using MVCFrontend.Extentions;
+using Data;
 
 namespace MVCFrontend.Controllers
 {
     [Authorize]
     public class PostbackDatasController : Controller
     {
-        private FrontendDbContext db = new FrontendDbContext();
+        private IDb db = DbFactory.Db();
 
         // GET: PostbackDatas
         public ActionResult Index()
         {
-            //principal.g
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.Postbacks.OrderByDescending(c=>c.Start).ToList());
+                return PartialView(db.GetEtfdb().Postbacks.OrderByDescending(c=>c.Start).ToList());
             }
-            else
+            else // only postbacks of the current user
             {
                 var userName = ClaimsPrincipal.Current.Claims.Where(c => c.Type == "given_name").Select(c => c.Value).FirstOrDefault();
-                return PartialView(db.Postbacks.Where(p => p.UserName == userName && p.Start >= DateTime.Today).OrderByDescending(c => c.End).ToList());
+                return PartialView(db.GetEtfdb().Postbacks.Where(p => p.UserName == userName && p.Start >= DateTime.Today).OrderByDescending(c => c.End).ToList());
             }
         }
 
@@ -40,7 +40,7 @@ namespace MVCFrontend.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.Postbacks.Find(Convert.ToInt32(id)); //string I have to edit generated code that worked before
+            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(Convert.ToInt32(id)); //string I have to edit generated code that worked before
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -63,7 +63,7 @@ namespace MVCFrontend.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Postbacks.Add(postbackData);
+                db.Add(postbackData);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -74,11 +74,12 @@ namespace MVCFrontend.Controllers
         // GET: PostbackDatas/Edit/5
         public ActionResult Edit(string id)
         {
+            
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.Postbacks.Find(id);
+            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(id);
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -95,7 +96,7 @@ namespace MVCFrontend.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(postbackData).State = EntityState.Modified;
+                db.GetEtfdb().Entry(postbackData).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -108,8 +109,8 @@ namespace MVCFrontend.Controllers
         public ActionResult DeleteConfirmed(string id)
         {
             int intPk = Convert.ToInt16(id);
-            PostbackData postbackData = db.Postbacks.Find(intPk);
-            db.Postbacks.Remove(postbackData);
+            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(intPk);
+            db.GetEtfdb().Postbacks.Remove(postbackData);
             db.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -118,7 +119,7 @@ namespace MVCFrontend.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                db.GetEtfdb().Dispose();
             }
             base.Dispose(disposing);
         }

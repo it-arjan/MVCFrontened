@@ -4,13 +4,13 @@ using System.Linq;
 using System.Web;
 using System.Data.Entity;
 
-namespace MVCFrontend.DAL
+namespace Data
 {
     public class EtfSetup
     {
         public static void InitDB()
         {
-            Database.SetInitializer(new System.Data.Entity.DropCreateDatabaseIfModelChanges<FrontendDbContext>());
+            Database.SetInitializer(new System.Data.Entity.DropCreateDatabaseAlways<FrontendDbContext>());
             // To not init db, use Database.SetInitializer<SchoolContext>(null);
             using (var db = new FrontendDbContext())
             {

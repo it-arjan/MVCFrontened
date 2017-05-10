@@ -12,11 +12,14 @@ namespace MVCFrontend.Helpers
         public const string SchemeKey = "scheme";
         public const string AuthServerKey = "auth.server";
         public const string AuthSessionLengthKey = "authserver.session.minutes";
+
         public const string CookieTimeoutKey = "cookie.timeout.minutes";
         public const string CookieSlidingExpirationKey = "cookie.sliding.expire";
+        public const string CookieTimeoutExpireOffsetKey = "cookie.expire.offset";
+        
 
         public const string SessionMaxAgeKey = "idsrv3.session.maxage.minutes";
-        public const string UseTokenLifetimeKey = "idsrv3.use.token.lifetime";
+        public const string UseTokenLifetimeKey = "idsrv3.use.token.lifetime.instead.of.cookie.middleware";
         
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
@@ -28,6 +31,8 @@ namespace MVCFrontend.Helpers
         public const string FrontendClientIdKey = "FrontendClientId";
         public const string LogLevelKey = "log.level";
         public const string AzureIgnoreCertificateErrorsKey = "azure.ignore.cert.errors";
+        public const string LogRequestIgnoreIpListKey = "log.request.ignore.ip.csv";
+
 
         public static string AuthUrl()
         {
@@ -96,14 +101,21 @@ namespace MVCFrontend.Helpers
 
         public static string LogLevel()
         {
-            return ConfigurationManager.AppSettings.Get(LogLevelKey);
+            return ConfigurationManager.AppSettings.Get(LogLevelKey).ToLower(); 
         }
-
+        
+        public static List<string> LogRequestIgnoreIpList()
+        {
+            return ConfigurationManager.AppSettings.Get(LogRequestIgnoreIpListKey).Replace(" ",string.Empty).Split(',').ToList<string>();
+        }
         public static bool AzureIgnoreCertificateErrors()
         {
             return GetBoolSetting(AzureIgnoreCertificateErrorsKey);
         }
-
+        public static int CookieTimeoutExpireOffset()
+        {
+            return GetIntSetting(CookieTimeoutExpireOffsetKey);
+        }
         public static int CookieTimeoutMinutes()
         {
             return GetIntSetting(CookieTimeoutKey);
