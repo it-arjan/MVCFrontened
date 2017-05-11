@@ -35,6 +35,7 @@ namespace Data.Models
 
         [DisplayFormat( DataFormatString = "{0:0.00}")]
         public decimal Duration { get; set; }
+        public string AspSessionId { get; set; }
 
         public string Content { get; set; }
     }

@@ -54,6 +54,15 @@
     <Compile Include="DbFactory.cs" />
     <Compile Include="FrontendDbContext.cs" />
     <Compile Include="IDb.cs" />
+    <Compile Include="Migrations\201705101215225_InitialCreate.cs" />
+    <Compile Include="Migrations\201705101215225_InitialCreate.Designer.cs">
+      <DependentUpon>201705101215225_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705111007114_aspSessionId.cs" />
+    <Compile Include="Migrations\201705111007114_aspSessionId.Designer.cs">
+      <DependentUpon>201705111007114_aspSessionId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\PostbackData.cs" />
     <Compile Include="Models\RequestLogEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -61,6 +70,14 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201705101215225_InitialCreate.resx">
+      <DependentUpon>201705101215225_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705111007114_aspSessionId.resx">
+      <DependentUpon>201705111007114_aspSessionId.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
