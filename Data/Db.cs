@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Data;
-using Data.Models;
+using MvcFrontendData;
+using MvcFrontendData.Models;
 
-namespace Data
+namespace MvcFrontendData
 {
     public class Db : IDb
     {

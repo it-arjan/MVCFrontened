@@ -6,14 +6,15 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using Data;
-using Data.Models;
+using MvcFrontendData;
+using MvcFrontendData.Models;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
-using Data;
+using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    [LogRequests]
     [Authorize]
     public class RequestLogEntriesController : Controller
     {
@@ -22,15 +23,12 @@ namespace MVCFrontend.Controllers
         // GET: RequestLogEntries
         public ActionResult Index()
         {
-            if (!ClaimsPrincipal.Current.isAdmin())
+            if (ClaimsPrincipal.Current.isAdmin())
             {
-                return new ContentResult
-                {
-                    Content = "You seem to be lacking the admin role",
-                    ContentType = "text/html"
-                };
+                return PartialView(db.GetEtfdb().RequestLogEntries.OrderByDescending(rq => rq.Timestamp).ToList());
             }
-            return PartialView(db.GetEtfdb().RequestLogEntries.OrderByDescending(rq => rq.Timestamp).ToList());
+
+            return PartialView(db.GetEtfdb().RequestLogEntries.Where(rq=>rq.AspSessionId == Session.SessionID).OrderByDescending(rq => rq.Timestamp).ToList());
         }
 
         // GET: RequestLogEntries/Details/5

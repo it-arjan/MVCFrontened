@@ -1,5 +1,5 @@
-﻿using Data;
-using Data.Models;
+﻿using MvcFrontendData;
+using MvcFrontendData.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +22,11 @@ using System.Xml;
 using MVCFrontend.Extentions;
 using System.Configuration;
 using MVCFrontend.Models;
+using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    [LogRequests]
     [Authorize]
     public class MessageController : Controller
     {

@@ -17,6 +17,7 @@ using System.Net;
 using MVCFrontend.Helpers;
 using System.Xml;
 using Microsoft.AspNet.Identity.Owin;
+using Nancy.Owin;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -201,6 +202,10 @@ namespace MVCFrontend
                 Authority = Appsettings.AuthUrl(),
                 ValidationMode = ValidationMode.Both, 
                 RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
+            });
+            app.UseNancy(new NancyOptions
+            {
+                
             });
 
             _logger.Info("startup executed");

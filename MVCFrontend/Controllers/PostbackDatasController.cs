@@ -4,16 +4,16 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
-using Data;
-using Data.Models;
+using MvcFrontendData;
+using MvcFrontendData.Models;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
-using Data;
+using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    [LogRequests]
     [Authorize]
     public class PostbackDatasController : Controller
     {
@@ -26,10 +26,9 @@ namespace MVCFrontend.Controllers
             {
                 return PartialView(db.GetEtfdb().Postbacks.OrderByDescending(c=>c.Start).ToList());
             }
-            else // only postbacks of the current user
+            else
             {
-                var userName = ClaimsPrincipal.Current.Claims.Where(c => c.Type == "given_name").Select(c => c.Value).FirstOrDefault();
-                return PartialView(db.GetEtfdb().Postbacks.Where(p => p.UserName == userName && p.Start >= DateTime.Today).OrderByDescending(c => c.End).ToList());
+                return PartialView(db.GetEtfdb().Postbacks.Where(pb => pb.AspSessionId == Session.SessionID).OrderByDescending(c => c.End).ToList());
             }
         }
 

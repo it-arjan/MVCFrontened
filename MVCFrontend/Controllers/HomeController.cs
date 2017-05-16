@@ -8,9 +8,11 @@ using System.Security.Claims;
 using MVCFrontend.Helpers;
 using MVCFrontend.Models;
 using MVCFrontend.Extentions;
+using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    [LogRequests]
     public class HomeController : Controller
     {
         private ILogger _logger = LogManager.CreateLogger(typeof(HomeController), Helpers.Appsettings.LogLevel());

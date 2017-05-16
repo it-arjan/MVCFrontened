@@ -113,6 +113,18 @@
       <HintPath>..\packages\Microsoft.Owin.Security.OpenIdConnect.3.0.1\lib\net45\Microsoft.Owin.Security.OpenIdConnect.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Nancy, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Packages\Nancy.1.4.3\lib\net40\Nancy.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.MSOwinSecurity, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Packages\Nancy.MSOwinSecurity.2.0.0\lib\net45\Nancy.MSOwinSecurity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Owin, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Packages\Nancy.Owin.1.4.1\lib\net40\Nancy.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\Packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -211,6 +223,7 @@
     <Compile Include="Controllers\PostbackDatasController.cs" />
     <Compile Include="Controllers\RequestLogEntriesController.cs" />
     <Compile Include="Controllers\ServiceSelectionController.cs" />
+    <Compile Include="Filters\LogRequestsAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -286,16 +299,18 @@
     <Content Include="Views\RequestLogEntries\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="api\" />
     <Folder Include="App_Data\" />
     <Folder Include="Logs\" />
     <Folder Include="Views\Partials\" />
-    <Folder Include="Views\SelectedServices\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>

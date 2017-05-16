@@ -11,9 +11,11 @@ using System.Web;
 using System.Web.Mvc;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
+using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    [LogRequests]
     [Authorize]
     public class ServiceSelectionController : Controller
     {

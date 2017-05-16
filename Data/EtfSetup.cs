@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Data.Entity;
-using Data.Migrations;
+using MvcFrontendData.Migrations;
 
-namespace Data
+namespace MvcFrontendData
 {
     public class EtfSetup
     {

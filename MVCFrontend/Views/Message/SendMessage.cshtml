@@ -5,7 +5,6 @@
 @{
     ViewBag.Title = "Control Panel";
     var hasRights = ClaimsPrincipal.Current.HasClaim("role", "SendMessage") || ClaimsPrincipal.Current.isAdmin();
-    var url = Appsettings.SocketServerUrl();
 }
 <h2>@Model.UserName @ViewBag.Title</h2>
 <p>
@@ -20,18 +19,20 @@
         <div class="row tab">
             <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Drop a Message</button>
             <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
+            <button class="tablinks"  onclick="openTab(event, 'RequestLog'); RefreshRequests('#RequestLog')">Request Log</button>
+            <button class="tablinks"></button>
+            <button class="tablinks"></button>
             <button class="tablinks" onclick="openTab(event, 'SystemLayout')">System Layout</button>
-            <button class="tablinks"  onclick="openTab(event, 'RequestLog')">Request Log</button>
-            <button class="tablinks"></button>
-            <button class="tablinks"></button>
         </div>
         <div class="row">
             <div id="SendMessage" class="tabcontent">
                 <div class="col-md-6">
                     <p>&nbsp;</p>
                     <p>
-                        Dropped messages land in a remote Message Queue, where they get picked up by a Queue Manager. This manager will use MSMQ to offer your input to 3 configured Web Services.
-                        The output of these 3 web services is collected and posted back here. Visible in the list on the right hand side.
+                        Dropped messages land in a remote Message Queue, where they get picked up by a Queue Manager. This manager will use MSMQ to offer your input to 3 configured Web Services. 
+                        The use of MSMQ makes this system suitable for high volume processing.
+                        The output of the web services is collected and posted using a web api of random selected type. 
+                        The message and its log becomes available for inspection in the list on the right hand side.
                         <br><br>Everything that is not a "[0-9a-zA-Z-_ ]" will be stripped from your input, spaces stay.
                         <br><br>Goodluck! ;)
                     </p>
@@ -48,13 +49,13 @@
                 <div class="col-md-3">
                     <h4>Timeouts </h4>
                     <div>
-                        <span>ASP Session </span><span id="exp_asp"></span>
+                        <b>ASP Session - </b><span id="exp_asp"></span>
                     </div>
                     <div>
-                        <span>Auth Cookie </span><span id="exp_cookie"></span>
+                        <b>Auth Cookie - </b><span id="exp_cookie"></span>
                     </div>
                     <div>
-                        <span>Cors Token </span><span id="exp_cors_token"></span>
+                        <b>Cors Token - </b><span id="exp_cors_token"></span>
                     </div>
                 </div>
             </div>
@@ -76,23 +77,13 @@
                     @Html.Partial("~/Views/Docu/SystemLayout.cshtml")
                 </div>
             </div>
-            <div id="RequestLog" class="tabcontent">
-                <div class="col-md-12">
-                    @if (ClaimsPrincipal.Current.isAdmin())
-                    {
-                        @Html.Action("Index", "RequestLogEntries")
-                    }
-                    else
-                    {
-                        <p>You need the admin role to view this page..</p>
-                    }
-                </div>
+            <div id="RequestLog" class="tabcontent col-md-12">
             </div>
         </div>
         <hr />
             <div class="row">
                 <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
-                <div class="col-md-4"><div class="wrapper">@Model.UserName actions of today. <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
+                <div class="col-md-4"><div class="wrapper">Actions by Cookie Asp.NET_SessionId <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
             </div>
             <div class="row">
                 <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
@@ -131,6 +122,23 @@
                     $(".tablinks").removeClass("active");
                     $("#" + tabId).show();
                     evt.currentTarget.className += " active";
+                }
+                function RefreshRequests(resultDivId) {
+                    CallFuncWhenCookieStillValid(GetRequestLogs, "no token, cookie", resultDivId);
+                }
+                function GetRequestLogs(tokenNotUsed, resultDivId) {
+                    $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
+                    $.ajax({
+                        type: 'Get',
+                        dataType: 'html',
+                        url: '/RequestLogEntries/',
+                    })
+                    .done(function (htmlPartial) {
+                        $(resultDivId).html(htmlPartial);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        $(resultDivId).append("<br/>Querying request logs failed: error= " + errorThrown);
+                    })
                 }
                 function InitializeChat() {
                     $("#socketChat").empty();
@@ -180,7 +188,8 @@
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
                         'SocketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
                         'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")'
+                        'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")',
+                        'AspSessionId': '@Session.SessionID'
                     };
 
                     $.ajax({
@@ -278,7 +287,8 @@
                     var minutes = Math.floor((secs % (1000 * 60 * 60)) / (1000 * 60));
                     var seconds = Math.floor((secs % (1000 * 60)) / 1000);
 
-                    return hours + "h " + minutes + "m " + seconds + "s ";
+                    var hrs_relevant = hours > 0 ? hours + "h " : "";
+                    return hrs_relevant + minutes + "m " + seconds + "s ";
                 }
 
                 function setExpiredAndStop(intervalRef, resultId) {
@@ -342,7 +352,7 @@
                                 LogMessage("_gSocket.onerror is triggered: " + msg.data);
                             };
 
-                            LogMessage("..chat log initialized.\n");
+                            LogMessage("..chat log initialized. Remote log messages & other notifications will land here..\n");
                         }
                         catch (ex) {
                             LogMessage("Exception connecting to socket server: " + serverUrl);

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using Data.Models;
+using MvcFrontendData.Models;
 using System.Data.Entity.Infrastructure;
-using Data.Migrations;
+using MvcFrontendData.Migrations;
 
-namespace Data
+namespace MvcFrontendData
 {
     public class FrontendDbContext : DbContext
     {

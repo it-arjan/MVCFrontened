@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Data;
+using MvcFrontendData;
 using MVCFrontend;
 using MVCFrontend.Helpers;
 using NLogWrapper;
@@ -19,7 +19,7 @@ namespace MVCFrontend
 
         public static void PreAppStartRegisterModules()
         {
-            RegisterModule(typeof(RequestLogModule));
+            //RegisterModule(typeof(RequestLogModule));
         }
 
         // adding an empty Session_Start solves a cookie issue causing endless redict on auth success

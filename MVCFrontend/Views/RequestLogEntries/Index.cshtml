@@ -1,4 +1,6 @@
-﻿@model IEnumerable<Data.Models.RequestLogEntry>
+﻿@using System.Security.Claims
+@using MVCFrontend.Extentions
+@model IEnumerable<Data.Models.RequestLogEntry>
 
 @{
     Layout = null;
@@ -6,13 +8,11 @@
 
 <div>
     @Html.AntiForgeryToken()
+    <p>Requests related to Cookie <b>Asp_SessionId=</b>@Session.SessionID</p>
     <table class="table">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Timestamp)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Ip)
             </th>
             <th>
                Postbacks
@@ -35,10 +35,7 @@
     @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Timestamp)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Ip)
+                @item.Timestamp.ToShortTimeString()
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.RecentContributions)
@@ -56,8 +53,12 @@
                 @Html.DisplayFor(modelItem => item.User)
             </td>
             <td>
-                <a href="#" class="txtButton" onclick="event.preventDefault();detailsLogentry(@item.Id);">Details</a> |
-                <a href="#" class="txtButton" onclick="event.preventDefault();deleteLogentry(@item.Id);">Delete</a>
+            @if (ClaimsPrincipal.Current.isAdmin())
+            {
+                <a href="#" class="txtButton" onclick="event.preventDefault();detailsLogentry(@item.Id);">Details</a>
+                <span> | </span>
+                <a href = "#" class="txtButton" onclick="event.preventDefault();deleteLogentry(@item.Id);">Delete</a>
+            }
             </td>
         </tr>
     }
