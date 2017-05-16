@@ -95,7 +95,7 @@
                 $(document).ready(function () {
                     $('#msgForm').submit(function (event) {
                         event.preventDefault();
-                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#apiResult", $('input[name=message]').val());
+                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#apiResult", $('input[name=message]').val());
                     });
                     $('#queryPostbackData').click(function (event) {
                         event.preventDefault();
@@ -107,12 +107,12 @@
                     });
                     $('#toggleQueue').click(function (event) {
                         event.preventDefault();
-                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
+                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#toggleResult");
                     });
 
                     //call these on page load
                     document.getElementById("openOnLoad").click();
-                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token")', "#toggleResult");
+                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#toggleResult");
                     QueryPostbackData('token-not-used', '#postbackResult');
                     InitializeChat();
                 });

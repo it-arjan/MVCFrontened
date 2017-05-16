@@ -46,7 +46,7 @@
         <span>Human Token Expire (server time) </span><span>@Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("access_token"), "exp");</span>
     </p>
     <p>
-        <span>AjaxQueueToken Expire (server time) </span><span>@Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");</span>
+        <span>AjaxQueueToken Expire (server time) </span><span>@Utils.GetTimeClaimFromToken(DateTime.Now - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("ajax_cors_token"), "exp");</span>
     </p>
     <p>
         <span>Auth Cookie timeout </span><span>@ClaimsPrincipal.Current.GetClaim("auth_cookie_exp")</span>

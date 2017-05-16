@@ -18,6 +18,7 @@ using MVCFrontend.Helpers;
 using System.Xml;
 using Microsoft.AspNet.Identity.Owin;
 using Nancy.Owin;
+using IdentityModel.Client;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -136,13 +137,13 @@ namespace MVCFrontend
                 Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman,
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 PostLogoutRedirectUri = Appsettings.HostUrl(),
-                UseTokenLifetime = Appsettings.UseTokenLifetime(), 
+                UseTokenLifetime = Appsettings.UseTokenLifetime(),
 
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
                     SecurityTokenValidated = n => /* Anonymous function */
                     {
-                        _logger.Debug("SecurityTokenValidated notfication detected");
+                        _logger.Debug("OpenIdConnect: SecurityTokenValidated");
 
                         var identity = n.AuthenticationTicket.Identity;
                         identity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
@@ -151,18 +152,27 @@ namespace MVCFrontend
                         identity.AddClaim(new Claim("socket_token", Guid.NewGuid().ToString()));
                         identity.AddClaim(new Claim("msg_done_token", Guid.NewGuid().ToString()));
 
+                        //var UserInfoEndpoint = string.Format("{0}{1}", Appsettings.AuthUrl(), "connect/userinfo");
+                        //var userInfoClient = new UserInfoClient(new Uri(UserInfoEndpoint), n.ProtocolMessage.AccessToken);
+                        //var userInfoResponse = userInfoClient.GetAsync().Result;
+                        //var userClaims = userInfoResponse.GetClaimsIdentity().Claims;
+                        //identity.AddClaims(userClaims);
+
+                        var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);
+                        identity.AddClaim(new Claim("ajax_cors_token", corsToken));
+
                         // not sure why creating a new AuthenticationTicket is needed
                         n.AuthenticationTicket = new AuthenticationTicket(identity, n.AuthenticationTicket.Properties);
                         return Task.FromResult(0);// return = irrelevant
                     },
                     RedirectToIdentityProvider = n =>
                     {
-                        _logger.Debug("RedirectToIdentityProvider notification detected");
+                        _logger.Debug("OpenIdConnect: RedirectToIdentityProvider");
                         if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
                             var max_age = Appsettings.SessionMaxAgeMinutes() * 60;
-                           // _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
+                            // _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
                             //notification.ProtocolMessage.MaxAge = max_age.ToString();
                         }
 
@@ -170,17 +180,19 @@ namespace MVCFrontend
                         {
                             //set the tokenHint (not the token) to the actual token .. very inuitive ;)
                             var IdTokenclaim = n.OwinContext.Authentication.User.FindFirst("id_token");
-                            n.ProtocolMessage.IdTokenHint = IdTokenclaim != null ?IdTokenclaim.Value:"";
+                            n.ProtocolMessage.IdTokenHint = IdTokenclaim != null ? IdTokenclaim.Value : "";
                         }
 
                         return Task.FromResult(0);
                     },
-                    AuthenticationFailed = n => 
+                    AuthenticationFailed = n =>
                     {
                         return Task.FromResult(0);
                     },
                     AuthorizationCodeReceived = n =>
                     {
+                        // doesn't get here
+                        _logger.Debug("OpenIdConnect: AuthorizationCodeReceived."); 
                         return Task.FromResult(0);
                     },
                     MessageReceived = n=>
@@ -203,10 +215,12 @@ namespace MVCFrontend
                 ValidationMode = ValidationMode.Both, 
                 RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
             });
-            app.UseNancy(new NancyOptions
-            {
+            
+            // Later figure out auth config for nancy
+            //app.UseNancy(new NancyOptions
+            //{
                 
-            });
+            //});
 
             _logger.Info("startup executed");
         }

@@ -37,10 +37,10 @@ namespace MVCFrontend.Controllers
             //Session.Abandon();
             var model = new MessageViewModel();
 
-            ClaimsPrincipal.Current.AddUpdateClaim("ajax_remote_queue_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");
+            //ClaimsPrincipal.Current.AddUpdateClaim("ajax_cors_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
+            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_cors_token"), "exp");
             Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
-                                                        ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"), "exp");
+                                                        ClaimsPrincipal.Current.GetClaim("ajax_cors_token"), "exp");
 
             Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaim("auth_cookie_exp");
             Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
@@ -69,7 +69,7 @@ namespace MVCFrontend.Controllers
         [HttpGet]
         public string AuthPing()
         {
-            return "Silicon token valid";
+            return "Auth Cookie still valid.";
         }
 
         [HttpPost]

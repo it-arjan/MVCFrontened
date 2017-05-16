@@ -118,7 +118,7 @@ namespace MVCFrontend.Controllers
                 ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaim("socket_token") )
                 : string.Format("{0}/api/CmdQueue", Appsettings.EntrypointUrl());
 
-            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_remote_queue_token"));
+            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_cors_token"));
             var easyHttp = new HttpClient();
 
             easyHttp.Request.AddExtraHeader("Authorization", auth_header);
