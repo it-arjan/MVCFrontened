@@ -21,6 +21,12 @@ namespace MVCFrontend.Controllers
             return View();
         }
 
+        [HttpGet]
+        public string AnonymousPing()
+        {
+            return "Ok";
+        }
+
         public ActionResult Logout()
         {
             Session.Abandon();

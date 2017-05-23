@@ -1,13 +1,14 @@
-﻿@{
+﻿@using MVCFrontend.Helpers
+@{
     ViewBag.Title = "Home Page";
+    var pingUrlAuth = string.Format("{0}/.well-known/openid-configuration", Appsettings.AuthUrl());
+    var pingUrlQueueManager = string.Format("{0}/api/test", Appsettings.EntrypointUrl());
+    var pingUrlFrontEnd = string.Format("{0}/home/anonymousping", Appsettings.HostUrl());
 }
 
 <div class="jumbotron">
     <h1>ASP.NET</h1>
-    <p class="lead">
-        <span>This site works with self signed certificates to enable a secure https. <br />
-        To make it work, download this <a href="~/Content/download/it-arjan-root-CS.cer">root certificate</a> and add it to the trusted Root Certification Authorities in your local certificate store. <br />
-        Then click Private (menu above) to access the secured area of this website.</span>
+    <p class="lead">Welcome
         @if (User.Identity.IsAuthenticated)
             {
             <span>You are logged on, click Private again to access the secured area.</span>
@@ -16,13 +17,60 @@
         {
             <span>You are not logged on. </span>
         }
-        <p>
-            <h2>Session variables</h2>
-            @foreach (string key in Session.Keys)
-            {
-                <span><b>@key :</b></span><span>@Session[key].ToString()</span><br/>
-            }
-        </p>
+        <span>
+            The AWS part of this little system uses self-signed certificates to enable a https connections.  To make it work without browser warnings, download this <a href="~/Content/download/it-arjan-root-CS.cer">root certificate</a> and add it to the trusted Root Certification Authorities in your local certificate store. 
+            Then click Private (menu above) to access the secured area of this website.<br/>
+        </span>
     </p>
+    <p style="font-size:smaller">            Browser note: Chrome is getting really strict with self signed certificates, but Edge should show no errors after you trust the root certificate.
+            If your browser is too unhappy with the certificate, the app should still work, except for the cool websocket log/ notifications.
+    </p>
+    <div class="row">
+        <div class="col-md-4" style="vertical-align:middle;text-align:center;"><br />Authorization Server</div>
+        <div class="col-md-4" id="auth_server"></div>
+        <div class="col-md-4" id=""></div>
+    </div>
+    <div class="row">
+        <div class="col-md-4" style="vertical-align:middle;text-align:center;"><br />Queue Manager</div>
+        <div class="col-md-4" id="queue_manager"></div>
+        <div class="col-md-4" id=""></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3" style="vertical-align:middle;text-align:center;"></div>
+        <div class="col-md-4" style="vertical-align:middle;text-align:center;" id="system_availability"><br/></div>
+        <div class="col-md-5" id=""></div>
+    </div>
 </div>
+<script>
+    var g_fails = 0;
+    $(document).ready(function () {
+        pingServer("@pingUrlAuth", "#auth_server");
+        pingServer("@pingUrlQueueManager", "#queue_manager");
+    });
+    function incFails() {
+        g_fails++;
+        //console.log("g_fails: " + g_fails);
+    }
+    function getFails() {
+        return g_fails;
+    }
+    function pingServer(url, resultDivId) {
+        $.ajax({
+            type: 'GET',
+            url: url,
+        })
+        .done(function (data) {
+            $(resultDivId).html("<img src='/content/img/success.png'/>");
+            commentAvailability(getFails(), "#system_availability")
+        })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                incFails();
+            $(resultDivId).html("<img src='/content/img/fail.jpg'/>");
+        });
+    }
+    function commentAvailability(nr_fails, resultDivId) {
+        var msg = nr_fails > 0 ? "<br/>Some distributed systems are Down!!" : "<br/>Distributed systems are Up";
+        $(resultDivId).html(msg);
+    }
+</script>
 
