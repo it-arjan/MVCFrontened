@@ -18,7 +18,7 @@ namespace MVCFrontend.Extentions
         {
             if (cp.Claims.Where(c => c.Type == claimType).Any())
                 return cp.Claims.Where(c => c.Type == claimType).First().Value;
-            return claimType + " not set (yet)";
+            return claimType + " not set. Silicon client?";
         }
 
         public static List<string> GetAllClaims(this ClaimsPrincipal cp, string claimType)

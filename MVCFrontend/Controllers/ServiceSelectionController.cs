@@ -142,7 +142,7 @@ namespace MVCFrontend.Controllers
                 else throw new Exception("Break: invalid method" + method);
 
                 result = JsonResponseToIntList(easyHttp.Response.RawText);
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaim("notification_socket_id"), "TEST socket-notification from Azure backend!!!");
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaim("notification_socket_id"), "The first three selected webservices are configured.");
             }
             catch (Exception ex)
             {

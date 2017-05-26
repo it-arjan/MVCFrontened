@@ -78,11 +78,14 @@ namespace MVCFrontend.Controllers
         {
             PostbackData protect = new PostbackData(data);
            _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(data));
-            //Task.Delay(10).Wait();
+
             try
             {
-                // ETF handles the data scurity
                 var db = DbFactory.Db();
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaim("notification_socket_id"), "Postback received.");
+                // manually log the request, ir oder to be able to related it to the human session
+                RequestLog.StoreRequestForSessionId(db, data.AspSessionId);
+                //Store the postback itself
                 db.Add(data);
                 db.SaveChanges();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
