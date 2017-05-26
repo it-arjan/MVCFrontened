@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using MvcFrontendData.Models;
+using MyData.Models;
 using System.Data.Entity.Infrastructure;
-using MvcFrontendData.Migrations;
+using MyData.Migrations;
 
-namespace MvcFrontendData
+namespace MyData
 {
     public class FrontendDbContext : DbContext
     {
@@ -19,7 +19,7 @@ namespace MvcFrontendData
 
         public DbSet<PostbackData> Postbacks { get; set; }
         public DbSet<RequestLogEntry> RequestLogEntries { get; set; }
-        //public DbSet<IpSessionId> IpSessionIds { get; set; }
+        public DbSet<IpSessionId> IpSessionIds { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

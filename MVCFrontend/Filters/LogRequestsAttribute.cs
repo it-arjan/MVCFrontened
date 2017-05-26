@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
 using System.Data.Entity;
-using MvcFrontendData.Models;
+using MyData.Models;
 
 namespace MVCFrontend.Filters
 {
@@ -23,24 +23,51 @@ namespace MVCFrontend.Filters
                                     ? ClaimsPrincipal.Current.GetClaim("name")
                                     : "Anonymous";
 
-                // TODO: store combination of asp sessionId and IP (when ip is in ignore ip list)
-                // to enable filtering the postbacks
-                var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
-                if (!Appsettings.LogRequestIgnoreIpList().Contains(logEntry.Ip.Trim()))
+                if (IgnoreIp())
                 {
-                    logEntry.AspSessionId= filterContext.HttpContext.Session.SessionID;
+                    LinkSessionIdIp(filterContext);
+                }
+                else
+                {
+                    var db = MyData.DbFactory.Db();
+                    if (!IgnoreSessionId(db, filterContext.HttpContext.Session.SessionID))
+                    {
+                        var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
+                        logEntry.AspSessionId = filterContext.HttpContext.Session.SessionID;
 
-                    var db = MvcFrontendData.DbFactory.Db();
-                    var dbg = db.GetEtfdb().Postbacks.Where(le => DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10);
-                    logEntry.RecentContributions = username == "Anonymous" ? 0
-                        : db.GetEtfdb().Postbacks.Where(le => DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10).Count();
-                        
-                    db.GetEtfdb().RequestLogEntries.Add(logEntry);
-                    db.SaveChanges();
+                        var dbg = db.GetEtfdb().Postbacks.Where(le => DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10);
+                        logEntry.RecentContributions = username == "Anonymous" ? 0
+                            : db.GetEtfdb().Postbacks.Where(le => DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10).Count();
+
+                        db.GetEtfdb().RequestLogEntries.Add(logEntry);
+                        db.SaveChanges();
+                    }
                 }
             }
 
             base.OnActionExecuting(filterContext);
+        }
+
+        private void LinkSessionIdIp(ActionExecutingContext filterContext)
+        {
+            var db = MyData.DbFactory.Db();
+            var sessionID = filterContext.HttpContext.Session.SessionID;
+            var remoteIpAddress = HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress;
+
+            if (db.GetEtfdb().IpSessionIds.Where(I => I.SessionID == sessionID && I.Ip == remoteIpAddress).Any())
+            {
+                var x = new IpSessionId { SessionID = sessionID, Ip = remoteIpAddress };
+                db.Add(x);
+                db.SaveChanges();
+            }
+        }
+        private bool IgnoreSessionId(MyData.IDb db, string sessionId)
+        {
+            return db.GetEtfdb().IpSessionIds.Where(I => I.SessionID == sessionId).Any();
+        }
+        private bool IgnoreIp()
+        {
+            return Appsettings.LogRequestIgnoreIpList().Contains(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress);
         }
         private RequestLogEntry CreateApiLogEntryWithRequestData(HttpRequest request)
         {

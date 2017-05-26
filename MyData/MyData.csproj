@@ -7,8 +7,8 @@
     <ProjectGuid>{079E9340-73E8-4A69-86A0-C64CA5E11F5C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Data</RootNamespace>
-    <AssemblyName>Data</AssemblyName>
+    <RootNamespace>MyData</RootNamespace>
+    <AssemblyName>MyData</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -62,7 +62,12 @@
     <Compile Include="Migrations\201705111007114_aspSessionId.Designer.cs">
       <DependentUpon>201705111007114_aspSessionId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705261434205_LinkSessionid-Ip.cs" />
+    <Compile Include="Migrations\201705261434205_LinkSessionid-Ip.Designer.cs">
+      <DependentUpon>201705261434205_LinkSessionid-Ip.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\IpSessionId.cs" />
     <Compile Include="Models\PostbackData.cs" />
     <Compile Include="Models\RequestLogEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -77,6 +82,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705111007114_aspSessionId.resx">
       <DependentUpon>201705111007114_aspSessionId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705261434205_LinkSessionid-Ip.resx">
+      <DependentUpon>201705261434205_LinkSessionid-Ip.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

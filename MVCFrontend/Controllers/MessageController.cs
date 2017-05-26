@@ -1,5 +1,5 @@
-﻿using MvcFrontendData;
-using MvcFrontendData.Models;
+﻿using MyData;
+using MyData.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

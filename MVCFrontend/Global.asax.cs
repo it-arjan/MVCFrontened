@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using MvcFrontendData;
+using MyData;
 using MVCFrontend;
 using MVCFrontend.Helpers;
 using NLogWrapper;

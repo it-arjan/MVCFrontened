@@ -1,4 +1,4 @@
-namespace MvcFrontendData.Migrations
+namespace MyData.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;

@@ -5,8 +5,8 @@ using System.Web;
 using System.Web.Mvc;
 using NLogWrapper;
 using MVCFrontend.Extentions;
-using MvcFrontendData;
-using MvcFrontendData.Models;
+using MyData;
+using MyData.Models;
 using MVCFrontend.Helpers;
 using System.Security.Claims;
 using System.Net.Http;
@@ -42,9 +42,9 @@ namespace MVCFrontend
                     var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
                     if (!Appsettings.LogRequestIgnoreIpList().Contains(logEntry.Ip.Trim()))
                     {
-                        var db = MvcFrontendData.DbFactory.Db();
+                        var db = MyData.DbFactory.Db();
                         logEntry.RecentContributions = username != "Anonymous" 
-                            ? db.GetEtfdb().Postbacks.Where(le => DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10).Count() 
+                            ? db.GetEtfdb().Postbacks.Where(le => System.Data.Entity.DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10).Count() 
                             : 0;
                         db.GetEtfdb().RequestLogEntries.Add(logEntry);
                         db.SaveChanges();
