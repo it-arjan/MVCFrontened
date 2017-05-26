@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@using MVCFrontend.Helpers
+@using MVCFrontend.Extentions
+    <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -7,6 +10,9 @@
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/bundles/jquery")
+    @*<script src="https://code.jquery.com/jquery-3.2.1.js"
+            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+            crossorigin="anonymous"></script>*@
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -35,6 +41,9 @@
             </div>
         </div>
     </div>
+    <div id="message_box">
+        The floating message goes here
+    </div>
     <div class="container body-content">
         @RenderBody()
         <hr />
@@ -42,8 +51,100 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
+    <script>
+        function DisplayNotification(notification)
+        {
+            $('#message_box').css({
+                visibility: "visible",
+                height: 0,
+            }).text(notification)
+                .animate({
+                    height: 35
+                }, 1500)
+                .animate({
+                    height: 0
+                }, {
+                    duration: 4500,
+                    always: function () {
+                        $('#message_box').css({
+                            visibility: "hidden",
+                        })
+                    }
+                })
+        }
+    </script>
+    @if (ClaimsPrincipal.Current.Identity.IsAuthenticated)
+    {
+        //Socket stuff in this script
+    <script>
+            // Create SocketIO instance, connect
+            var _gSocket = null;
+            var serverUrl = '@Appsettings.SocketServerUrl()';
 
+            function ConnectToSocketServer() {
+                if ("WebSocket" in window) {
+                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")';
+                    var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_id")';
+                    var notification_token = '@ClaimsPrincipal.Current.GetClaim("notification_socket_id")';
 
+                    if (qm_log_token.length > 0) {
+                        try {
+                            if (_gSocket != null) {
+                                //alert('closing existing socket..');
+                                _gSocket.close();
+                            }
+                            _gSocket = new WebSocket(serverUrl);
+                            // Add a message listener
+                            _gSocket.onmessage = function (msg) {
+                                if (msg.data.toString().indexOf(qm_log_token.toString()) == 0) {
+                                    var msgWithoutToken = msg.data.toString().substring(qm_log_token.toString().length + 6, msg.data.toString().length);
+                                    if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
+                                        LogMessage("Done token received, auto-refreshing postbacks...");
+                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
+                                    }
+                                    else {
+                                        LogMessage(msgWithoutToken);
+                                    }
+                                }
+                                else if (msg.data.toString().indexOf(notification_token.toString()) == 0)
+                                {
+                                    var msgWithoutToken = msg.data.toString().substring(notification_token.toString().length + 6, msg.data.toString().length);
+                                    DisplayNotification(msgWithoutToken);
+                                }
+                                else {
+                                    DisplayNotification("It seems other users are active on the site..");
+                                }
+
+                            };
+                            _gSocket.onerror = function (msg) {
+                                LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                            };
+
+                            LogMessage("..chat log initialized. Remote log messages & other notifications will land here..\n");
+                        }
+                        catch (ex) {
+                            LogMessage("Exception connecting to socket server: " + serverUrl);
+                            LogMessage(ex.message);
+                        }
+                    }
+                    else {
+                        LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+                    }
+                }
+                else {
+                    LogMessage("webSockets are not supported on this browser, the chat log will not work.");
+                }
+            }
+
+            function socketDisconnected(socketArg) {
+                return socketArg.ready == 0;
+            }
+
+            function LogMessage(msg) {
+                $("#socketChat").prepend("<p>" + msg + "</p>");
+            }
+    </script>
+    }
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
 </body>

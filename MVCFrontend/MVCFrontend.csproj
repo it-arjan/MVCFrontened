@@ -230,6 +230,7 @@
     <Compile Include="Helpers\Appsettings.cs" />
     <Compile Include="Helpers\IdServ3.cs" />
     <Compile Include="Extensions\Principal.cs" />
+    <Compile Include="Helpers\Security.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Models\MessageViewModel.cs" />
     <Compile Include="Models\AboutModel.cs" />
@@ -237,6 +238,8 @@
     <Compile Include="Models\WebService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestLogModule.cs" />
+    <Compile Include="WebSocket\WebNotification - OLD.cs" />
+    <Compile Include="Helpers\WebNotification.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -257,6 +260,7 @@
     <Content Include="Content\download\it-arjan-root-CS.cer">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="App_Data\AWS_certificate.cer" />
     <None Include="Properties\PublishProfiles\Disk.pubxml" />
     <None Include="Properties\PublishProfiles\MessageQueueFrontEnd - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
@@ -303,7 +307,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="api\" />
-    <Folder Include="App_Data\" />
     <Folder Include="Logs\" />
     <Folder Include="Views\Partials\" />
   </ItemGroup>

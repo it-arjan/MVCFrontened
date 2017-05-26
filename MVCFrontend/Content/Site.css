@@ -22,13 +22,20 @@ select,
 textarea {
     max-width: 280px;
 }
-
+#message_box {
+    position: absolute;
+    left:50%;
+    visibility: hidden;
+    background-color: #bca;
+    border: 1px solid green;
+    text-align: center;
+}
 button.xbutton {
-     margin-top: 1px;
-     margin-right: 2px;
-     position:absolute;
-     right:0;
- }
+    margin-top: 1px;
+    margin-right: 2px;
+    position: absolute;
+    right: 0;
+}
 div.postback-detail-div {
     background-color:beige;
 }

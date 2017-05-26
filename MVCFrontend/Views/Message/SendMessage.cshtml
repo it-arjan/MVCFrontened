@@ -11,7 +11,7 @@
     Welcome, the following roles are listed as claims in your identity: @Model.Roles
 </p>
 <div class="row">
-    <div class="col-md-6"></div>
+    <div class="col-md-6"><button onclick="DisplayNotification('hello!!!!')">TEST</button></div>
 
     </div>
     @if (hasRights)
@@ -148,7 +148,7 @@
                 function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': "GetModus",
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -156,7 +156,7 @@
                 function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': 'ToggleModus',
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -186,8 +186,8 @@
                     var formData = {
                         'MessageId': data,
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
-                        'SocketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
-                        'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_token")',
+                        'SocketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
+                        'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_id")',
                         'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")',
                         'AspSessionId': '@Session.SessionID'
                     };
@@ -314,68 +314,7 @@
                 })
             }
         </script>
-        //Socket stuff in this script
-        <script>
-            // Create SocketIO instance, connect
-            var _gSocket = null;
-            var serverUrl = '@Appsettings.SocketServerUrl()';
 
-            function ConnectToSocketServer() {
-                if ("WebSocket" in window) {
-                    var socketToken = '@ClaimsPrincipal.Current.GetClaim("socket_token")';
-                    var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_token")';
-                    if (socketToken.length > 0) {
-                        try {
-                            if (_gSocket != null) {
-                                //alert('closing existing socket..');
-                                _gSocket.close();
-                            }
-                            _gSocket = new WebSocket(serverUrl);
-                            // Add a message listener
-                            _gSocket.onmessage = function (msg) {
-                                if (msg.data.toString().indexOf(socketToken.toString()) == 0) {
-                                    var msgWithoutToken = msg.data.toString().substring(socketToken.toString().length + 6, msg.data.toString().length);
-                                    if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
-                                        LogMessage("Done token received, auto-refreshing postbacks...");
-                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
-                                    }
-                                    else {
-                                        LogMessage(msgWithoutToken);
-                                    }
-                                }
-                                else {
-                                    LogMessage("Receiving messages for other sessions...");
-                                }
-
-                            };
-                            _gSocket.onerror = function (msg) {
-                                LogMessage("_gSocket.onerror is triggered: " + msg.data);
-                            };
-
-                            LogMessage("..chat log initialized. Remote log messages & other notifications will land here..\n");
-                        }
-                        catch (ex) {
-                            LogMessage("Exception connecting to socket server: " + serverUrl);
-                            LogMessage(ex.message);
-                        }
-                    }
-                    else {
-                        LogMessage("Socket Token not set, the chat will not work, refresh the page.");
-                    }
-                }
-                else {
-                    LogMessage("webSockets are not supported on this browser, the chat log will not work.");
-                }
-            }
-
-            function socketDisconnected(socketArg) {
-                return socketArg.ready == 0;
-            }
-
-            function LogMessage(msg) {
-                $("#socketChat").prepend("<p>" + msg + "</p>");
-            }
-        </script>
     }
     else
     {

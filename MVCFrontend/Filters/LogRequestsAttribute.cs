@@ -23,6 +23,8 @@ namespace MVCFrontend.Filters
                                     ? ClaimsPrincipal.Current.GetClaim("name")
                                     : "Anonymous";
 
+                // TODO: store combination of asp sessionId and IP (when ip is in ignore ip list)
+                // to enable filtering the postbacks
                 var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
                 if (!Appsettings.LogRequestIgnoreIpList().Contains(logEntry.Ip.Trim()))
                 {

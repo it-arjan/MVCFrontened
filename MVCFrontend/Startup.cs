@@ -72,7 +72,7 @@ namespace MVCFrontend
 
         public void Configuration(IAppBuilder app)
         {
-            if (Appsettings.AzureIgnoreCertificateErrors())
+            if (Appsettings.OnAzure())
             {
                 ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
@@ -149,8 +149,9 @@ namespace MVCFrontend
                         identity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", n.ProtocolMessage.AccessToken)); //access_token is for commnication with api
 
-                        identity.AddClaim(new Claim("socket_token", Guid.NewGuid().ToString()));
-                        identity.AddClaim(new Claim("msg_done_token", Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim("qm_socket_id", Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim("notification_socket_id", Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim("msg_done_id", Guid.NewGuid().ToString()));
 
                         //var UserInfoEndpoint = string.Format("{0}{1}", Appsettings.AuthUrl(), "connect/userinfo");
                         //var userInfoClient = new UserInfoClient(new Uri(UserInfoEndpoint), n.ProtocolMessage.AccessToken);

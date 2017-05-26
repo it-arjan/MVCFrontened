@@ -34,7 +34,7 @@
             'service6': $("#service6").is(':checked'),
             'service7': $("#service7").is(':checked'),
             'service8': $("#service8").is(':checked'),
-            'socketToken': '@ClaimsPrincipal.Current.GetClaim("socket_token")',
+            'socketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
         };
         $(resultDivId).text("loading...");
         $.ajax({

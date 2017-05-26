@@ -19,7 +19,8 @@ namespace MvcFrontendData
 
         public DbSet<PostbackData> Postbacks { get; set; }
         public DbSet<RequestLogEntry> RequestLogEntries { get; set; }
-        
+        //public DbSet<IpSessionId> IpSessionIds { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             // possibility to set some conventions

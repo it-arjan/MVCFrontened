@@ -56,6 +56,11 @@ namespace MVCFrontend.Helpers
             return ConfigurationManager.AppSettings.Get(EntrypointKey);
         }
 
+        public static bool Ssl()
+        {
+            return Scheme() == "https";
+        }
+
         public static string SocketServerUrl()
         {
             return string.Format("{0}://{1}:{2}", SocketScheme(), SocketServerHostname(), SocketPort());
@@ -108,7 +113,7 @@ namespace MVCFrontend.Helpers
         {
             return ConfigurationManager.AppSettings.Get(LogRequestIgnoreIpListKey).Replace(" ",string.Empty).Split(',').ToList<string>();
         }
-        public static bool AzureIgnoreCertificateErrors()
+        public static bool OnAzure()
         {
             return GetBoolSetting(AzureIgnoreCertificateErrorsKey);
         }
