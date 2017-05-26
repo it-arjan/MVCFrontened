@@ -26,12 +26,12 @@ using MVCFrontend.Filters;
 
 namespace MVCFrontend.Controllers
 {
-    [LogRequests]
     [Authorize]
     public class MessageController : Controller
     {
         private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Appsettings.LogLevel());
         // GET: Message
+        [LogRequests]
         public ActionResult Index()
         {
             //Session.Abandon();
@@ -67,6 +67,7 @@ namespace MVCFrontend.Controllers
         }
 
         [HttpGet]
+        [LogRequests]
         public string AuthPing()
         {
             return "Auth Cookie still valid.";
