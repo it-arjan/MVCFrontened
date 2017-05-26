@@ -18,6 +18,7 @@ namespace MyData.Models
             Duration = toClone.Duration;
             Content = toClone.Content;
         }
+
         public PostbackData()
         {
             Start = DateTime.Now;

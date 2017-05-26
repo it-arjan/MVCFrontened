@@ -185,6 +185,7 @@
                         'MessageId': data,
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
                         'SocketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
+                        'NotificationToken': '@ClaimsPrincipal.Current.GetClaim("notification_socket_id")',
                         'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_id")',
                         'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")',
                         'AspSessionId': '@Session.SessionID'
@@ -205,8 +206,15 @@
                         var obj = JSON.parse(data);
                         $(resultDivId).text(obj.Message);
                     })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        $(resultDivId).append("<br/>Dropping item into queue failed, error= " + errorThrown);
+                        .fail(function (jqXHR, textStatus, errorThrown) {
+                            var msg = "";
+                            if (jqXHR.status == 401) {
+                                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
+                            }
+                            else {
+                                msg = "<br/>Drop failed, error= " + textStatus
+                            }
+                        $(resultDivId).append(msg);
                     })
                 }
             </script>

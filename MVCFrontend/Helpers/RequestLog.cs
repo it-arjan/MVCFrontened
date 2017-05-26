@@ -15,7 +15,6 @@ namespace MVCFrontend.Helpers
             string username = HttpContext.Current.Request.IsAuthenticated
                               ? ClaimsPrincipal.Current.GetClaim("name")
                               : "Anonymous";
-
             if (!IgnoreSessionId(db, AspSessionId))
             {
 

@@ -74,18 +74,27 @@ namespace MVCFrontend.Controllers
         }
 
         [HttpPost]
-        public ActionResult Postback(PostbackData data)
+        public ActionResult Postback(DataFromQM MqResult)
         {
-            PostbackData protect = new PostbackData(data);
-           _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(data));
+           _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(MqResult));
 
             try
             {
                 var db = DbFactory.Db();
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaim("notification_socket_id"), "Postback received.");
-                // manually log the request, ir oder to be able to related it to the human session
-                RequestLog.StoreRequestForSessionId(db, data.AspSessionId);
-                //Store the postback itself
+                WebNotification.Send(MqResult.NotificationToken, "Postback received.");
+                // manually log the request
+                // in oder to be able to related it to the human session
+                RequestLog.StoreRequestForSessionId(db, MqResult.AspSessionId);
+
+                var data = new PostbackData();
+                data.MessageId = MqResult.MessageId;
+                data.Start = MqResult.Start;
+                data.End = MqResult.End;
+                data.AspSessionId = MqResult.AspSessionId;
+                data.Content = MqResult.Content;
+                data.Duration = MqResult.Duration;
+                data.UserName = MqResult.UserName;
+
                 db.Add(data);
                 db.SaveChanges();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
@@ -97,23 +106,23 @@ namespace MVCFrontend.Controllers
                     msg = string.Format("{0} \n{1}", msg, ex.InnerException.Message);
                     ex = ex.InnerException;
                 }
-                _logger.Error("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(data));
+                _logger.Error("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(MqResult));
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
             
         }
         
-        private class EntryQApiResult
-        {
-            public string message { get; set; }
-        }
-        private class QueuePostdata
+        public class DataFromQM
         {
             public string MessageId { get; set; }
-            public string PostBackUrl { get; set; }
-            public string SocketToken { get; set; }
-            public string DoneToken { get; set; }
             public string UserName { get; set; }
+            public DateTime Start { get; set; }
+            public DateTime End { get; set; }
+
+            public decimal Duration { get; set; }
+            public string Content { get; set; }
+            public string AspSessionId { get; set; }
+            public string NotificationToken { get; set; }
         }
     }
 }
