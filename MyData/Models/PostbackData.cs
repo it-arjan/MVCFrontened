@@ -31,7 +31,7 @@ namespace MyData.Models
         public string UserName { get; set; }
 
         public DateTime Start { get; set; }
-        [DisplayFormat(DataFormatString = "{0:hh.mm tt}")]
+        [DisplayFormat(DataFormatString = "{0:ddd MMMM dd, H:mm}")]
         public DateTime End { get; set; }
 
         [DisplayFormat( DataFormatString = "{0:0.00}")]

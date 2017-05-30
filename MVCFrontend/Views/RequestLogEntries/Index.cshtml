@@ -15,9 +15,6 @@
                 @Html.DisplayNameFor(model => model.Timestamp)
             </th>
             <th>
-               Recent Postbacks
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Path)
             </th>
             <th>
@@ -35,10 +32,7 @@
     @foreach (var item in Model) {
         <tr>
             <td>
-                @item.Timestamp.ToShortTimeString()
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.RecentContributions)
+                @Html.DisplayFor(modelItem => item.Timestamp)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Path)

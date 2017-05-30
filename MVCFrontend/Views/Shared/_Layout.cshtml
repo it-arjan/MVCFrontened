@@ -34,7 +34,8 @@
                         <li>@Html.ActionLink("View Claims", "About", "Home")</li>
                         <li><a href="/logout">Logout</a></li>
                         <li style="color:white;">
-                            <span>Server time: @DateTime.Now.ToLongTimeString()</span><br/>
+                            <span>AspSessionID: @Session.SessionID</span><br />
+                            <span>Server time: @DateTime.Now.ToLongTimeString()</span>
                         </li>
                     }
                 </ul>

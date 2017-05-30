@@ -19,7 +19,7 @@ namespace MVCFrontend.Helpers
             {
                 var tokSrc = new CancellationTokenSource();
 
-                string total_msg = string.Format("{0}#-_-_-#Azure Backend: {1}", sessionToken, string.Format(msg, msgPars));
+                string total_msg = string.Format("{0}#-_-_-#Backend notification: {1}", sessionToken, string.Format(msg, msgPars));
                 var tsk = _wsClient.SendAsync(
                                 new ArraySegment<byte>(Encoding.UTF8.GetBytes(total_msg)),
                                                     WebSocketMessageType.Text,

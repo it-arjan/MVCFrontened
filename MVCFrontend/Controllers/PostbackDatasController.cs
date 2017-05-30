@@ -24,11 +24,11 @@ namespace MVCFrontend.Controllers
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetEtfdb().Postbacks.OrderByDescending(c=>c.Start).ToList());
+                return PartialView(db.GetPostbacks(50).OrderByDescending(c=>c.Start).ToList());
             }
             else
             {
-                return PartialView(db.GetEtfdb().Postbacks.Where(pb => pb.AspSessionId == Session.SessionID).OrderByDescending(c => c.End).ToList());
+                return PartialView(db.GetPostbacks(50, Session.SessionID).OrderByDescending(c => c.End).ToList());
             }
         }
 
@@ -39,7 +39,7 @@ namespace MVCFrontend.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(Convert.ToInt32(id)); //string I have to edit generated code that worked before
+            PostbackData postbackData = db.FindPostback(Convert.ToInt32(id)); 
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -63,7 +63,7 @@ namespace MVCFrontend.Controllers
             if (ModelState.IsValid)
             {
                 db.Add(postbackData);
-                db.SaveChanges();
+                db.Commit();
                 return RedirectToAction("Index");
             }
 
@@ -73,12 +73,11 @@ namespace MVCFrontend.Controllers
         // GET: PostbackDatas/Edit/5
         public ActionResult Edit(string id)
         {
-            
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(id);
+            PostbackData postbackData = db.FindPostback(Convert.ToInt32(id));
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -86,31 +85,15 @@ namespace MVCFrontend.Controllers
             return View(postbackData);
         }
 
-        // POST: PostbackDatas/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Duration,UserName,Content")] PostbackData postbackData)
-        {
-            if (ModelState.IsValid)
-            {
-                db.GetEtfdb().Entry(postbackData).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(postbackData);
-        }
-
-        // POST: PostbackDatas/Delete/5
+         // POST: PostbackDatas/Delete/5
         [HttpPost, ActionName("Delete")]
         //[ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
             int intPk = Convert.ToInt16(id);
-            PostbackData postbackData = db.GetEtfdb().Postbacks.Find(intPk);
-            db.GetEtfdb().Postbacks.Remove(postbackData);
-            db.SaveChanges();
+            PostbackData postbackData = db.FindPostback(intPk);
+            db.Remove(postbackData);
+            db.Commit();
             return RedirectToAction("Index");
         }
 
@@ -118,7 +101,7 @@ namespace MVCFrontend.Controllers
         {
             if (disposing)
             {
-                db.GetEtfdb().Dispose();
+                db.Dispose();
             }
             base.Dispose(disposing);
         }

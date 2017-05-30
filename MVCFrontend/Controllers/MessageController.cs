@@ -96,7 +96,7 @@ namespace MVCFrontend.Controllers
                 data.UserName = MqResult.UserName;
 
                 db.Add(data);
-                db.SaveChanges();
+                db.Commit();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
             }
             catch (Exception ex) {

@@ -25,10 +25,10 @@ namespace MVCFrontend.Controllers
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetEtfdb().RequestLogEntries.OrderByDescending(rq => rq.Timestamp).ToList());
+                return PartialView(db.GetRequestLogs(50).OrderByDescending(rq => rq.Timestamp).ToList());
             }
 
-            return PartialView(db.GetEtfdb().RequestLogEntries.Where(rq=>rq.AspSessionId == Session.SessionID).OrderByDescending(rq => rq.Timestamp).ToList());
+            return PartialView(db.GetRequestLog(50, Session.SessionID).OrderByDescending(rq => rq.Timestamp).ToList());
         }
 
         // GET: RequestLogEntries/Details/5
@@ -46,7 +46,7 @@ namespace MVCFrontend.Controllers
                     ContentType = "text/html"
                 };
             }
-            RequestLogEntry requestLogEntry = db.GetEtfdb().RequestLogEntries.Find(id);
+            RequestLogEntry requestLogEntry = db.FindRequestLog((int)id);
             if (requestLogEntry == null)
             {
                 return HttpNotFound();
@@ -82,9 +82,9 @@ namespace MVCFrontend.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
             }
-            RequestLogEntry requestLogEntry = db.GetEtfdb().RequestLogEntries.Find(id);
-            db.GetEtfdb().RequestLogEntries.Remove(requestLogEntry);
-            db.SaveChanges();
+            RequestLogEntry requestLogEntry = db.FindRequestLog(id);
+            db.Remove(requestLogEntry);
+            db.Commit();
             return RedirectToAction("Index");
         }
 
@@ -92,7 +92,7 @@ namespace MVCFrontend.Controllers
         {
             if (disposing)
             {
-                //db.Dispose();
+                db.Dispose();
             }
             base.Dispose(disposing);
         }

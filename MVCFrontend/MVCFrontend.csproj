@@ -238,7 +238,6 @@
     <Compile Include="Models\ServiceSelectionModel.cs" />
     <Compile Include="Models\WebService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestLogModule-Notused.cs" />
     <Compile Include="WebSocket\WebNotification - OLD.cs" />
     <Compile Include="Helpers\WebNotification.cs" />
     <Compile Include="Startup.cs" />

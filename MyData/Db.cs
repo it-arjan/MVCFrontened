@@ -15,6 +15,7 @@ namespace MyData
         {
             _etfDb = new FrontendDbContext();
         }
+
         public void Add<T>(T data)
         {
             bool typeFound = false;
@@ -39,14 +40,88 @@ namespace MyData
             if (!typeFound) throw new Exception("You need to add type " + typeof(T).Name + " in this generic Add function" );
         }
 
-        public FrontendDbContext GetEtfdb()
+        public void Remove<T>(T data)
         {
-            return _etfDb;
+            bool typeFound = false;
+            if (typeof(T) == typeof(RequestLogEntry))
+            {
+                var x = data as RequestLogEntry;
+                _etfDb.RequestLogEntries.Remove(x);
+                typeFound = true;
+            }
+            if (typeof(T) == typeof(PostbackData))
+            {
+                var x = data as PostbackData;
+                _etfDb.Postbacks.Remove(x);
+                typeFound = true;
+            }
+            if (typeof(T) == typeof(IpSessionId))
+            {
+                var x = data as IpSessionId;
+                _etfDb.IpSessionIds.Remove(x);
+                typeFound = true;
+            }
+            if (!typeFound) throw new Exception("You need to add type " + typeof(T).Name + " in this generic Add function");
         }
 
-        public void SaveChanges()
+        public bool IpSessionIdExists(string sessionId, string ip)
+        {
+            return _etfDb.IpSessionIds.Where(I => I.SessionID == sessionId && I.Ip == ip).Any();
+        }
+
+        public void Commit()
         {
             _etfDb.SaveChanges();
+        }
+
+        public List<RequestLogEntry> GetRequestLogs(int nr)
+        {
+            return _etfDb.RequestLogEntries.Take(nr).ToList();
+        }
+
+        public List<RequestLogEntry> GetRequestLog(int nr, string SessionId)
+        {
+            return _etfDb.RequestLogEntries.Where(rq => rq.AspSessionId == SessionId).ToList();
+        }
+
+        public List<PostbackData> GetPostbacksFromToday()
+        {
+            return _etfDb.Postbacks.Where(pb => System.Data.Entity.DbFunctions.DiffDays(pb.End, DateTime.Now) < 1).ToList();
+        }
+
+        public bool SessionIdExists(string aspSessionId)
+        {
+            return _etfDb.IpSessionIds.Where(ips => ips.SessionID == aspSessionId).Any();
+        }
+
+        public RequestLogEntry FindRequestLog(int id)
+        {
+            return _etfDb.RequestLogEntries.Find(id);
+        }
+
+        public PostbackData FindPostback(int id)
+        {
+            return _etfDb.Postbacks.Find(id);
+        }
+
+        public IpSessionId FindIpSessionId(int id)
+        {
+            return _etfDb.IpSessionIds.Find(id);
+        }
+
+        public List<PostbackData> GetPostbacks(int nr)
+        {
+            return _etfDb.Postbacks.Take(nr).ToList();
+        }
+
+        public List<PostbackData> GetPostbacks(int nr, string SessionId)
+        {
+            return _etfDb.Postbacks.Where(pb => pb.AspSessionId==SessionId).Take(nr).ToList();
+        }
+
+        public void Dispose()
+        {
+            _etfDb.Dispose();
         }
     }
 }

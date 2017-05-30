@@ -28,7 +28,8 @@ namespace MyData.Models
         public string Method { get; set; }
         public string ContentType { get; set; }
         public int    RecentContributions { get; set; }
-        
+
+        [DisplayFormat(DataFormatString = "{0:ddd MMMM dd, H:mm}")]
         public DateTime Timestamp { get; set; }
 
     }

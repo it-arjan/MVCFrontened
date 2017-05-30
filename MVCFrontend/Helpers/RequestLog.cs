@@ -20,12 +20,12 @@ namespace MVCFrontend.Helpers
 
                 var logEntry = RequestLog.CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
                 logEntry.AspSessionId = AspSessionId;
-                var dbg = db.GetEtfdb().Postbacks.Where(le => System.Data.Entity.DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10);
-                logEntry.RecentContributions = username == "Anonymous" ? 0
-                    : db.GetEtfdb().Postbacks.Where(le => System.Data.Entity.DbFunctions.DiffMinutes(DateTime.Now, le.End) <= 10).Count();
 
-                db.GetEtfdb().RequestLogEntries.Add(logEntry);
-                db.SaveChanges();
+                logEntry.RecentContributions = username == "Anonymous" ? 0
+                    : db.GetPostbacksFromToday().Count();
+
+                db.Add(logEntry);
+                db.Commit();
             }
         }
 
@@ -46,7 +46,7 @@ namespace MVCFrontend.Helpers
         }
         public static bool IgnoreSessionId(MyData.IDb db, string sessionId)
         {
-            return db.GetEtfdb().IpSessionIds.Where(I => I.SessionID == sessionId).Any();
+            return db.SessionIdExists(sessionId);
         }
     }
 }

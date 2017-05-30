@@ -40,11 +40,11 @@ namespace MVCFrontend.Filters
             var sessionID = filterContext.HttpContext.Session.SessionID;
             var remoteIpAddress = HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress;
 
-            if (db.GetEtfdb().IpSessionIds.Where(I => I.SessionID == sessionID && I.Ip == remoteIpAddress).Any())
+            if (!db.IpSessionIdExists(sessionID,remoteIpAddress))
             {
                 var x = new IpSessionId { SessionID = sessionID, Ip = remoteIpAddress };
                 db.Add(x);
-                db.SaveChanges();
+                db.Commit();
             }
         }
 
