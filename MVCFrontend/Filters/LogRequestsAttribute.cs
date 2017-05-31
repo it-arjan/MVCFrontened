@@ -28,6 +28,7 @@ namespace MVCFrontend.Filters
                     var AspSessionId = filterContext.HttpContext.Session.SessionID;
 
                     RequestLog.StoreRequestForSessionId(db, AspSessionId);
+                    db.Dispose();
                 }
             }
 
@@ -45,6 +46,7 @@ namespace MVCFrontend.Filters
                 var x = new IpSessionId { SessionID = sessionID, Ip = remoteIpAddress };
                 db.Add(x);
                 db.Commit();
+                db.Dispose();
             }
         }
 

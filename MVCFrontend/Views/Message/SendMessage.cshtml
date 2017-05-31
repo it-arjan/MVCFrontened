@@ -212,7 +212,7 @@
                                 msg = "AUTHENTICATION FAILED, is the Cors token expired?"
                             }
                             else {
-                                msg = "<br/>Drop failed, error= " + textStatus
+                                msg = "<br/>Drop failed, status= " + jqXHR.status
                             }
                         $(resultDivId).append(msg);
                     })

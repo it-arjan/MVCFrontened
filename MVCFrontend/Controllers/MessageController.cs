@@ -97,6 +97,7 @@ namespace MVCFrontend.Controllers
 
                 db.Add(data);
                 db.Commit();
+                db.Dispose();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
             }
             catch (Exception ex) {
@@ -111,7 +112,15 @@ namespace MVCFrontend.Controllers
             }
             
         }
-        
+        [HttpGet]
+        public JsonResult GetPostbacks()
+        {
+            var db = DbFactory.Db();
+            var recentPostbacks = db.GetPostbacks(10);
+            db.Dispose();
+            return Json(JsonConvert.SerializeObject(recentPostbacks), JsonRequestBehavior.AllowGet );
+
+        }
         public class DataFromQM
         {
             public string MessageId { get; set; }
