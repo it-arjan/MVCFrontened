@@ -74,14 +74,14 @@ namespace MyData
             _etfDb.SaveChanges();
         }
 
-        public List<RequestLogEntry> GetRequestLogs(int nr)
+        public List<RequestLogEntry> GetRecentRequestLogs(int nr)
         {
-            return _etfDb.RequestLogEntries.Take(nr).ToList();
+            return _etfDb.RequestLogEntries.OrderByDescending(rq => rq.Timestamp).Take(nr).ToList();
         }
 
-        public List<RequestLogEntry> GetRequestLog(int nr, string SessionId)
+        public List<RequestLogEntry> GetRecentRequestLog(int nr, string SessionId)
         {
-            return _etfDb.RequestLogEntries.Where(rq => rq.AspSessionId == SessionId).ToList();
+            return _etfDb.RequestLogEntries.Where(rq => rq.AspSessionId == SessionId).OrderByDescending(rq => rq.Timestamp).ToList();
         }
 
         public List<PostbackData> GetPostbacksFromToday()
@@ -109,14 +109,14 @@ namespace MyData
             return _etfDb.IpSessionIds.Find(id);
         }
 
-        public List<PostbackData> GetPostbacks(int nr)
+        public List<PostbackData> GetRecentPostbacks(int nr)
         {
-            return _etfDb.Postbacks.Take(nr).ToList();
+            return _etfDb.Postbacks.OrderByDescending(c => c.Start).Take(nr).ToList();
         }
 
-        public List<PostbackData> GetPostbacks(int nr, string SessionId)
+        public List<PostbackData> GetRecentPostbacks(int nr, string SessionId)
         {
-            return _etfDb.Postbacks.Where(pb => pb.AspSessionId==SessionId).Take(nr).ToList();
+            return _etfDb.Postbacks.Where(pb => pb.AspSessionId==SessionId).OrderByDescending(c => c.Start).Take(nr).ToList();
         }
 
         public void Dispose()

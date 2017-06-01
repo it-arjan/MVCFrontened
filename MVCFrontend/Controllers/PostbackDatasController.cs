@@ -24,11 +24,11 @@ namespace MVCFrontend.Controllers
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetPostbacks(50).OrderByDescending(c=>c.Start).ToList());
+                return PartialView(db.GetRecentPostbacks(50));
             }
             else
             {
-                return PartialView(db.GetPostbacks(50, Session.SessionID).OrderByDescending(c => c.End).ToList());
+                return PartialView(db.GetRecentPostbacks(50, Session.SessionID));
             }
         }
 

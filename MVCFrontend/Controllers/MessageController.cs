@@ -116,7 +116,7 @@ namespace MVCFrontend.Controllers
         public JsonResult GetPostbacks()
         {
             var db = DbFactory.Db();
-            var recentPostbacks = db.GetPostbacks(10);
+            var recentPostbacks = db.GetRecentPostbacks(10);
             db.Dispose();
             return Json(JsonConvert.SerializeObject(recentPostbacks), JsonRequestBehavior.AllowGet );
 

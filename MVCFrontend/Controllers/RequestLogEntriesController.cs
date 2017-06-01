@@ -25,10 +25,10 @@ namespace MVCFrontend.Controllers
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetRequestLogs(50).OrderByDescending(rq => rq.Timestamp).ToList());
+                return PartialView(db.GetRecentRequestLogs(50));
             }
 
-            return PartialView(db.GetRequestLog(50, Session.SessionID).OrderByDescending(rq => rq.Timestamp).ToList());
+            return PartialView(db.GetRecentRequestLog(50, Session.SessionID));
         }
 
         // GET: RequestLogEntries/Details/5

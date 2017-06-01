@@ -16,12 +16,12 @@ namespace MyData
         bool        IpSessionIdExists(string sessionId, string ip);
         bool        SessionIdExists(string aspSessionId);
 
-        List<RequestLogEntry> GetRequestLogs    (int nr);
-        List<RequestLogEntry> GetRequestLog     (int nr, string SessionId);
+        List<RequestLogEntry> GetRecentRequestLogs    (int nr);
+        List<RequestLogEntry> GetRecentRequestLog     (int nr, string SessionId);
 
         RequestLogEntry     FindRequestLog  (int id);
-        List<PostbackData>  GetPostbacks(int nr);
-        List<PostbackData>  GetPostbacks(int nr, string SessionId);
+        List<PostbackData>  GetRecentPostbacks(int nr);
+        List<PostbackData>  GetRecentPostbacks(int nr, string SessionId);
 
         PostbackData FindPostback    (int id);
         IpSessionId         FindIpSessionId (int id);
