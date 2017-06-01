@@ -43,9 +43,9 @@ namespace MVCFrontend.Controllers
 
             var model = new AboutModel();
             model.Claims = ClaimsPrincipal.Current.Claims;
-            model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaim("auth_time"));
+            model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaimValue("auth_time"));
             model.TokenSessionEnd = Utils.ConvertUnixTimestampToCetTime(
-                    Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("access_token"), "exp")
+                    Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue("access_token"), "exp")
                     );
 
 

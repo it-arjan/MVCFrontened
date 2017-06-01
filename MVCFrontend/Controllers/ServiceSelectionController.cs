@@ -116,10 +116,10 @@ namespace MVCFrontend.Controllers
             var result = new List<int>();
 
             var apiUrl = method == HttpMethod.GET
-                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaim("qm_socket_id") )
+                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
                 : string.Format("{0}/api/CmdQueue", Appsettings.EntrypointUrl());
 
-            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaim("ajax_cors_token"));
+            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             var easyHttp = new HttpClient();
 
             easyHttp.Request.AddExtraHeader("Authorization", auth_header);
@@ -142,7 +142,7 @@ namespace MVCFrontend.Controllers
                 else throw new Exception("Break: invalid method" + method);
 
                 result = JsonResponseToIntList(easyHttp.Response.RawText);
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaim("notification_socket_id"), "The first three selected webservices are configured.");
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three selected webservices are configured.");
             }
             catch (Exception ex)
             {

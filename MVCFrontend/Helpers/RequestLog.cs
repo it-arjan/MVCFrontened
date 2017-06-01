@@ -13,7 +13,7 @@ namespace MVCFrontend.Helpers
         public static void StoreRequestForSessionId(MyData.IDb db, string AspSessionId)
         {
             string username = HttpContext.Current.Request.IsAuthenticated
-                              ? ClaimsPrincipal.Current.GetClaim("name")
+                              ? ClaimsPrincipal.Current.GetClaimValue("name")
                               : "Anonymous";
             if (!IgnoreSessionId(db, AspSessionId))
             {
@@ -35,7 +35,7 @@ namespace MVCFrontend.Helpers
             return new RequestLogEntry
             {
                 User = request.IsAuthenticated
-                                        ? ClaimsPrincipal.Current.GetClaim("name")
+                                        ? ClaimsPrincipal.Current.GetClaimValue("name")
                                         : "Anonymous",
                 ContentType = request.ContentType,
                 Ip = request.GetOwinContext().Request.RemoteIpAddress ?? "OwinContext.Request.RemoteIpAddress not set",

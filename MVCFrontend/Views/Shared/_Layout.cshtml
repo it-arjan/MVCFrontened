@@ -84,9 +84,9 @@
 
             function ConnectToSocketServer() {
                 if ("WebSocket" in window) {
-                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")';
-                    var doneToken = '@ClaimsPrincipal.Current.GetClaim("msg_done_id")';
-                    var notification_token = '@ClaimsPrincipal.Current.GetClaim("notification_socket_id")';
+                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")';
+                    var doneToken = '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")';
+                    var notification_token = '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")';
 
                     if (qm_log_token.length > 0) {
                         try {
@@ -101,7 +101,7 @@
                                     var msgWithoutToken = msg.data.toString().substring(qm_log_token.toString().length + 6, msg.data.toString().length);
                                     if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
                                         LogMessage("Done token received, auto-refreshing postbacks...");
-                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaim("ajax_backend_token")', "#postbackResult");
+                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaimValue("ajax_backend_token")', "#postbackResult");
                                     }
                                     else {
                                         LogMessage(msgWithoutToken);

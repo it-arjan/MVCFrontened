@@ -93,7 +93,7 @@
                 $(document).ready(function () {
                     $('#msgForm').submit(function (event) {
                         event.preventDefault();
-                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#apiResult", $('input[name=message]').val());
+                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")', "#apiResult", $('input[name=message]').val());
                     });
                     $('#queryPostbackData').click(function (event) {
                         event.preventDefault();
@@ -105,12 +105,12 @@
                     });
                     $('#toggleQueue').click(function (event) {
                         event.preventDefault();
-                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#toggleResult");
+                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")', "#toggleResult");
                     });
 
                     //call these on page load
                     document.getElementById("openOnLoad").click();
-                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaim("ajax_cors_token")', "#toggleResult");
+                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")', "#toggleResult");
                     QueryPostbackData('token-not-used', '#postbackResult');
                     InitializeChat();
                 });
@@ -146,7 +146,7 @@
                 function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': "GetModus",
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -154,7 +154,7 @@
                 function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': 'ToggleModus',
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
+                        'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -184,10 +184,10 @@
                     var formData = {
                         'MessageId': data,
                         'PostBackUrl': '@string.Format("{0}/Message/Postback", Appsettings.HostUrl())',
-                        'SocketToken': '@ClaimsPrincipal.Current.GetClaim("qm_socket_id")',
-                        'NotificationToken': '@ClaimsPrincipal.Current.GetClaim("notification_socket_id")',
-                        'DoneToken': '@ClaimsPrincipal.Current.GetClaim("msg_done_id")',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaim("given_name")',
+                        'SocketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+                        'NotificationToken': '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")',
+                        'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")',
+                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
                         'AspSessionId': '@Session.SessionID'
                     };
 

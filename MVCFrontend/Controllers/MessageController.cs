@@ -38,17 +38,17 @@ namespace MVCFrontend.Controllers
             var model = new MessageViewModel();
 
             //ClaimsPrincipal.Current.AddUpdateClaim("ajax_cors_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaim("ajax_cors_token"), "exp");
+            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
             Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
-                                                        ClaimsPrincipal.Current.GetClaim("ajax_cors_token"), "exp");
+                                                        ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
 
-            Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaim("auth_cookie_exp");
+            Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp");
             Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
-                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaim("auth_cookie_exp")).AddSeconds(Appsettings.CookieTimeoutExpireOffset())
+                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp")).AddSeconds(Appsettings.CookieTimeoutExpireOffset())
                 : DateTime.Now.AddHours(-5);
 
 
-            model.UserName = ClaimsPrincipal.Current.GetClaim("given_name");
+            model.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
 
             ViewBag.Message = CheckSessionSettings();

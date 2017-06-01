@@ -14,7 +14,7 @@ namespace MVCFrontend.Extentions
             return cp.HasClaim(c => c.Type == "role" && c.Value == "admin");
         }
 
-        public static string GetClaim(this ClaimsPrincipal cp, string claimType)
+        public static string GetClaimValue(this ClaimsPrincipal cp, string claimType)
         {
             if (cp.Claims.Where(c => c.Type == claimType).Any())
                 return cp.Claims.Where(c => c.Type == claimType).First().Value;

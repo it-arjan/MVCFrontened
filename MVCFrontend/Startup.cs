@@ -146,6 +146,8 @@ namespace MVCFrontend
                         _logger.Debug("OpenIdConnect: SecurityTokenValidated");
 
                         var identity = n.AuthenticationTicket.Identity;
+
+                        //add usefult claims
                         identity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
                         identity.AddClaim(new Claim("access_token", n.ProtocolMessage.AccessToken)); //access_token is for commnication with api
 
@@ -153,14 +155,27 @@ namespace MVCFrontend
                         identity.AddClaim(new Claim("notification_socket_id", Guid.NewGuid().ToString()));
                         identity.AddClaim(new Claim("msg_done_id", Guid.NewGuid().ToString()));
 
-                        //var UserInfoEndpoint = string.Format("{0}{1}", Appsettings.AuthUrl(), "connect/userinfo");
-                        //var userInfoClient = new UserInfoClient(new Uri(UserInfoEndpoint), n.ProtocolMessage.AccessToken);
-                        //var userInfoResponse = userInfoClient.GetAsync().Result;
-                        //var userClaims = userInfoResponse.GetClaimsIdentity().Claims;
-                        //identity.AddClaims(userClaims);
-
                         var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);
                         identity.AddClaim(new Claim("ajax_cors_token", corsToken));
+
+                        // clean up
+                        var claimsToRemove = new List<Claim>();
+                        foreach (var claim in identity.Claims)
+                        {
+                            if (claim.Type == "iss" ||
+                                claim.Type == "nbf" ||
+                                claim.Type == "aud" ||
+                                claim.Type == "iat" ||
+                                claim.Type == "at_hash" ||
+                                claim.Type == "sid" ||
+                                claim.Type == "idp" ||
+                                claim.Type == "nonce" ||
+                                claim.Type == "amr" )
+                            {
+                                claimsToRemove.Add(claim);
+                            }
+                        }
+                        claimsToRemove.ForEach(c => identity.RemoveClaim(c));
 
                         // not sure why creating a new AuthenticationTicket is needed
                         n.AuthenticationTicket = new AuthenticationTicket(identity, n.AuthenticationTicket.Properties);
