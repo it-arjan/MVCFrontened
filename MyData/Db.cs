@@ -111,7 +111,7 @@ namespace MyData
 
         public List<PostbackData> GetRecentPostbacks(int nr)
         {
-            return _etfDb.Postbacks.OrderByDescending(c => c.Start).Take(nr).ToList();
+            return _etfDb.Postbacks.OrderByDescending(c => c.End).Take(nr).ToList();
         }
 
         public List<PostbackData> GetRecentPostbacks(int nr, string SessionId)
