@@ -106,7 +106,7 @@ namespace MVCFrontend.Helpers
 
         public static string LogLevel()
         {
-            return ConfigurationManager.AppSettings.Get(LogLevelKey).ToLower(); 
+            return ConfigurationManager.AppSettings.Get(LogLevelKey); 
         }
         
         public static List<string> LogRequestIgnoreIpList()

@@ -9,16 +9,9 @@
 <div class="jumbotron">
     <h1>ASP.NET</h1>
     <p class="lead">Welcome
-        @if (User.Identity.IsAuthenticated)
-            {
-            <span>You are logged on, click Private again to access the secured area.</span>
-        }
-        else
-        {
-            <span>You are not logged on. </span>
-        }
+        <span>@ViewBag.Message </span>
         <span>
-            The AWS part of this little system uses self-signed certificates to enable a https connections.  To make it work without browser warnings, download this <a href="~/Content/download/it-arjan-root-CS.cer">root certificate</a> and add it to the trusted Root Certification Authorities in your local certificate store. 
+            The AWS part of this system uses a self-signed certificate to enable a https connection.  To make it work without browser warnings, download this <a href="~/Content/download/it-arjan-root-CS.cer">root certificate</a> and add it to the trusted Root Certification Authorities in your local certificate store. 
             Then click Private (menu above) to access the secured area of this website.<br/>
         </span>
     </p>

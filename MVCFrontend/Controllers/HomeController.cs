@@ -15,9 +15,17 @@ namespace MVCFrontend.Controllers
     [LogRequests]
     public class HomeController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(HomeController), Helpers.Appsettings.LogLevel());
+        public HomeController(ILogger logger)
+        {
+            _logger = logger;
+            _logger.SetLevel(Appsettings.LogLevel());
+        }
+        private ILogger _logger;
         public ActionResult Index()
         {
+            ViewBag.Message = User.Identity.IsAuthenticated
+                ? "You are logged on."
+                : "You are not logged on.";
             return View();
         }
 
@@ -42,10 +50,11 @@ namespace MVCFrontend.Controllers
             ViewBag.Message = "You are logged on.";
 
             var model = new AboutModel();
-            model.Claims = ClaimsPrincipal.Current.Claims;
-            model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(ClaimsPrincipal.Current.GetClaimValue("auth_time"));
+            var cp = User as ClaimsPrincipal;
+            model.Claims = cp.Claims;
+            model.TokenSessionStart = Utils.ConvertUnixTimestampToCetTime(cp.GetClaimValue("auth_time"));
             model.TokenSessionEnd = Utils.ConvertUnixTimestampToCetTime(
-                    Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue("access_token"), "exp")
+                    Utils.GetClaimFromToken(cp.GetClaimValue("access_token"), "exp")
                     );
 
 

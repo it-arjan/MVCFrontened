@@ -9,6 +9,7 @@ using MyData;
 using MVCFrontend;
 using MVCFrontend.Helpers;
 using NLogWrapper;
+using MVCFrontend.Extensions;
 
 [assembly: PreApplicationStartMethod(typeof(MvcApplication), "PreAppStartRegisterModules")]
 namespace MVCFrontend
@@ -46,10 +47,11 @@ namespace MVCFrontend
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
             EtfSetup.InitDB();
+            ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;
         }
-        
     }
 }

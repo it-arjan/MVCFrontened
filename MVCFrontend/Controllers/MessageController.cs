@@ -29,8 +29,13 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class MessageController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(MessageController), Appsettings.LogLevel());
+        private ILogger _logger;
         // GET: Message
+        public MessageController(ILogger logger)
+        {
+            _logger = logger;
+            _logger.SetLevel(Appsettings.LogLevel());
+        }
         [LogRequests]
         public ActionResult Index()
         {

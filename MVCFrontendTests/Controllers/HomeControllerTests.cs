@@ -1,0 +1,117 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using MVCFrontend.Controllers;
+using NLogWrapper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;
+
+namespace MVCFrontend.Controllers.Tests
+{
+    [TestClass()]
+    public class HomeControllerTests
+    {
+        [TestMethod()]
+        public void IndexAuthenticatedTest()
+        {
+            Mock<ClaimsPrincipal> principalMock;
+            HomeController hc = MockHomeController(out principalMock);
+            principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            ViewResult result = hc.Index() as ViewResult;
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.ViewBag.Message == "You are logged on.");
+        }
+
+        [TestMethod()]
+        public void IndexAnonymousTest()
+        {
+            Mock<ClaimsPrincipal> principalMock;
+            HomeController hc = MockHomeController(out principalMock);
+            principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(false);
+
+            ViewResult result = hc.Index() as ViewResult;
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.ViewBag.Message == "You are not logged on.");
+        }
+ 
+
+        [TestMethod()]
+        public void DoNotSignoutWhenNotAuthenticatedTest()
+        {
+            Mock<ClaimsPrincipal> principalMock;
+            HomeController hc = MockHomeController(out principalMock);
+            principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(false);
+
+            var result = hc.Logout() as RedirectResult;
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Url == "/");
+        }
+
+        [TestMethod()]
+        public void LogOutWhenAuthenticatedTest()
+        {
+            // find a way to mock request.getOwinContext().Authentication.Signout()
+            // getOwinContext is extention: static
+            // http://adventuresdotnet.blogspot.nl/2011/03/mocking-static-methods-for-unit-testing.html
+            Assert.Fail();
+            // expect that signout gets called once
+        }
+
+        [TestMethod()]
+        public void AboutTest()
+        {
+            Mock<ClaimsPrincipal> cpMock;
+            HomeController hc = MockHomeController(out cpMock);
+
+            cpMock.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+            var claimList = new List<Claim> {
+                new Claim ("auth_time","1496914632"),
+                new Claim ("access_token","eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IjFqNV9UQnJEMmxpR002VGVES0ZWTlhqenpWcyIsImtpZCI6IjFqNV9UQnJEMmxpR002VGVES0ZWTlhqenpWcyJ9.eyJpc3MiOiJodHRwczovL2xvY2FsLmlkZW50aXR5c2VydmVyOjUwMDAiLCJhdWQiOiJodHRwczovL2xvY2FsLmlkZW50aXR5c2VydmVyOjUwMDAvcmVzb3VyY2VzIiwiZXhwIjoxNDk2OTE0NjMyLCJuYmYiOjE0OTY5MTQ2MjIsImNsaWVudF9pZCI6ImRldi1odW1hbiIsInNjb3BlIjpbIm9wZW5pZCIsInJvbGVzIiwibXZjLWZyb250ZW5kLWh1bWFuIl0sInN1YiI6ImFkbWluQG1lc3NhZ2VxdWV1ZWZyb250ZW5kLmNvbSIsImF1dGhfdGltZSI6MTQ5NjkxNDYyMiwiaWRwIjoiaWRzcnYiLCJhbXIiOlsicGFzc3dvcmQiXX0.k-FIoNDix3SX4O0-vNP7aDrYz1MI-zaCL_BgZBp1lBORx50y6s0uE0i8b44NBo2OX0cLQExP9lM3L0D_SKx1-iqKfxJuZeg6PjyK0upAwEvJ7jtBpE6_OdhJLW09ckS0cJWw9wGhC8496mbh9t8MLG-HjZAZHgrwmPr1k7BKKmr6N4sy6H8CYHsS4avbielq465beUiMdZrtmZZ2CrOcjiAHpAMWTuoBm9RPtz-rUq-MN0vVeCTq5GxpCYsST-tZHfKu0D7kklg66wnHEItw9EpgZKK0zWYsdT_okpEYnWQV_e2MhltC-Sz1BbgcdFxhQltxm-tt-0xUFVq_QZM-3Q,"),
+                };
+            cpMock.SetupGet(p => p.Claims).Returns(claimList);
+
+            ViewResult result = hc.About() as ViewResult;
+            Assert.IsNotNull(result);
+
+            var abouModel = result.Model as Models.AboutModel;
+            Assert.AreSame(abouModel.Claims, claimList);
+            // Claim Setup: auth_time == exp from access_token
+            Assert.IsTrue(abouModel.TokenSessionStart == abouModel.TokenSessionEnd);
+        }
+
+        private static HomeController MockHomeController( out Mock<ClaimsPrincipal> principalMock)
+        {
+            var outvar = new Mock<ClaimsPrincipal>();
+            var loggerMock = new Mock<ILogger>();
+            var homeController = new HomeController(loggerMock.Object);
+
+            var contextBaseMock = new Mock<HttpContextBase>();
+            contextBaseMock.Setup(cttx => cttx.User).Returns(outvar.Object);
+            var sessionMock = new Mock<HttpSessionStateBase>();
+            contextBaseMock.Setup(cttx => cttx.Session).Returns(sessionMock.Object);
+
+            // Cannot mock request.getOwinContext like this, it is static extention
+            //var requestMock = new Mock<HttpRequestBase>();
+            //requestMock.Setup(rm=>rm.get)
+            //contextBaseMock.Setup(cttx => cttx.Request).Returns(requestMock.Object);
+
+            var controllerContextMock = new Mock<ControllerContext>();
+            controllerContextMock.Setup(con => con.HttpContext).Returns(contextBaseMock.Object);
+
+            homeController.ControllerContext = controllerContextMock.Object;
+            principalMock = outvar;
+
+            return homeController;
+        }
+    }
+}

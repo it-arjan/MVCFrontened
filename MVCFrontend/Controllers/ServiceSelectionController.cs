@@ -20,8 +20,13 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class ServiceSelectionController : Controller
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(ServiceSelectionController), Appsettings.LogLevel());
+        private ILogger _logger;
         // GET: SelectedServices
+        public ServiceSelectionController(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public ActionResult Index()
         {
             // Get the actual service config

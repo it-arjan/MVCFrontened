@@ -11,6 +11,7 @@ using MyData.Models;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
 using MVCFrontend.Filters;
+using NLogWrapper;
 
 namespace MVCFrontend.Controllers
 {
@@ -19,6 +20,11 @@ namespace MVCFrontend.Controllers
     public class RequestLogEntriesController : Controller
     {
         private IDb db = DbFactory.Db();
+        private ILogger _logger;
+        public RequestLogEntriesController(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         // GET: RequestLogEntries
         public ActionResult Index()
