@@ -1,7 +1,7 @@
 ﻿@using System.Security.Claims
 @using MVCFrontend.Helpers
 @using MVCFrontend.Extentions
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -121,7 +121,7 @@
                                 LogMessage("_gSocket.onerror is triggered: " + msg.data);
                             };
 
-                            LogMessage("..chat log initialized. Remote log messages & other notifications will land here..\n");
+                            LogMessage("..socket log initialized. Log messages of remote system will show here..\n");
                         }
                         catch (ex) {
                             LogMessage("Exception connecting to socket server: " + serverUrl);
@@ -129,11 +129,11 @@
                         }
                     }
                     else {
-                        LogMessage("Socket Token not set, the chat will not work, refresh the page.");
+                        LogMessage("Socket Token not set, the socket chat will not work, refresh the page.");
                     }
                 }
                 else {
-                    LogMessage("webSockets are not supported on this browser, the chat log will not work.");
+                    LogMessage("webSockets are not supported on this browser, the socket chat log will not work.");
                 }
             }
 
