@@ -45,22 +45,22 @@
             'service8': $("#service8").is(':checked'),
             'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
         };
-        $(resultDivId).text("The first 3 selected webservices will be selected...");
+        $(resultDivId).text("Configuring Queue manager...");
         $.ajax({
             type: 'POST',
             url: '/ServiceSelection/Submit',
             data: formData,
             dataType: 'text',
             encode: true,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-            },
+            //beforeSend: function (xhr) {
+            //    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+            //},
         })
         .done(function (result) {
             $(resultDivId).html(result);
         })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            $(resultDivId).append("<br/>call to change Settings failed: error= " + errorThrown);
-        })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                $(resultDivId).append("<br/>Configuring queue manager failed: error= " + errorThrown);
+            })
     }
 </script>

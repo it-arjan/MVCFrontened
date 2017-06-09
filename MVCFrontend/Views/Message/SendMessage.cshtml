@@ -16,7 +16,7 @@
     {
         <div class="row tab">
             <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Drop a Message</button>
-            <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Server Configuration</button>
+            <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Queue Manager Configuration</button>
             <button class="tablinks"  onclick="openTab(event, 'RequestLog'); RefreshRequests('#RequestLog')">Request Log</button>
             <button class="tablinks"></button>
             <button class="tablinks"></button>
@@ -38,9 +38,10 @@
                         <input type="text" name="message" /> 
                         <span>-</span>
                         <select name="nrdrops">
-                            @for (int i = 1; i <= 20; i++){<option>@i</option>}
+                            @for (int i = 1; i <= 10; i++){<option>@i</option>}
                         </select><span> times</span><br />
-                        <div class="wrapper"><button name="dropSubmit" form="msgForm">Drop</button><span class="tourTip ttButton">Ajax CORS</span></div><span id="dropResult"></span>
+                        <div class="wrapper"><button name="dropSubmit" form="msgForm">Drop</button><span class="tourTip ttButton">Ajax CORS</span></div>
+                        <span id="dropResult"></span>
                     </form>
                 </div>
                 <div class="col-md-3">
@@ -54,10 +55,12 @@
                         <b>ASP Session - </b><span id="exp_asp"></span>
                     </div>
                     <div>
-                        <b>Auth Cookie - </b><span id="exp_cookie"></span><button>Refresh1 (cookie-auth)</button><button>Refresh2 (token-auth)</button>
+                        <b>Auth Cookie - </b><span id="exp_cookie"></span>
                     </div>
                     <div>
-                        <b>Cors Token - </b><span id="exp_cors_token"></span>
+                        <b>Cors Token - </b><span id="exp_cors_token"></span><br/> 
+                        <a onclick="event.preventDefault();alert('todo')">Refresh1 </a>(cookie-auth)<br/>
+                        <a onclick="event.preventDefault();alert('todo')">Refresh2</a> (token-auth)
                     </div>
                 </div>
             </div>
@@ -85,7 +88,7 @@
         <hr />
             <div class="row">
                 <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
-                <div class="col-md-4"><div class="wrapper">Actions by Cookie Asp.NET_SessionId <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
+                <div class="col-md-4"><div class="wrapper">Actions related to Asp.NET_SessionId <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
             </div>
             <div class="row">
                 <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
@@ -109,9 +112,6 @@
                         DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")',
                             "#dropResult", $('input[name=message]').val(), $('select[name=nrdrops]').val());
                         $('select[name=nrdrops]').val(1);
-                        setTimeout(function () {
-                            $('button[name=dropSubmit]').show();
-                        }, 3000);
                     });
                     $('#queryPostbackData').click(function (event) {
                         event.preventDefault();
@@ -193,8 +193,15 @@
                         var obj = JSON.parse(data);
                         $(resultDivId).text(obj.Message);
                     })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        $(resultDivId).text("Sending command failed: code=" + jqXHR.status + ", error= " + jqXHR.statusText);
+                        .fail(function (jqXHR, textStatus, errorThrown) {
+                            var msg = "";
+                            if (jqXHR.status == 401) {
+                                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
+                            }
+                            else {
+                                msg = "Drop failed, status= " + jqXHR.status
+                            }
+                            $(resultDivId).text(msg);
                     })
                 }
 
@@ -209,7 +216,9 @@
                         'AspSessionId': '@Session.SessionID',
                         'NrDrops': nrDrops
                     };
+
                     $('button[name=dropSubmit]').hide();
+
                     $.ajax({
                         type: 'POST',
                         url: '@Appsettings.EntrypointUrl()' + 'api/entryqueue',
@@ -225,15 +234,21 @@
                         var obj = JSON.parse(data);
                         $(resultDivId).text(obj.message);
                     })
-                        .fail(function (jqXHR, textStatus, errorThrown) {
-                            var msg = "";
-                            if (jqXHR.status == 401) {
-                                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
-                            }
-                            else {
-                                msg = "<br/>Drop failed, status= " + jqXHR.status
-                            }
-                        $(resultDivId).append(msg);
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        var msg = "";
+                        if (jqXHR.status == 401) {
+                            msg = "AUTHENTICATION FAILED, is the Cors token expired?"
+                        }
+                        else {
+                            msg = "<br/>Drop failed, status= " + jqXHR.status
+                        }
+                    $(resultDivId).append(msg);
+                    })
+                    .always(function () {
+                        setTimeout(function () {
+                            $('button[name=dropSubmit]').show();
+                        }, 3000);
+
                     })
                 }
             </script>

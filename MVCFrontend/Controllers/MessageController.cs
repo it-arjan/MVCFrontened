@@ -22,7 +22,7 @@ using System.Xml;
 using MVCFrontend.Extentions;
 using System.Configuration;
 using MVCFrontend.Models;
-using MVCFrontend.Filters;
+using MVCFrontend.Overrides.Filters;
 
 namespace MVCFrontend.Controllers
 {
@@ -31,7 +31,7 @@ namespace MVCFrontend.Controllers
     {
         private ILogger _logger;
         // GET: Message
-        public MessageController(ILogger logger)
+        public MessageController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
             _logger.SetLevel(Appsettings.LogLevel());

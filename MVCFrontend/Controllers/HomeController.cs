@@ -8,17 +8,27 @@ using System.Security.Claims;
 using MVCFrontend.Helpers;
 using MVCFrontend.Models;
 using MVCFrontend.Extentions;
-using MVCFrontend.Filters;
+using MVCFrontend.Overrides.Filters;
 
 namespace MVCFrontend.Controllers
 {
+    public class MakeStaticsMockable : IMakeStaticsMockable
+    {
+        [Authorize]
+        public virtual void SignOut(HttpRequestBase request)
+        {
+            request.GetOwinContext().Authentication.SignOut();
+        }
+    }
     [LogRequests]
     public class HomeController : Controller
     {
-        public HomeController(ILogger logger)
+        private IMakeStaticsMockable Mockme;
+        public HomeController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
             _logger.SetLevel(Appsettings.LogLevel());
+            Mockme = injectMockMe;
         }
         private ILogger _logger;
         public ActionResult Index()
@@ -34,12 +44,12 @@ namespace MVCFrontend.Controllers
         {
             return "Ok";
         }
-
+        
         public ActionResult Logout()
         {
             Session.Abandon();
             if (User.Identity.IsAuthenticated)
-                Request.GetOwinContext().Authentication.SignOut();
+                Mockme.SignOut(Request);
             //else
             return Redirect("/");
         }

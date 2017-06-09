@@ -9,7 +9,7 @@ using System.Web.Mvc;
 using System.Data.Entity;
 using MyData.Models;
 
-namespace MVCFrontend.Filters
+namespace MVCFrontend.Overrides.Filters
 {
     public class LogRequestsAttribute : ActionFilterAttribute
     {

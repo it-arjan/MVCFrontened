@@ -10,32 +10,34 @@ namespace MVCFrontend.Helpers
     public static class WebNotification
     {
         private static ILogger _logger = LogManager.CreateLogger(typeof(WebNotification), Appsettings.LogLevel());
-
+        private static object serializer = new object();
         public static void Send(string sessionToken, string msg, params object[] msgPars)
         {
-           
-            var _wsClient = Connect(Appsettings.SocketServerUrl());
-            if (Connected(_wsClient))
+            lock (serializer)
             {
-                var tokSrc = new CancellationTokenSource();
+                var _wsClient = Connect(Appsettings.SocketServerUrl());
+                if (Connected(_wsClient))
+                {
 
-                string total_msg = string.Format("{0}#-_-_-#Backend notification: {1}", sessionToken, string.Format(msg, msgPars));
-                var tsk = _wsClient.SendAsync(
-                                new ArraySegment<byte>(Encoding.UTF8.GetBytes(total_msg)),
-                                                    WebSocketMessageType.Text,
-                                                    true,
-                                                    tokSrc.Token
-                                                    );
-                tsk.Wait(); tsk.Dispose();
-                tokSrc.Dispose();
-                Close(_wsClient);
+                    string total_msg = string.Format("{0}#-_-_-#Backend notification: {1}", sessionToken, string.Format(msg, msgPars));
+                    var tokSrc = new CancellationTokenSource();
+                    var tsk = _wsClient.SendAsync(
+                                    new ArraySegment<byte>(Encoding.UTF8.GetBytes(total_msg)),
+                                                        WebSocketMessageType.Text,
+                                                        true,
+                                                        tokSrc.Token
+                                                        );
+                    tsk.Wait(); tsk.Dispose();
+                    tokSrc.Dispose();
+                    Close(_wsClient);
+                }
             }
         }
 
         private static ClientWebSocket Connect(string url)
         {
-            _logger.Info("Connecting to {0}", url);
             var _wsClient = new ClientWebSocket();
+            _logger.Info("Connecting to {0}", url);
 
             if (Appsettings.Ssl())
             {

@@ -218,12 +218,13 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\interfaces\IMakeStaticsMockable.cs" />
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\PostbackDatasController.cs" />
     <Compile Include="Controllers\RequestLogEntriesController.cs" />
     <Compile Include="Controllers\ServiceSelectionController.cs" />
-    <Compile Include="Extensions\CustomControllerFactory.cs" />
-    <Compile Include="Filters\LogRequestsAttribute.cs" />
+    <Compile Include="Overrides\CustomControllerFactory.cs" />
+    <Compile Include="Overrides\Filters\LogRequestsAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

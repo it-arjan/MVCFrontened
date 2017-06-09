@@ -9,7 +9,7 @@ using MyData;
 using MVCFrontend;
 using MVCFrontend.Helpers;
 using NLogWrapper;
-using MVCFrontend.Extensions;
+using MVCFrontend.Overrides;
 
 [assembly: PreApplicationStartMethod(typeof(MvcApplication), "PreAppStartRegisterModules")]
 namespace MVCFrontend

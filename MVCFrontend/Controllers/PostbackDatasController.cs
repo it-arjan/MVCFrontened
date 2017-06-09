@@ -9,7 +9,7 @@ using MyData;
 using MyData.Models;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
-using MVCFrontend.Filters;
+using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
 
 namespace MVCFrontend.Controllers
@@ -19,7 +19,7 @@ namespace MVCFrontend.Controllers
     public class PostbackDatasController : Controller
     {
         private ILogger _logger;
-        public PostbackDatasController(ILogger logger)
+        public PostbackDatasController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
         }

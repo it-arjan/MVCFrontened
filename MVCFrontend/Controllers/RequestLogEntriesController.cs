@@ -10,7 +10,7 @@ using MyData;
 using MyData.Models;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
-using MVCFrontend.Filters;
+using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
 
 namespace MVCFrontend.Controllers
@@ -21,7 +21,7 @@ namespace MVCFrontend.Controllers
     {
         private IDb db = DbFactory.Db();
         private ILogger _logger;
-        public RequestLogEntriesController(ILogger logger)
+        public RequestLogEntriesController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
         }

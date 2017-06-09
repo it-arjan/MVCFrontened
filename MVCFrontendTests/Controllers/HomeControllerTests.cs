@@ -1,15 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using MVCFrontend.Controllers;
 using NLogWrapper;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -22,7 +15,9 @@ namespace MVCFrontend.Controllers.Tests
         public void IndexAuthenticatedTest()
         {
             Mock<ClaimsPrincipal> principalMock;
-            HomeController hc = MockHomeController(out principalMock);
+            Mock<MakeStaticsMockable> staticsMock;
+            HomeController hc = MockHomeController(out principalMock, out staticsMock);
+
             principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(true);
 
             ViewResult result = hc.Index() as ViewResult;
@@ -35,7 +30,9 @@ namespace MVCFrontend.Controllers.Tests
         public void IndexAnonymousTest()
         {
             Mock<ClaimsPrincipal> principalMock;
-            HomeController hc = MockHomeController(out principalMock);
+            Mock<MakeStaticsMockable> staticsMock;
+            HomeController hc = MockHomeController(out principalMock, out staticsMock);
+
             principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(false);
 
             ViewResult result = hc.Index() as ViewResult;
@@ -49,7 +46,9 @@ namespace MVCFrontend.Controllers.Tests
         public void DoNotSignoutWhenNotAuthenticatedTest()
         {
             Mock<ClaimsPrincipal> principalMock;
-            HomeController hc = MockHomeController(out principalMock);
+            Mock<MakeStaticsMockable> staticsMock;
+            HomeController hc = MockHomeController(out principalMock, out staticsMock);
+
             principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(false);
 
             var result = hc.Logout() as RedirectResult;
@@ -63,15 +62,25 @@ namespace MVCFrontend.Controllers.Tests
             // find a way to mock request.getOwinContext().Authentication.Signout()
             // getOwinContext is extention: static
             // http://adventuresdotnet.blogspot.nl/2011/03/mocking-static-methods-for-unit-testing.html
-            Assert.Fail();
-            // expect that signout gets called once
+
+            Mock<ClaimsPrincipal> principalMock;
+            Mock<MakeStaticsMockable> staticsMock;
+            HomeController hc = MockHomeController(out principalMock, out staticsMock);
+            principalMock.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            var result = hc.Logout() as RedirectResult;
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Url == "/");
+            // expect that mocked signout gets called once
+            staticsMock.Verify(sm => sm.SignOut(It.IsAny<HttpRequestBase>()), Times.Exactly(1));
         }
 
         [TestMethod()]
         public void AboutTest()
         {
             Mock<ClaimsPrincipal> cpMock;
-            HomeController hc = MockHomeController(out cpMock);
+            Mock<MakeStaticsMockable> staticsMock;
+            HomeController hc = MockHomeController(out cpMock, out staticsMock);
 
             cpMock.Setup(p => p.Identity.IsAuthenticated).Returns(true);
             var claimList = new List<Claim> {
@@ -89,14 +98,20 @@ namespace MVCFrontend.Controllers.Tests
             Assert.IsTrue(abouModel.TokenSessionStart == abouModel.TokenSessionEnd);
         }
 
-        private static HomeController MockHomeController( out Mock<ClaimsPrincipal> principalMock)
+        private static HomeController MockHomeController( out Mock<ClaimsPrincipal> principalMock, out Mock<MakeStaticsMockable> staticsMock)
         {
-            var outvar = new Mock<ClaimsPrincipal>();
-            var loggerMock = new Mock<ILogger>();
-            var homeController = new HomeController(loggerMock.Object);
 
+            var loggerMock = new Mock<ILogger>();
+            var requestMock = new Mock<HttpRequestBase>();
+            var SmOutvar = new Mock<MakeStaticsMockable>();
+            SmOutvar.Setup(sm => sm.SignOut(requestMock.Object));
+
+            var homeController = new HomeController(loggerMock.Object, SmOutvar.Object);
+
+
+            var CpOutvar = new Mock<ClaimsPrincipal>();
             var contextBaseMock = new Mock<HttpContextBase>();
-            contextBaseMock.Setup(cttx => cttx.User).Returns(outvar.Object);
+            contextBaseMock.Setup(cttx => cttx.User).Returns(CpOutvar.Object);
             var sessionMock = new Mock<HttpSessionStateBase>();
             contextBaseMock.Setup(cttx => cttx.Session).Returns(sessionMock.Object);
 
@@ -109,7 +124,9 @@ namespace MVCFrontend.Controllers.Tests
             controllerContextMock.Setup(con => con.HttpContext).Returns(contextBaseMock.Object);
 
             homeController.ControllerContext = controllerContextMock.Object;
-            principalMock = outvar;
+
+            principalMock = CpOutvar;
+            staticsMock = SmOutvar;
 
             return homeController;
         }

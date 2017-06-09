@@ -11,8 +11,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
-using MVCFrontend.Filters;
-using MVCFrontend.WebSocket;
+using MVCFrontend.Overrides.Filters;
 
 namespace MVCFrontend.Controllers
 {
@@ -22,7 +21,7 @@ namespace MVCFrontend.Controllers
     {
         private ILogger _logger;
         // GET: SelectedServices
-        public ServiceSelectionController(ILogger logger)
+        public ServiceSelectionController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
         }
@@ -52,7 +51,7 @@ namespace MVCFrontend.Controllers
             LogValues(values);
             if (list == null)
             {
-                _logger.Warn("less then 3 values selected, doing a GETserviceConfig instead.");
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, refreshing your view");
                 result = ServiceConfig(HttpMethod.GET);
             }
             else
@@ -65,6 +64,7 @@ namespace MVCFrontend.Controllers
                 data.SocketToken = values["SocketToken"];
 
                 result = ServiceConfig(HttpMethod.POST, data);
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three services in your selection are configured");
             }
             var model = CreateModel(result);
 
@@ -121,8 +121,10 @@ namespace MVCFrontend.Controllers
             var result = new List<int>();
 
             var apiUrl = method == HttpMethod.GET
-                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
-                : string.Format("{0}/api/CmdQueue", Appsettings.EntrypointUrl());
+                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", 
+                    Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
+                : string.Format("{0}/api/CmdQueue", 
+                    Appsettings.EntrypointUrl());
 
             var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             var easyHttp = new HttpClient();
@@ -147,7 +149,6 @@ namespace MVCFrontend.Controllers
                 else throw new Exception("Break: invalid method" + method);
 
                 result = JsonResponseToIntList(easyHttp.Response.RawText);
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three selected webservices are configured.");
             }
             catch (Exception ex)
             {
