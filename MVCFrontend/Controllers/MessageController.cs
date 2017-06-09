@@ -49,7 +49,7 @@ namespace MVCFrontend.Controllers
 
             Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp");
             Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
-                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp")).AddSeconds(Appsettings.CookieTimeoutExpireOffset())
+                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp"))
                 : DateTime.Now.AddHours(-5);
 
 

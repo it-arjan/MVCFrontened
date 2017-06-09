@@ -15,8 +15,6 @@ namespace MVCFrontend.Helpers
 
         public const string CookieTimeoutKey = "cookie.timeout.minutes";
         public const string CookieSlidingExpirationKey = "cookie.sliding.expire";
-        public const string CookieTimeoutExpireOffsetKey = "cookie.expire.offset";
-        
 
         public const string SessionMaxAgeKey = "idsrv3.session.maxage.minutes";
         public const string UseTokenLifetimeKey = "idsrv3.use.token.lifetime.instead.of.cookie.middleware";
@@ -116,10 +114,6 @@ namespace MVCFrontend.Helpers
         public static bool OnAzure()
         {
             return GetBoolSetting(AzureIgnoreCertificateErrorsKey);
-        }
-        public static int CookieTimeoutExpireOffset()
-        {
-            return GetIntSetting(CookieTimeoutExpireOffsetKey);
         }
         public static int CookieTimeoutMinutes()
         {
