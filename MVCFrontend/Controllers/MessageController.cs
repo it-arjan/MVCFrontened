@@ -34,7 +34,7 @@ namespace MVCFrontend.Controllers
         public MessageController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
-            _logger.SetLevel(Appsettings.LogLevel());
+            _logger.SetLevel(Configsettings.LogLevel());
         }
         [LogRequests]
         public ActionResult Index()

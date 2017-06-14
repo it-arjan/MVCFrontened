@@ -26,23 +26,17 @@ namespace MVCFrontend
 {
     public class Startup
     {
-        private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Appsettings.LogLevel());
+        private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Configsettings.LogLevel());
         private void CheckHealth()
         {
             _logger.Info("Checking config settings..");
             _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
-            if (Appsettings.Scheme() == null) throw new Exception(Appsettings.SchemeKey + " is not present in app.config");
-            if (Appsettings.Hostname() == null) throw new Exception(Appsettings.HostnameKey + " is not present in app.config");
+            SettingsChecker.CheckPresenceAllPlainSettings(typeof(Configsettings));
 
-            if (Appsettings.AuthServer() == null) throw new Exception(Appsettings.AuthServerKey + " is not present in app.config");
-            if (Appsettings.SiliconClientId() == null) throw new Exception(Appsettings.SiliconClientIdKey + " is not present in app.config");
-            if (Appsettings.SiliconClientSecret() == null) throw new Exception(Appsettings.SiliconClientSecretKey + " is not present in app.config");
-            if (Appsettings.FrontendClientId() == null) throw new Exception(Appsettings.FrontendClientIdKey + " is not present in app.config");
-
-            _logger.Info("all requried config settings present..");
-            _logger.Info("Url = {0}", Appsettings.HostUrl());
-            _logger.Info("Socket server Url = {0}", Appsettings.SocketServerUrl());
-            _logger.Info("Auth server Url= {0}", Appsettings.AuthUrl());
+            _logger.Info("all requried config settings seem present..");
+            _logger.Info("Url = {0}", Configsettings.HostUrl());
+            _logger.Info("Socket server Url = {0}", Configsettings.SocketServerUrl());
+            _logger.Info("Auth server Url= {0}", Configsettings.AuthUrl());
             _logger.Info("..done with config checks.");
         }
 
@@ -72,7 +66,7 @@ namespace MVCFrontend
 
         public void Configuration(IAppBuilder app)
         {
-            if (Appsettings.OnAzure())
+            if (Configsettings.OnAzure())
             {
                 ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
@@ -93,8 +87,8 @@ namespace MVCFrontend
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                ExpireTimeSpan = TimeSpan.FromMinutes(Appsettings.CookieTimeoutMinutes()),
-                SlidingExpiration = Appsettings.CookieSlidingExpiration(),
+                ExpireTimeSpan = TimeSpan.FromMinutes(Configsettings.CookieTimeoutMinutes()),
+                SlidingExpiration = Configsettings.CookieSlidingExpiration(),
                 Provider = new CookieAuthenticationProvider
                 {
                     OnValidateIdentity = GetAuthCookieExp,
@@ -130,14 +124,14 @@ namespace MVCFrontend
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
             {
-                ClientId = Appsettings.FrontendClientId(),
-                Authority = Appsettings.AuthUrl(),
-                RedirectUri = Appsettings.HostUrl(),
+                ClientId = Configsettings.FrontendClientId(),
+                Authority = Configsettings.AuthUrl(),
+                RedirectUri = Configsettings.HostUrl(),
                 ResponseType = "token id_token",
                 Scope = "openid roles " + IdSrv3.ScopeMcvFrontEndHuman,
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                PostLogoutRedirectUri = Appsettings.HostUrl(),
-                UseTokenLifetime = Appsettings.UseTokenLifetime(),
+                PostLogoutRedirectUri = Configsettings.HostUrl(),
+                UseTokenLifetime = Configsettings.UseTokenLifetime(),
 
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
@@ -187,7 +181,7 @@ namespace MVCFrontend
                         if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                         {
                             // set the session max age
-                            var max_age = Appsettings.SessionMaxAgeMinutes() * 60;
+                            var max_age = Configsettings.SessionMaxAgeMinutes() * 60;
                             // _logger.Info("Setting notification.ProtocolMessage.MaxAge to {0} secs", max_age);
                             //notification.ProtocolMessage.MaxAge = max_age.ToString();
                         }
@@ -227,7 +221,7 @@ namespace MVCFrontend
               // silicon client authorization
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
-                Authority = Appsettings.AuthUrl(),
+                Authority = Configsettings.AuthUrl(),
                 ValidationMode = ValidationMode.Both, 
                 RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
             });

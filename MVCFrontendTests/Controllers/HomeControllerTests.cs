@@ -54,15 +54,12 @@ namespace MVCFrontend.Controllers.Tests
             var result = hc.Logout() as RedirectResult;
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Url == "/");
+            staticsMock.Verify(sm => sm.SignOut(It.IsAny<HttpRequestBase>()), Times.Exactly(0));
         }
 
         [TestMethod()]
-        public void LogOutWhenAuthenticatedTest()
+        public void SignOutWhenAuthenticatedTest()
         {
-            // find a way to mock request.getOwinContext().Authentication.Signout()
-            // getOwinContext is extention: static
-            // http://adventuresdotnet.blogspot.nl/2011/03/mocking-static-methods-for-unit-testing.html
-
             Mock<ClaimsPrincipal> principalMock;
             Mock<MakeStaticsMockable> staticsMock;
             HomeController hc = MockHomeController(out principalMock, out staticsMock);
@@ -100,7 +97,6 @@ namespace MVCFrontend.Controllers.Tests
 
         private static HomeController MockHomeController( out Mock<ClaimsPrincipal> principalMock, out Mock<MakeStaticsMockable> staticsMock)
         {
-
             var loggerMock = new Mock<ILogger>();
             var requestMock = new Mock<HttpRequestBase>();
             var SmOutvar = new Mock<MakeStaticsMockable>();
@@ -108,17 +104,11 @@ namespace MVCFrontend.Controllers.Tests
 
             var homeController = new HomeController(loggerMock.Object, SmOutvar.Object);
 
-
             var CpOutvar = new Mock<ClaimsPrincipal>();
             var contextBaseMock = new Mock<HttpContextBase>();
             contextBaseMock.Setup(cttx => cttx.User).Returns(CpOutvar.Object);
             var sessionMock = new Mock<HttpSessionStateBase>();
             contextBaseMock.Setup(cttx => cttx.Session).Returns(sessionMock.Object);
-
-            // Cannot mock request.getOwinContext like this, it is static extention
-            //var requestMock = new Mock<HttpRequestBase>();
-            //requestMock.Setup(rm=>rm.get)
-            //contextBaseMock.Setup(cttx => cttx.Request).Returns(requestMock.Object);
 
             var controllerContextMock = new Mock<ControllerContext>();
             controllerContextMock.Setup(con => con.HttpContext).Returns(contextBaseMock.Object);

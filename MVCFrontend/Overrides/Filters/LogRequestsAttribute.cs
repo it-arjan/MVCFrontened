@@ -52,7 +52,7 @@ namespace MVCFrontend.Overrides.Filters
 
         private bool IgnoreIp()
         {
-            return Appsettings.LogRequestIgnoreIpList().Contains(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress);
+            return Configsettings.LogRequestIgnoreIpList().Contains(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress);
         }
  
     }

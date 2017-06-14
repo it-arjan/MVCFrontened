@@ -10,7 +10,7 @@ namespace MVCFrontend.WebSocket
     public class WebNotification2
     {
         private ClientWebSocket _wsClient;
-        private ILogger _logger = LogManager.CreateLogger(typeof(WebNotification2), Appsettings.LogLevel());
+        private ILogger _logger = LogManager.CreateLogger(typeof(WebNotification2), Configsettings.LogLevel());
         object _serializer = new object();
         public WebNotification2()
         {
@@ -46,7 +46,7 @@ namespace MVCFrontend.WebSocket
             _logger.Info("Connecting to {0}", url);
             _wsClient = new ClientWebSocket();
 
-            if (Appsettings.Ssl())
+            if (Configsettings.Ssl())
             {
                 _logger.Info("Loading certificate from file");
                 _wsClient.Options.ClientCertificates.Add(Security.GetCertificateFromFile());

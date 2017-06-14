@@ -16,7 +16,7 @@ namespace MVCFrontend
 {
     public class MvcApplication : System.Web.HttpApplication
     {
-        private static ILogger _logger = LogManager.CreateLogger(typeof(MvcApplication), Appsettings.LogLevel());
+        private static ILogger _logger = LogManager.CreateLogger(typeof(MvcApplication), Configsettings.LogLevel());
 
         public static void PreAppStartRegisterModules()
         {
@@ -30,7 +30,7 @@ namespace MVCFrontend
             Session["asp_session_start_time"]= DateTime.Now;
             Session["asp_session_exp_time"] = DateTime.Now.AddMinutes(Session.Timeout);
         }
-
+        
         protected void Session_End()
         {
             var start = Convert.ToDateTime(Session["asp_session_start_time"]);

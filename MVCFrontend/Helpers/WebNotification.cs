@@ -9,13 +9,13 @@ namespace MVCFrontend.Helpers
 {
     public static class WebNotification
     {
-        private static ILogger _logger = LogManager.CreateLogger(typeof(WebNotification), Appsettings.LogLevel());
+        private static ILogger _logger = LogManager.CreateLogger(typeof(WebNotification), Configsettings.LogLevel());
         private static object serializer = new object();
         public static void Send(string sessionToken, string msg, params object[] msgPars)
         {
             lock (serializer)
             {
-                var _wsClient = Connect(Appsettings.SocketServerUrl());
+                var _wsClient = Connect(Configsettings.SocketServerUrl());
                 if (Connected(_wsClient))
                 {
 
@@ -39,7 +39,7 @@ namespace MVCFrontend.Helpers
             var _wsClient = new ClientWebSocket();
             _logger.Info("Connecting to {0}", url);
 
-            if (Appsettings.Ssl())
+            if (Configsettings.Ssl())
             {
                 _logger.Info("Loading certificate from file");
                 _wsClient.Options.ClientCertificates.Add(Security.GetCertificateFromFile());

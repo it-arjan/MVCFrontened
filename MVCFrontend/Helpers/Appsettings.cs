@@ -7,11 +7,10 @@ using System.Configuration;
 
 namespace MVCFrontend.Helpers
 {
-    public static class Appsettings
+    public static class Configsettings
     {
         public const string SchemeKey = "scheme";
         public const string AuthServerKey = "auth.server";
-        public const string AuthSessionLengthKey = "authserver.session.minutes";
 
         public const string CookieTimeoutKey = "cookie.timeout.minutes";
         public const string CookieSlidingExpirationKey = "cookie.sliding.expire";

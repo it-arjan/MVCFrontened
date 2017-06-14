@@ -26,10 +26,10 @@ namespace MVCFrontend.Helpers
 
         public static string NewSiliconClientToken(string scope)
         {
-            var tokenUrl = string.Format("{0}connect/token", Appsettings.AuthUrl());
+            var tokenUrl = string.Format("{0}connect/token", Configsettings.AuthUrl());
             _logger.Debug("Getting a new Client Token for scope {1} at {0} ", tokenUrl, scope );
 
-            var client = new TokenClient(tokenUrl, Appsettings.SiliconClientId(), Appsettings.SiliconClientSecret());
+            var client = new TokenClient(tokenUrl, Configsettings.SiliconClientId(), Configsettings.SiliconClientSecret());
 
             var token = client.RequestClientCredentialsAsync(scope).Result;
             if (token.IsError) return "Error Getting a Silicon Token for scope " + scope;

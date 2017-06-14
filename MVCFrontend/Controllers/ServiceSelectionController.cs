@@ -122,9 +122,9 @@ namespace MVCFrontend.Controllers
 
             var apiUrl = method == HttpMethod.GET
                 ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", 
-                    Appsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
+                    Configsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
                 : string.Format("{0}/api/CmdQueue", 
-                    Appsettings.EntrypointUrl());
+                    Configsettings.EntrypointUrl());
 
             var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             var easyHttp = new HttpClient();

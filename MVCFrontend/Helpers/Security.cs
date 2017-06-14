@@ -40,7 +40,7 @@ namespace MVCFrontend.Helpers
         {
             X509Certificate2 result = null;
             var certificatePath = string.Empty;
-            certificatePath = Appsettings.OnAzure()
+            certificatePath = Configsettings.OnAzure()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HOME"), "site\\wwwroot\\App_Data\\aws_certificate.cer")
                 : Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~\\App_Data"),"aws_certificate.cer");
 

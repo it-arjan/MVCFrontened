@@ -27,7 +27,7 @@ namespace MVCFrontend.Controllers
         public HomeController(ILogger logger, IMakeStaticsMockable injectMockMe)
         {
             _logger = logger;
-            _logger.SetLevel(Appsettings.LogLevel());
+            _logger.SetLevel(Configsettings.LogLevel());
             Mockme = injectMockMe;
         }
         private ILogger _logger;
