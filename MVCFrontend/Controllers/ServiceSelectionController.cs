@@ -17,13 +17,11 @@ namespace MVCFrontend.Controllers
 {
     [LogRequests]
     [Authorize]
-    public class ServiceSelectionController : Controller
+    public class ServiceSelectionController : MyBaseController
     {
-        private ILogger _logger;
         // GET: SelectedServices
-        public ServiceSelectionController(ILogger logger, IMakeStaticsMockable injectMockMe)
+        public ServiceSelectionController(ILogger logger, IMakeStaticsMockable injectMockMe) : base(logger)
         {
-            _logger = logger;
         }
 
         public ActionResult Index()

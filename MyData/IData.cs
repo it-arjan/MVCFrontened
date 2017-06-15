@@ -8,7 +8,7 @@ using MyData;
 
 namespace MyData
 {
-    public interface IDb
+    public interface IData
     {
         void        Add<T>(T data);
         void        Remove<T>(T data);

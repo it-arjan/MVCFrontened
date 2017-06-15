@@ -10,7 +10,7 @@ namespace MVCFrontend.Helpers
 {
     public static class RequestLog
     {
-        public static void StoreRequestForSessionId(MyData.IDb db, string AspSessionId)
+        public static void StoreRequestForSessionId(MyData.IData db, string AspSessionId)
         {
             string username = HttpContext.Current.Request.IsAuthenticated
                               ? ClaimsPrincipal.Current.GetClaimValue("name")
@@ -44,7 +44,7 @@ namespace MVCFrontend.Helpers
                 Path = request.Path
             };
         }
-        public static bool IgnoreSessionId(MyData.IDb db, string sessionId)
+        public static bool IgnoreSessionId(MyData.IData db, string sessionId)
         {
             return db.SessionIdExists(sessionId);
         }

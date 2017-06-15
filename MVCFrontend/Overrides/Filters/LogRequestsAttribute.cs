@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Data.Entity;
 using MyData.Models;
+using MyData;
 
 namespace MVCFrontend.Overrides.Filters
 {
@@ -24,7 +25,7 @@ namespace MVCFrontend.Overrides.Filters
                 }
                 else
                 {
-                    var db = MyData.DbFactory.Db();
+                    var db = new DataFactory(MyDbType.EtfDb).Db();
                     var AspSessionId = filterContext.HttpContext.Session.SessionID;
 
                     RequestLog.StoreRequestForSessionId(db, AspSessionId);
@@ -37,7 +38,7 @@ namespace MVCFrontend.Overrides.Filters
 
         private void LinkSessionIdIp(ActionExecutingContext filterContext)
         {
-            var db = MyData.DbFactory.Db();
+            var db = new DataFactory(MyDbType.EtfDb).Db();
             var sessionID = filterContext.HttpContext.Session.SessionID;
             var remoteIpAddress = HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress;
 

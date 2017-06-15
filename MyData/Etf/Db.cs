@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using MyData;
 using MyData.Models;
 
-namespace MyData
+namespace MyData.Etf
 {
-    public class Db : IDb
+    public class EntityFrameworkDb : IData
     {
         public FrontendDbContext _etfDb;
-        public Db()
+        public EntityFrameworkDb()
         {
             _etfDb = new FrontendDbContext();
         }

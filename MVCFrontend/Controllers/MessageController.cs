@@ -27,14 +27,11 @@ using MVCFrontend.Overrides.Filters;
 namespace MVCFrontend.Controllers
 {
     [Authorize]
-    public class MessageController : Controller
+    public class MessageController : MyBaseController
     {
-        private ILogger _logger;
         // GET: Message
-        public MessageController(ILogger logger, IMakeStaticsMockable injectMockMe)
+        public MessageController(ILogger logger, IMakeStaticsMockable injectMokcables): base(logger)
         {
-            _logger = logger;
-            _logger.SetLevel(Configsettings.LogLevel());
         }
         [LogRequests]
         public ActionResult Index()
@@ -85,7 +82,7 @@ namespace MVCFrontend.Controllers
 
             try
             {
-                var db = DbFactory.Db();
+                var db = new DataFactory(MyDbType.EtfDb).Db();
                 WebNotification.Send(MqResult.NotificationToken, "Postback received.");
                 // manually log the request
                 // in oder to be able to related it to the human session
@@ -120,7 +117,7 @@ namespace MVCFrontend.Controllers
         [HttpGet]
         public JsonResult GetPostbacks()
         {
-            var db = DbFactory.Db();
+            var db = new DataFactory(MyDbType.EtfDb).Db();
             var recentPostbacks = db.GetRecentPostbacks(10);
             db.Dispose();
             return Json(JsonConvert.SerializeObject(recentPostbacks), JsonRequestBehavior.AllowGet );

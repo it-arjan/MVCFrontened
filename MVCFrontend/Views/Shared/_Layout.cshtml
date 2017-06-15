@@ -80,7 +80,7 @@
     <script>
             // Create SocketIO instance, connect
             var _gSocket = null;
-            var serverUrl = '@Appsettings.SocketServerUrl()';
+            var serverUrl = '@Configsettings.SocketServerUrl()';
 
             function ConnectToSocketServer() {
                 if ("WebSocket" in window) {

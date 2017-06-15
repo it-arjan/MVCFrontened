@@ -16,14 +16,12 @@ namespace MVCFrontend.Controllers
 {
     [LogRequests]
     [Authorize]
-    public class PostbackDatasController : Controller
+    public class PostbackDatasController : MyBaseController
     {
-        private ILogger _logger;
-        public PostbackDatasController(ILogger logger, IMakeStaticsMockable injectMockMe)
+        public PostbackDatasController(ILogger logger, IMakeStaticsMockable injectMockMe) : base(logger)
         {
-            _logger = logger;
         }
-        private IDb db = DbFactory.Db();
+        private IData db = new DataFactory(MyDbType.EtfDb).Db();
 
         // GET: PostbackDatas
         public ActionResult Index()

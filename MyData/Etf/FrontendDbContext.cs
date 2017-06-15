@@ -8,7 +8,7 @@ using MyData.Models;
 using System.Data.Entity.Infrastructure;
 using MyData.Migrations;
 
-namespace MyData
+namespace MyData.Etf
 {
     public class FrontendDbContext : DbContext
     {

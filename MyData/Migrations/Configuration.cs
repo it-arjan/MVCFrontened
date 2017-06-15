@@ -5,7 +5,7 @@ namespace MyData.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<MyData.FrontendDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<MyData.Etf.FrontendDbContext>
     {
         public Configuration()
         {
@@ -13,7 +13,7 @@ namespace MyData.Migrations
             ContextKey = "Data.FrontendDbContext";
         }
 
-        protected override void Seed(MyData.FrontendDbContext context)
+        protected override void Seed(MyData.Etf.FrontendDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

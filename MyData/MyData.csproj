@@ -50,11 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Db.cs" />
-    <Compile Include="EtfSetup.cs" />
-    <Compile Include="DbFactory.cs" />
-    <Compile Include="FrontendDbContext.cs" />
-    <Compile Include="IDb.cs" />
+    <Compile Include="Etf\Db.cs" />
+    <Compile Include="Etf\EtfSetup.cs" />
+    <Compile Include="DataFactory.cs" />
+    <Compile Include="Etf\FrontendDbContext.cs" />
+    <Compile Include="IDataSetup.cs" />
+    <Compile Include="IData.cs" />
     <Compile Include="Migrations\201705101215225_InitialCreate.cs" />
     <Compile Include="Migrations\201705101215225_InitialCreate.Designer.cs">
       <DependentUpon>201705101215225_InitialCreate.cs</DependentUpon>

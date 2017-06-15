@@ -1,9 +1,9 @@
 ﻿@using MVCFrontend.Helpers
 @{
     ViewBag.Title = "Home Page";
-    var pingUrlAuth = string.Format("{0}/.well-known/openid-configuration", Appsettings.AuthUrl());
-    var pingUrlQueueManager = string.Format("{0}/api/test", Appsettings.EntrypointUrl());
-    var pingUrlFrontEnd = string.Format("{0}/home/anonymousping", Appsettings.HostUrl());
+    var pingUrlAuth = string.Format("{0}/.well-known/openid-configuration", Configsettings.AuthUrl());
+    var pingUrlQueueManager = string.Format("{0}/api/test", Configsettings.EntrypointUrl());
+    var pingUrlFrontEnd = string.Format("{0}/home/anonymousping", Configsettings.HostUrl());
 }
 
 <div class="jumbotron">

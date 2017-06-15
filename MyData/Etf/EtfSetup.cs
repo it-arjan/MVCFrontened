@@ -5,11 +5,11 @@ using System.Web;
 using System.Data.Entity;
 using MyData.Migrations;
 
-namespace MyData
+namespace MyData.Etf
 {
-    public class EtfSetup
+    public class EtfSetup : IDataSetup
     {
-        public static void InitDB()
+        public void InitDB()
         {
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<FrontendDbContext, Configuration>());
             // To not init db, use Database.SetInitializer<SchoolContext>(null);

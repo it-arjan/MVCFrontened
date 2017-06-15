@@ -17,13 +17,11 @@ namespace MVCFrontend.Controllers
 {
     [LogRequests]
     [Authorize]
-    public class RequestLogEntriesController : Controller
+    public class RequestLogEntriesController : MyBaseController
     {
-        private IDb db = DbFactory.Db();
-        private ILogger _logger;
-        public RequestLogEntriesController(ILogger logger, IMakeStaticsMockable injectMockMe)
+        private IData db = new DataFactory(MyDbType.EtfDb).Db();
+        public RequestLogEntriesController(ILogger logger, IMakeStaticsMockable injectMockMe) : base(logger)
         {
-            _logger = logger;
         }
 
         // GET: RequestLogEntries

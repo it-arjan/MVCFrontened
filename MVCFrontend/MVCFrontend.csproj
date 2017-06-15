@@ -220,9 +220,11 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\interfaces\IMakeStaticsMockable.cs" />
     <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\MyBaseController.cs" />
     <Compile Include="Controllers\PostbackDatasController.cs" />
     <Compile Include="Controllers\RequestLogEntriesController.cs" />
     <Compile Include="Controllers\ServiceSelectionController.cs" />
+    <Compile Include="Controllers\SystemLayoutController.cs" />
     <Compile Include="Helpers\SettingsChecker.cs" />
     <Compile Include="Overrides\CustomControllerFactory.cs" />
     <Compile Include="Overrides\Filters\LogRequestsAttribute.cs" />
@@ -305,10 +307,12 @@
     <Content Include="Views\Docu\SystemLayout.cshtml" />
     <Content Include="Views\RequestLogEntries\Details.cshtml" />
     <Content Include="Views\RequestLogEntries\Index.cshtml" />
+    <Content Include="Views\SystemLayout\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="api\" />
     <Folder Include="Logs\" />
+    <Folder Include="Views\MyBase\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
