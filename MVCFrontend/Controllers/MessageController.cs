@@ -43,7 +43,7 @@ namespace MVCFrontend.Controllers
             Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
             Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
                                                         ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
-
+            
             Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp");
             Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
                 ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp"))
@@ -82,10 +82,13 @@ namespace MVCFrontend.Controllers
 
             try
             {
-                var db = new DataFactory(MyDbType.EtfDb).Db();
                 WebNotification.Send(MqResult.NotificationToken, "Postback received.");
                 // manually log the request
-                // in oder to be able to related it to the human session
+                // in order to be able to related it to the human session
+                IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+                var db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                    );
                 RequestLog.StoreRequestForSessionId(db, MqResult.AspSessionId);
 
                 var data = new PostbackData();
@@ -117,7 +120,10 @@ namespace MVCFrontend.Controllers
         [HttpGet]
         public JsonResult GetPostbacks()
         {
-            var db = new DataFactory(MyDbType.EtfDb).Db();
+            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+            var db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                );
             var recentPostbacks = db.GetRecentPostbacks(10);
             db.Dispose();
             return Json(JsonConvert.SerializeObject(recentPostbacks), JsonRequestBehavior.AllowGet );

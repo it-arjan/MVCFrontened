@@ -21,8 +21,11 @@ namespace MVCFrontend.Helpers
         public const string SocketPortKey = "websocket.port";
         public const string SocketSchemeKey = "websocket.scheme";
         public const string SocketServerHostnameKey = "websocket.server.hostname";
+
         public const string HostnameKey = "hostname";
         public const string EntrypointKey = "entrypoint.server";
+        public const string DataApiKey = "data.api.nancy";
+
         public const string SiliconClientIdKey = "SiliconClientId";
         public const string SiliconClientSecretKey = "SiliconClientSecret";
         public const string FrontendClientIdKey = "FrontendClientId";
@@ -53,6 +56,11 @@ namespace MVCFrontend.Helpers
             return ConfigurationManager.AppSettings.Get(EntrypointKey);
         }
 
+        public static string DataApiUrl()
+        {
+            return string.Format("{0}://{1}/", Scheme(), ConfigurationManager.AppSettings.Get(DataApiKey));
+        }
+        
         public static bool Ssl()
         {
             return Scheme() == "https";

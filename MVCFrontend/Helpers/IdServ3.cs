@@ -1,8 +1,12 @@
 ﻿using IdentityModel.Client;
+using MVCFrontend.Extentions;
+using Newtonsoft.Json;
 using NLogWrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Web;
 
 namespace MVCFrontend.Helpers
@@ -23,7 +27,11 @@ namespace MVCFrontend.Helpers
         public static int SessionRefreshTimeoutSecs = 3600;
 
         private static ILogger _logger = LogManager.CreateLogger(typeof(IdSrv3));
-
+        private static Dictionary<string, string> claimTypeScopeMap = new Dictionary<string, string>
+        {
+            { "ajax_cors_token", IdSrv3.ScopeEntryQueueApi },
+            { "data_api_token", IdSrv3.ScopeNancyApi}
+        };
         public static string NewSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Configsettings.AuthUrl());
@@ -35,6 +43,48 @@ namespace MVCFrontend.Helpers
             if (token.IsError) return "Error Getting a Silicon Token for scope " + scope;
             return token.AccessToken;
         }
+        public static bool EnsureTokenClaimIsValid(string claimType)
+        {
+            if (TokenAlmostExpired(ClaimsPrincipal.Current.GetClaimValue(claimType), claimTypeScopeMap[claimType]))
+            {
+                ClaimsPrincipal.Current.AddUpdateClaim(claimType, NewSiliconClientToken(claimTypeScopeMap[claimType]));
+                return true;
+            }
+            return true;
+        }
+        private static bool TokenAlmostExpired(string jwt, string scope)
+        {
+            if (jwt.Contains("not set")) return true;
+            _logger.Debug("Checking expiration of token({1}) {0}", jwt, scope);
+            // #PastedCode
+            //
+            //=> Retrieve the 2nd part of the JWT token (this the JWT payload)
+            var payloadBytes = jwt.Split('.')[1];
 
+            //=> Padding the raw payload with "=" chars to reach a length that is multiple of 4
+            var mod4 = payloadBytes.Length % 4;
+            if (mod4 > 0) payloadBytes += new string('=', 4 - mod4);
+
+            //=> Decoding the base64 string
+            var payloadBytesDecoded = Convert.FromBase64String(payloadBytes);
+
+            //=> Retrieve the "exp" property of the payload's JSON
+            var payloadStr = Encoding.UTF8.GetString(payloadBytesDecoded, 0, payloadBytesDecoded.Length);
+            var payload = JsonConvert.DeserializeAnonymousType(payloadStr, new { Exp = 0UL });
+
+
+            var date1970CET = new DateTime(1970, 1, 1, 0, 0, 0).AddHours(1);
+            //_logger.Debug("Expired Check: the token({1}) is valid until {0}.", date1970CET.AddSeconds(payload.Exp), scope);
+
+            //=> Get the current timestamp
+            var currentTimestamp = (ulong)(DateTime.UtcNow.AddHours(1) - date1970CET).TotalSeconds;
+            // Compare
+            var isExpired = currentTimestamp + 10 > payload.Exp; // 10 sec = margin
+            var logMsg = isExpired ? string.Format("Expired Check: token({0}) is expired.", scope)
+                                    : string.Format("Expired Check: token({0}) still valid.", scope);
+            _logger.Info(logMsg);
+
+            return isExpired;
+        }
     }
 }

@@ -152,6 +152,9 @@ namespace MVCFrontend
                         var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);
                         identity.AddClaim(new Claim("ajax_cors_token", corsToken));
 
+                        var dataApiToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeNancyApi);
+                        identity.AddClaim(new Claim("data_api_token", dataApiToken));
+
                         // clean up
                         var claimsToRemove = new List<Claim>();
                         foreach (var claim in identity.Claims)

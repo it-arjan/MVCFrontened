@@ -25,7 +25,10 @@ namespace MVCFrontend.Overrides.Filters
                 }
                 else
                 {
-                    var db = new DataFactory(MyDbType.EtfDb).Db();
+                    IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+                    var db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                        );
                     var AspSessionId = filterContext.HttpContext.Session.SessionID;
 
                     RequestLog.StoreRequestForSessionId(db, AspSessionId);
@@ -38,7 +41,10 @@ namespace MVCFrontend.Overrides.Filters
 
         private void LinkSessionIdIp(ActionExecutingContext filterContext)
         {
-            var db = new DataFactory(MyDbType.EtfDb).Db();
+            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+            var db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                );
             var sessionID = filterContext.HttpContext.Session.SessionID;
             var remoteIpAddress = HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress;
 

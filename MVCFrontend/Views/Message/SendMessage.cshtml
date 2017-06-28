@@ -94,7 +94,11 @@
         <hr />
             <div class="row">
                 <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
-                <div class="col-md-4"><div class="wrapper">Actions related to Asp.NET_SessionId <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span></div></div>
+                <div class="col-md-4">
+                    <div class="wrapper">@(ClaimsPrincipal.Current.isAdmin()? "All actions": "Actions related to asp.net cookie")
+                    <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span>
+                     </div>
+                </div>
             </div>
             <div class="row">
                 <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
@@ -214,7 +218,7 @@
                 function DropIntoQueueCors(ajaxAccessToken, resultDivId, msgId, nrDrops) {
                     var formData = {
                         'MessageId': msgId,
-                        'PostBackUrl': '@string.Format("{0}/Message/Postback", Configsettings.HostUrl())',
+                        'PostBackUrl': '@string.Format("{0}/postback", Configsettings.DataApiUrl())',
                         'SocketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
                         'NotificationToken': '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")',
                         'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")',

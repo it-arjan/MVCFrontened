@@ -11,6 +11,7 @@ using System.Security.Claims;
 using MVCFrontend.Extentions;
 using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
+using MVCFrontend.Helpers;
 
 namespace MVCFrontend.Controllers
 {
@@ -18,13 +19,17 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class PostbackDatasController : MyBaseController
     {
+        private IData db;
         public PostbackDatasController(ILogger logger, IMakeStaticsMockable injectMockMe) : base(logger)
         {
-        }
-        private IData db = new DataFactory(MyDbType.EtfDb).Db();
+            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+            db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+            );
+    }
 
-        // GET: PostbackDatas
-        public ActionResult Index()
+    // GET: PostbackDatas
+    public ActionResult Index()
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
@@ -95,8 +100,7 @@ namespace MVCFrontend.Controllers
         public ActionResult DeleteConfirmed(string id)
         {
             int intPk = Convert.ToInt16(id);
-            PostbackData postbackData = db.FindPostback(intPk);
-            db.Remove(postbackData);
+            db.RemovePostback(intPk);
             db.Commit();
             return RedirectToAction("Index");
         }

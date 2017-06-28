@@ -47,7 +47,7 @@ namespace MVCFrontend
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            new MyData.DataFactory(MyDbType.EtfDb).DbSetup();
+            new MyData.DataFactory(MyDbType.ApiDbNancy).DbSetup();
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;

@@ -12,6 +12,7 @@ using System.Security.Claims;
 using MVCFrontend.Extentions;
 using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
+using MVCFrontend.Helpers;
 
 namespace MVCFrontend.Controllers
 {
@@ -19,9 +20,13 @@ namespace MVCFrontend.Controllers
     [Authorize]
     public class RequestLogEntriesController : MyBaseController
     {
-        private IData db = new DataFactory(MyDbType.EtfDb).Db();
+        private IData db;
         public RequestLogEntriesController(ILogger logger, IMakeStaticsMockable injectMockMe) : base(logger)
         {
+            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+            db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                ); 
         }
 
         // GET: RequestLogEntries
@@ -32,7 +37,7 @@ namespace MVCFrontend.Controllers
                 return PartialView(db.GetRecentRequestLogs(50));
             }
 
-            return PartialView(db.GetRecentRequestLog(50, Session.SessionID));
+            return PartialView(db.GetRecentRequestLogs(50, Session.SessionID));
         }
 
         // GET: RequestLogEntries/Details/5
@@ -86,8 +91,7 @@ namespace MVCFrontend.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
             }
-            RequestLogEntry requestLogEntry = db.FindRequestLog(id);
-            db.Remove(requestLogEntry);
+            db.RemoveRequestlog(id);
             db.Commit();
             return RedirectToAction("Index");
         }
