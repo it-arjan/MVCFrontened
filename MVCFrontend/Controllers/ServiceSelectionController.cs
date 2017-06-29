@@ -107,9 +107,10 @@ namespace MVCFrontend.Controllers
             result.Services.Add(new WebService { Id = 2, Prompt = "Ms WebApi2", Selected = activeServiceList.Contains(2) });
             result.Services.Add(new WebService { Id = 3, Prompt = "Real 404", Selected = activeServiceList.Contains(3) });
             result.Services.Add(new WebService { Id = 4, Prompt = "Real Crash", Selected = activeServiceList.Contains(4) });
-            result.Services.Add(new WebService { Id = 5, Prompt = "Nancy PC lookup", Selected = activeServiceList.Contains(5) });
-            result.Services.Add(new WebService { Id = 6, Prompt = "Servicesstack api", Selected = activeServiceList.Contains(6) });
-            result.Services.Add(new WebService { Id = 7, Prompt = "Wcf service", Selected = activeServiceList.Contains(7) });
+            result.Services.Add(new WebService { Id = 5, Prompt = "Ordercheck(NancyFx)", Selected = activeServiceList.Contains(5) });
+            result.Services.Add(new WebService { Id = 6, Prompt = "Servicesstack", Selected = activeServiceList.Contains(6) });
+            result.Services.Add(new WebService { Id = 7, Prompt = "Postal Code", Selected = activeServiceList.Contains(7) });
+            result.Services.Add(new WebService { Id = 8, Prompt = "Wcf service", Selected = activeServiceList.Contains(8) });
 
             return result;
         }

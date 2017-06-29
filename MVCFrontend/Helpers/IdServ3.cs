@@ -18,6 +18,7 @@ namespace MVCFrontend.Helpers
         public const string ScopeMvcFrontEnd = "mvc-frontend-silicon";
         public const string ScopeEntryQueueApi = "entry-queue-api";
         public const string ScopeNancyApi = "nancy-api";
+        public const string ScopeFrontendDataApi = "frontend-data-api";
         public const string ScopeServiceStackApi = "servicestack-api";
         public const string ScopeWcfService = "wcf-service";
         public const string ScopeMsWebApi = "ms-webapi2";
@@ -27,11 +28,13 @@ namespace MVCFrontend.Helpers
         public static int SessionRefreshTimeoutSecs = 3600;
 
         private static ILogger _logger = LogManager.CreateLogger(typeof(IdSrv3));
+
         private static Dictionary<string, string> claimTypeScopeMap = new Dictionary<string, string>
         {
             { "ajax_cors_token", IdSrv3.ScopeEntryQueueApi },
-            { "data_api_token", IdSrv3.ScopeNancyApi}
+            { "data_api_token", IdSrv3.ScopeFrontendDataApi}
         };
+
         public static string NewSiliconClientToken(string scope)
         {
             var tokenUrl = string.Format("{0}connect/token", Configsettings.AuthUrl());

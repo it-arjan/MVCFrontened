@@ -152,7 +152,7 @@ namespace MVCFrontend
                         var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);
                         identity.AddClaim(new Claim("ajax_cors_token", corsToken));
 
-                        var dataApiToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeNancyApi);
+                        var dataApiToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeFrontendDataApi);
                         identity.AddClaim(new Claim("data_api_token", dataApiToken));
 
                         // clean up
@@ -172,11 +172,12 @@ namespace MVCFrontend
                                 claimsToRemove.Add(claim);
                             }
                         }
+
                         claimsToRemove.ForEach(c => identity.RemoveClaim(c));
 
                         // not sure why creating a new AuthenticationTicket is needed
                         n.AuthenticationTicket = new AuthenticationTicket(identity, n.AuthenticationTicket.Properties);
-                        return Task.FromResult(0);// return = irrelevant
+                        return Task.FromResult(0); //return = irrelevant
                     },
                     RedirectToIdentityProvider = n =>
                     {

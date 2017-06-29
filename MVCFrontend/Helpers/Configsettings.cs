@@ -24,7 +24,7 @@ namespace MVCFrontend.Helpers
 
         public const string HostnameKey = "hostname";
         public const string EntrypointKey = "entrypoint.server";
-        public const string DataApiKey = "data.api.nancy";
+        public const string DataApiKey = "frontend.data.api";
 
         public const string SiliconClientIdKey = "SiliconClientId";
         public const string SiliconClientSecretKey = "SiliconClientSecret";
