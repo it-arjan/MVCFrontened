@@ -18,13 +18,11 @@
                     <legend class="fldset-lgnd">@service.Prompt</legend>
                     <div class="slideThree">
                         @{
-                            var inputId = string.Format("service{0}", i);
+                            var inputId = string.Format("service{0}", @service.Id);
                             var selected = @service.Selected ? "checked" : string.Empty;
                         }
                         <input type="checkbox" value="@service.Id" id="@inputId" name="service" @selected />
                         <label for="@inputId"></label>
-                        @{i++;
-                        }
                     </div>
                 </fieldset>
                 }

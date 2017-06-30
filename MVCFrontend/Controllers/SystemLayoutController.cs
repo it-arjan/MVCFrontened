@@ -18,5 +18,9 @@ namespace MVCFrontend.Controllers
         {
             return View();
         }
+        public ActionResult GetAsPartial()
+        {
+            return PartialView("Index");
+        }
     }
 }

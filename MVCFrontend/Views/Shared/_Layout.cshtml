@@ -42,7 +42,10 @@
             </div>
         </div>
     </div>
-    <div id="message_box">
+    <div id="message_box1">
+        The floating message goes here
+    </div>
+    <div id="message_box2">
         The floating message goes here
     </div>
     <div class="container body-content">
@@ -53,25 +56,68 @@
         </footer>
     </div>
     <script>
-        function DisplayNotification(notification)
-        {
-            $('#message_box').css({
+        var allBoxes = ["#message_box1"];
+        var busyBoxes = [];
+
+        function DisplayNotification(notification) {
+            var finder = new FreeBoxFinder();
+            finder.findBox(finder, notification);
+            if (!finder.found) {
+                //console.log("trying again..");
+                //
+            }
+        }
+       
+        function FreeBoxFinder() {
+            this.found = false,
+            this.findBox = GlobalFind
+        }
+
+        function GlobalFind(caller, notification) {
+            for (var i = 0; i < allBoxes.length; i++) {
+                if (busyBoxes.indexOf(allBoxes[i]) < 0) {
+                    console.log("animating " + allBoxes[i]);
+                    caller.found = true;
+                    AnimateMessageBox(allBoxes[i], notification);
+                    break;
+                }
+            }
+            if (!caller.found) {
+                console.log("no free box available, trying again in a sec or so");
+                setTimeout(function () {
+                    caller.findBox(caller, notification);
+                }, 1000);
+            }
+        }
+
+        function AnimateMessageBox(cssId, notification) {
+            console.log("starting anumation for box " + cssId);
+            busyBoxes.push(cssId);
+            $(cssId).css({
                 visibility: "visible",
                 height: 0,
-            }).text(notification)
+            }).text(notification.toString())
                 .animate({
-                    height: 35
-                }, 1500)
-                .animate({
+                    height: 45
+                }, { queue: true }, 1000);
+
+            setTimeout(function () {
+                $(cssId).animate({
                     height: 0
                 }, {
-                    duration: 4500,
+                    duration: 3500, queue: true,
                     always: function () {
-                        $('#message_box').css({
-                            visibility: "hidden",
-                        })
-                    }
-                })
+                            $(cssId).css({
+                                visibility: "hidden"
+                            })
+                        },
+                    complete: function () {
+                        var idx = busyBoxes.indexOf(cssId);
+                        console.log("removing " + cssId + " from pos " + idx);
+                        busyBoxes.splice(idx, 1);
+                        }
+                    })
+            }, 4000);
         }
     </script>
     @if (ClaimsPrincipal.Current.Identity.IsAuthenticated)
@@ -113,7 +159,7 @@
                                     DisplayNotification(msgWithoutToken);
                                 }
                                 else {
-                                    DisplayNotification("It seems other users are active on the site..");
+                                    DisplayNotification("It seems that other users are active on the site..");
                                 }
 
                             };

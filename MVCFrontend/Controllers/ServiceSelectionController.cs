@@ -49,7 +49,7 @@ namespace MVCFrontend.Controllers
             LogValues(values);
             if (list == null)
             {
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, refreshing your view");
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, nothing is configured.");
                 result = ServiceConfig(HttpMethod.GET);
             }
             else
@@ -62,7 +62,14 @@ namespace MVCFrontend.Controllers
                 data.SocketToken = values["SocketToken"];
 
                 result = ServiceConfig(HttpMethod.POST, data);
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three services in your selection are configured");
+                if (list.Contains("7"))
+                {
+                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "You have selected postal code lookup. Post a message like \"1234Ab 12\" and We'll lookup some public info about this property.\n\n");
+                }
+                else // default message
+                {
+                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three services in your selection are configured");
+                }
             }
             var model = CreateModel(result);
 
@@ -108,9 +115,9 @@ namespace MVCFrontend.Controllers
             result.Services.Add(new WebService { Id = 3, Prompt = "Real 404", Selected = activeServiceList.Contains(3) });
             result.Services.Add(new WebService { Id = 4, Prompt = "Real Crash", Selected = activeServiceList.Contains(4) });
             result.Services.Add(new WebService { Id = 5, Prompt = "Ordercheck(NancyFx)", Selected = activeServiceList.Contains(5) });
-            result.Services.Add(new WebService { Id = 6, Prompt = "Servicesstack", Selected = activeServiceList.Contains(6) });
-            result.Services.Add(new WebService { Id = 7, Prompt = "Postal Code", Selected = activeServiceList.Contains(7) });
-            result.Services.Add(new WebService { Id = 8, Prompt = "Wcf service", Selected = activeServiceList.Contains(8) });
+            //result.Services.Add(new WebService { Id = 6, Prompt = "Servicesstack", Selected = activeServiceList.Contains(6) });
+            result.Services.Add(new WebService { Id = 7, Prompt = "Postal Code lookup", Selected = activeServiceList.Contains(7) });
+            //result.Services.Add(new WebService { Id = 8, Prompt = "Wcf service", Selected = activeServiceList.Contains(8) });
 
             return result;
         }
@@ -170,7 +177,10 @@ namespace MVCFrontend.Controllers
                 result.Add(Convert.ToInt16(int_arr[1]));
                 result.Add(Convert.ToInt16(int_arr[2]));
             }
-            //else ERROR, return empty list todo: build & use message system
+            else //ERROR, return empty list 
+            {
+                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "An error ocurred parsing the json of the server response");
+            }
             return result;
         }
 

@@ -22,13 +22,23 @@ select,
 textarea {
     max-width: 280px;
 }
-#message_box {
+#message_box1 {
     position: absolute;
-    left:50%;
+    left: 50%;
+}
+#message_box2 {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+
+}
+#message_box1, #message_box2 {
     visibility: hidden;
     background-color: #bca;
     border: 1px solid green;
     text-align: center;
+    font-size: 10pt;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 button.xbutton {
     margin-top: 1px;

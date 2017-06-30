@@ -1,5 +1,13 @@
 ﻿<div>
-    <p>This is the system layout</p>
-    
-    <img src="~/Content/Img/System_Layout.png" />
+    <p>&nbsp;</p>
+    <button src="arrow-left.jpg" onclick="ScrollVersion()">Scroll versions</button><br/>
+    <img id ="v11" src="/Content/Img/System_Layout-v11.png" />
+    <img id="v10" src="/Content/Img/System_Layout-v10.png" style="display:none;"/>
 </div>
+<script>
+    function ScrollVersion()
+    {
+        $("#v11").toggle();
+        $("#v10").toggle();
+    }
+</script>
