@@ -106,6 +106,9 @@
                     var idx = busyBoxes.indexOf(cssId);
                     console.log("removing " + cssId + " from pos " + idx);
                     busyBoxes.splice(idx, 1);
+                    $(cssId).css({
+                        visibility: "hidden"
+                    })
                 });
         }
     </script>
