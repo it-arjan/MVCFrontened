@@ -48,6 +48,9 @@
     <div id="message_box2">
         The floating message goes here
     </div>
+    <div id="message_box3">
+        The floating message goes here
+    </div>
     <div class="container body-content">
         @RenderBody()
         <hr />
@@ -56,7 +59,7 @@
         </footer>
     </div>
     <script>
-        var allBoxes = ["#message_box1"];
+        var allBoxes = ["#message_box1", "#message_box2", "#message_box3"];
         var busyBoxes = [];
 
         function DisplayNotification(notification) {
@@ -70,10 +73,10 @@
        
         function FreeBoxFinder() {
             this.found = false,
-            this.findBox = GlobalFind
+            this.findBox = FreeBoxFinderFunc
         }
 
-        function GlobalFind(caller, notification) {
+        function FreeBoxFinderFunc(caller, notification) {
             for (var i = 0; i < allBoxes.length; i++) {
                 if (busyBoxes.indexOf(allBoxes[i]) < 0) {
                     console.log("animating " + allBoxes[i]);
@@ -91,33 +94,19 @@
         }
 
         function AnimateMessageBox(cssId, notification) {
-            console.log("starting anumation for box " + cssId);
+            console.log("starting animation for box " + cssId);
             busyBoxes.push(cssId);
             $(cssId).css({
                 visibility: "visible",
-                height: 0,
+                top: 150
             }).text(notification.toString())
                 .animate({
-                    height: 45
-                }, { queue: true }, 1000);
-
-            setTimeout(function () {
-                $(cssId).animate({
-                    height: 0
-                }, {
-                    duration: 3500, queue: true,
-                    always: function () {
-                            $(cssId).css({
-                                visibility: "hidden"
-                            })
-                        },
-                    complete: function () {
-                        var idx = busyBoxes.indexOf(cssId);
-                        console.log("removing " + cssId + " from pos " + idx);
-                        busyBoxes.splice(idx, 1);
-                        }
-                    })
-            }, 4000);
+                    top: 0
+                }, 4500, function () {
+                    var idx = busyBoxes.indexOf(cssId);
+                    console.log("removing " + cssId + " from pos " + idx);
+                    busyBoxes.splice(idx, 1);
+                });
         }
     </script>
     @if (ClaimsPrincipal.Current.Identity.IsAuthenticated)

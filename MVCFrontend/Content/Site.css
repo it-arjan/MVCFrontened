@@ -22,17 +22,11 @@ select,
 textarea {
     max-width: 280px;
 }
-#message_box1 {
+#message_box1, #message_box2, #message_box3 {
     position: absolute;
-    left: 50%;
-}
-#message_box2 {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-
-}
-#message_box1, #message_box2 {
+    left: 70%;
+    width: 30%;
+    height: 55px;
     visibility: hidden;
     background-color: #bca;
     border: 1px solid green;
