@@ -79,7 +79,7 @@
         function FreeBoxFinderFunc(caller, notification) {
             for (var i = 0; i < allBoxes.length; i++) {
                 if (busyBoxes.indexOf(allBoxes[i]) < 0) {
-                    console.log("animating " + allBoxes[i]);
+                    //console.log("animating " + allBoxes[i]);
                     caller.found = true;
                     AnimateMessageBox(allBoxes[i], notification);
                     break;
@@ -94,7 +94,7 @@
         }
 
         function AnimateMessageBox(cssId, notification) {
-            console.log("starting animation for box " + cssId);
+            //console.log("starting animation for box " + cssId);
             busyBoxes.push(cssId);
             $(cssId).css({
                 visibility: "visible",
@@ -104,7 +104,7 @@
                     top: 0
                 }, 4500, function () {
                     var idx = busyBoxes.indexOf(cssId);
-                    console.log("removing " + cssId + " from pos " + idx);
+                    //console.log("removing " + cssId + " from pos " + idx);
                     busyBoxes.splice(idx, 1);
                     $(cssId).css({
                         visibility: "hidden"
@@ -125,7 +125,8 @@
                     var qm_log_token = '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")';
                     var doneToken = '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")';
                     var notification_token = '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")';
-
+                    var api_feed_token = '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")';
+                    //var api_feed_token = "x_x_x";
                     if (qm_log_token.length > 0) {
                         try {
                             if (_gSocket != null) {
@@ -145,13 +146,16 @@
                                         LogMessage(msgWithoutToken);
                                     }
                                 }
-                                else if (msg.data.toString().indexOf(notification_token.toString()) == 0)
-                                {
+                                else if (msg.data.toString().indexOf(notification_token.toString()) == 0) {
                                     var msgWithoutToken = msg.data.toString().substring(notification_token.toString().length + 6, msg.data.toString().length);
                                     DisplayNotification(msgWithoutToken);
                                 }
+                                else if (msg.data.toString().indexOf(api_feed_token.toString()) == 0) {
+                                    var msgWithoutToken = msg.data.toString().substring(api_feed_token.toString().length + 6, msg.data.toString().length);
+                                    DisplayApiFeed(msgWithoutToken);
+                                }
                                 else {
-                                    DisplayNotification("It seems that other users are active on the site..");
+                                    DisplayNotification("It seems other users are active on the site..");
                                 }
 
                             };
@@ -159,7 +163,7 @@
                                 LogMessage("_gSocket.onerror is triggered: " + msg.data);
                             };
 
-                            LogMessage("..socket log initialized. Log messages of remote system will show here..\n");
+                            LogMessage("..socket log initialized. Log messages of remote system will show here..");
                         }
                         catch (ex) {
                             LogMessage("Exception connecting to socket server: " + serverUrl);
@@ -177,6 +181,9 @@
 
             function socketDisconnected(socketArg) {
                 return socketArg.ready == 0;
+            }
+            function DisplayApiFeed(msg) {
+                $("#api-request-feed").prepend("<p>" + msg + "</p>");
             }
 
             function LogMessage(msg) {

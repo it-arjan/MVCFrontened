@@ -60,6 +60,9 @@ namespace MVCFrontend.Controllers
                 data.Service2Nr = list[1];
                 data.Service3Nr = list[2];
                 data.SocketToken = values["SocketToken"];
+                data.UserName = values["UserName"];
+                data.AspSessionId = values["AspSessionId"];
+                data.ApiFeedToken = values["ApiFeedToken"];
 
                 result = ServiceConfig(HttpMethod.POST, data);
                 if (list.Contains("7"))
@@ -127,10 +130,14 @@ namespace MVCFrontend.Controllers
             var result = new List<int>();
 
             var apiUrl = method == HttpMethod.GET
-                ? string.Format("{0}/api/CmdQueue/{1}/GetServiceConfig", 
-                    Configsettings.EntrypointUrl(), ClaimsPrincipal.Current.GetClaimValue("qm_socket_id") )
-                : string.Format("{0}/api/CmdQueue", 
-                    Configsettings.EntrypointUrl());
+                ? string.Format("{0}/api/CmdQueue/{1}/{2}/{3}/{4}/GetServiceConfig", 
+                    Configsettings.EntrypointUrl(), 
+                    ClaimsPrincipal.Current.GetClaimValue("qm_socket_id"),
+                    ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id"),
+                    "todo",
+                    //ClaimsPrincipal.Current.GetClaimValue("given_name"),
+                    Session.SessionID)
+                : string.Format("{0}/api/CmdQueue", Configsettings.EntrypointUrl());
 
             var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             var easyHttp = new HttpClient();
@@ -193,5 +200,9 @@ namespace MVCFrontend.Controllers
         public string Service2Nr { get; set; }
         public string Service3Nr { get; set; }
         public string SocketToken { get; set; }
+        public string UserName { get; set; }
+        public string ApiFeedToken { get; set; }
+        public string AspSessionId { get; set; }
+        
     }
 }

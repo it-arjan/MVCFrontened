@@ -50,24 +50,27 @@
                         <span id="dropResult"></span>
                     </form>
                 </div>
-                <div class="col-md-3">
-                    <h4>Timeout Settings</h4>
-                    <span class='Info'>Auth.Cookie.SlidingExp=@Configsettings.CookieSlidingExpiration()</span><br />
-                    <span class='Info'>Use.Token.Lifetime=@Configsettings.UseTokenLifetime()</span><br />
+                <div class="col-md-4">
+                    <h4>data Api request feed - live</h4>
+                    <div id="api-request-feed" class="scroll-div"> 
+                    </div>
                 </div>
-                <div class="col-md-3">
+                <div id="timeout-settings" class="col-md-2">
                     <h4>Timeouts </h4>
-                    <div>
+                    <div >
                         <b>ASP Session - </b><span id="exp_asp"></span>
                     </div>
                     <div>
                         <b>Auth Cookie - </b><span id="exp_cookie"></span>
                     </div>
                     <div>
-                        <b>Cors Token - </b><span id="exp_cors_token"></span><br/> 
-                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS1 </a>(cookie-auth)<br/>
-                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS2</a> (token-auth)
+                        <b>Cors Token - </b><span id="exp_cors_token"></span><br />
+                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS1 </a><br />(cookie-auth)<br />
+                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS2</a> <br />(token-auth)
                     </div>
+                    <h4>Timeout Settings</h4>
+                    <span class='Info'>Auth.Cookie.SlidingExp=@Configsettings.CookieSlidingExpiration()</span><br />
+                    <span class='Info'>Use.Token.Lifetime=@Configsettings.UseTokenLifetime()</span><br />
                 </div>
             </div>
             <div id="ServerConfig" class="tabcontent">
@@ -83,12 +86,12 @@
                     @Html.Action("Index", "ServiceSelection")
                 </div>
             </div>
-            <div id="SystemLayout" class="tabcontent">
+            <div id="SystemLayout" class="tabcontent ">
                 <div class="col-md-12" style="position:absolute;background-color:white;opacity:0.9;z-index:8">
                     @Html.Action("GetAsPartial","SystemLayout")
                 </div>
             </div>
-            <div id="RequestLog" class="tabcontent col-md-12">
+            <div id="RequestLog" class="tabcontent col-md-12 scroll-div">
             </div>
         </div>
         <hr />
@@ -101,8 +104,8 @@
                 </div>
             </div>
             <div class="row">
-                <div id="socketChat" class="col-md-8" style="border: solid 1px #3399CC; padding: 3px;"></div>
-                <div id="postbackResult" class="col-md-4" style="border: solid 1px #3399CC; padding: 3px;"></div>
+                <div id="socketChat" class="col-md-8 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
+                <div id="postbackResult" class="col-md-4 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
             </div>
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
             <script src="~/Scripts/Custom/secure-utils.js"></script>
@@ -175,6 +178,9 @@
                     var formData = {
                         'cmdType': "GetModus",
                         'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
+                        'AspSessionId': '@Session.SessionID',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -183,6 +189,9 @@
                     var formData = {
                         'cmdType': 'ToggleModus',
                         'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
+                        'AspSessionId': '@Session.SessionID',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);
@@ -223,6 +232,7 @@
                         'NotificationToken': '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")',
                         'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")',
                         'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
                         'AspSessionId': '@Session.SessionID',
                         'NrDrops': nrDrops
                     };
@@ -252,7 +262,7 @@
                             else {
                                 msg = "<br/>Drop failed, status= " + jqXHR.status
                             }
-                        $(resultDivId).append(msg);
+                        $(resultDivId).text(msg);
                         })
                     .always(function () {
                         setTimeout(function () {

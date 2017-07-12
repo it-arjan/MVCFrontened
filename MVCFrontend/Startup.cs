@@ -147,6 +147,8 @@ namespace MVCFrontend
 
                         identity.AddClaim(new Claim("qm_socket_id", Guid.NewGuid().ToString()));
                         identity.AddClaim(new Claim("notification_socket_id", Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim("api_feed_socket_id", Guid.NewGuid().ToString()));
+                        
                         identity.AddClaim(new Claim("msg_done_id", Guid.NewGuid().ToString()));
 
                         var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);

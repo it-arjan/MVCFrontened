@@ -42,7 +42,7 @@ namespace MVCFrontend.Helpers
             if (Configsettings.Ssl())
             {
                 _logger.Info("Loading certificate from file");
-                _wsClient.Options.ClientCertificates.Add(Security.GetCertificateFromFile());
+                //_wsClient.Options.ClientCertificates.Add(Security.GetCertificateFromFile());
             }
             var tokSrc = new CancellationTokenSource();
             //cannot use await within lock

@@ -22,6 +22,33 @@ select,
 textarea {
     max-width: 280px;
 }
+.scroll-div {
+    overflow-y: scroll;
+    background: ivory;
+}
+#api-request-feed {
+    height: 250px;
+    max-height: 250px;
+}
+#timeout-settings {
+    font-size: 12px;
+}
+#ServerConfig {
+    height: 250px;
+    max-height: 250px;
+}
+#RequestLog {
+    height: 250px;
+    max-height: 250px;
+}
+#socketChat {
+    height: 800px;
+    max-height: 800px;
+}
+#postbackResult {
+    height: 800px;
+    max-height: 800px;
+}
 #message_box1, #message_box2, #message_box3 {
     position: absolute;
     left: 70%;

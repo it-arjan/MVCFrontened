@@ -78,6 +78,7 @@ namespace MVCFrontend.Controllers
         [HttpPost]
         public ActionResult Postback(DataFromQM MqResult)
         {
+            // NOT called when running  with separate data Api Db
            _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(MqResult));
 
             try
@@ -87,7 +88,9 @@ namespace MVCFrontend.Controllers
                 // in order to be able to related it to the human session
                 IdSrv3.EnsureTokenClaimIsValid("data_api_token");
                 var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                Configsettings.DataApiUrl(), 
+                    ClaimsPrincipal.Current.GetClaimValue("data_api_token"), 
+                    ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
                     );
                 RequestLog.StoreRequestForSessionId(db, MqResult.AspSessionId);
 
@@ -115,14 +118,16 @@ namespace MVCFrontend.Controllers
                 _logger.Error("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(MqResult));
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
-            
         }
+
         [HttpGet]
         public JsonResult GetPostbacks()
         {
             IdSrv3.EnsureTokenClaimIsValid("data_api_token");
             var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                        Configsettings.DataApiUrl(),
+                        ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
+                        ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
                 );
             var recentPostbacks = db.GetRecentPostbacks(10);
             db.Dispose();

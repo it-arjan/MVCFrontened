@@ -25,7 +25,9 @@ namespace MVCFrontend.Controllers
         {
             IdSrv3.EnsureTokenClaimIsValid("data_api_token");
             db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                Configsettings.DataApiUrl(), ClaimsPrincipal.Current.GetClaimValue("data_api_token")
+                        Configsettings.DataApiUrl(),
+                        ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
+                        ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
                 ); 
         }
 
