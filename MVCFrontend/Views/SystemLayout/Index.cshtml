@@ -1,13 +1,18 @@
 ﻿<div>
     <p>&nbsp;</p>
     <button src="arrow-left.jpg" onclick="ScrollVersion()">Scroll versions</button><br/>
-    <img id ="v11" src="/Content/Img/System_Layout-v11.png" />
-    <img id="v10" src="/Content/Img/System_Layout-v10.png" style="display:none;"/>
+    <img id="v12" class="image" src="/Content/Img/System_Layout-v12.png" />
+    <img id="v11"  class="image"  src="/Content/Img/System_Layout-v11.png"  style="display:none;"/>
+    <img id="v10"  class="image" src="/Content/Img/System_Layout-v10.png" style="display:none;"/>
 </div>
 <script>
+    var current = 0;
+    var imgs = ["#v12", "#v11","#v10"];
     function ScrollVersion()
     {
-        $("#v11").toggle();
-        $("#v10").toggle();
+        $(".image").hide();
+        current++;
+        current = current % 3;
+        $(imgs[current]).show();
     }
 </script>
