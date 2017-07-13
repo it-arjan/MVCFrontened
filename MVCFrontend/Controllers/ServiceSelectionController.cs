@@ -27,7 +27,7 @@ namespace MVCFrontend.Controllers
         public ActionResult Index()
         {
             // Get the actual service config
-            var result = ServiceConfig(HttpMethod.GET);
+            var result = Post(GetServiceConfigdata());
             var model = CreateModel(result);
 
             return PartialView("~/views/Message/ServiceSelection-Styled.cshtml", model);
@@ -50,21 +50,21 @@ namespace MVCFrontend.Controllers
             if (list == null)
             {
                 WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, nothing is configured.");
-                result = ServiceConfig(HttpMethod.GET);
+                result = Post(GetServiceConfigdata());
             }
             else
             {
                 CmdPostData data = new CmdPostData();
-                data.cmdType = values["cmdType"];
+                data.cmdType = "SetServiceConfig";
                 data.Service1Nr = list[0];
                 data.Service2Nr = list[1];
                 data.Service3Nr = list[2];
-                data.SocketToken = values["SocketToken"];
-                data.UserName = values["UserName"];
-                data.AspSessionId = values["AspSessionId"];
-                data.ApiFeedToken = values["ApiFeedToken"];
+                data.SocketToken = ClaimsPrincipal.Current.GetClaimValue("qm_socket_id");
+                data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
+                data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
+                data.AspSessionId = Session.SessionID;
 
-                result = ServiceConfig(HttpMethod.POST, data);
+                result = Post(data);
                 if (list.Contains("7"))
                 {
                     WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "You have selected postal code lookup. Post a message like \"1234Ab 12\" and We'll lookup some public info about this property.\n\n");
@@ -77,6 +77,20 @@ namespace MVCFrontend.Controllers
             var model = CreateModel(result);
 
             return PartialView("~/views/Message/ServiceSelection-Styled.cshtml", model);
+        }
+
+        private CmdPostData GetServiceConfigdata()
+        {
+            CmdPostData data = new CmdPostData();
+            data.cmdType = "GetServiceConfig";
+            data.Service1Nr = string.Empty;
+            data.Service2Nr = string.Empty;
+            data.Service3Nr = string.Empty;
+            data.SocketToken = ClaimsPrincipal.Current.GetClaimValue("qm_socket_id");
+            data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
+            data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
+            data.AspSessionId = Session.SessionID;
+            return data;
         }
 
         private List<string> GetFirstThreeSelectedvalues(FormCollection values)
@@ -125,41 +139,21 @@ namespace MVCFrontend.Controllers
             return result;
         }
 
-        private List<int> ServiceConfig(HttpMethod method, CmdPostData data = null)
+        private List<int> Post(CmdPostData data = null)
         {
             var result = new List<int>();
 
-            var apiUrl = method == HttpMethod.GET
-                ? string.Format("{0}/api/CmdQueue/{1}/{2}/{3}/{4}/GetServiceConfig", 
-                    Configsettings.EntrypointUrl(), 
-                    ClaimsPrincipal.Current.GetClaimValue("qm_socket_id"),
-                    ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id"),
-                    "todo",
-                    //ClaimsPrincipal.Current.GetClaimValue("given_name"),
-                    Session.SessionID)
-                : string.Format("{0}/api/CmdQueue", Configsettings.EntrypointUrl());
-
-            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             var easyHttp = new HttpClient();
-
+            var apiUrl = string.Format("{0}/api/CmdQueue", Configsettings.EntrypointUrl());
+            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
             easyHttp.Request.AddExtraHeader("Authorization", auth_header);
             easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
 
             try
             {
-                if (method == HttpMethod.GET)
-                {
-                    _logger.Debug("Getting service config at {0}", apiUrl);
-                    easyHttp.Get(apiUrl);
-                    _logger.Debug("Getting service config returned = {0}", easyHttp.Response.RawText);
-                }
-                else if (method == HttpMethod.POST)
-                {
-                    _logger.Debug("Settting service config at {0} with data {1}", apiUrl, JsonConvert.SerializeObject(data));
-                    easyHttp.Post(apiUrl, data, HttpContentTypes.ApplicationJson);
-                    _logger.Debug("Settting service config returned = {0}", easyHttp.Response.RawText);
-                }
-                else throw new Exception("Break: invalid method" + method);
+                _logger.Debug("Settting service config at {0} with data {1}", apiUrl, JsonConvert.SerializeObject(data));
+                easyHttp.Post(apiUrl, data, HttpContentTypes.ApplicationJson);
+                _logger.Debug("Settting service config returned = {0}", easyHttp.Response.RawText);
 
                 result = JsonResponseToIntList(easyHttp.Response.RawText);
             }

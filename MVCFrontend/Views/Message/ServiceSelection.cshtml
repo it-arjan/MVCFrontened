@@ -25,7 +25,6 @@
 <script>
     function ConfigureSettingsAjax(ajaxAccessToken, resultDivId, data) {
         var formData = {
-            'cmdType': "SetServiceConfig",
             'service1': $("#service1").is(':checked'),
             'service2': $("#service2").is(':checked'),
             'service3': $("#service3").is(':checked'),
@@ -34,7 +33,6 @@
             'service6': $("#service6").is(':checked'),
             'service7': $("#service7").is(':checked'),
             'service8': $("#service8").is(':checked'),
-            'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
         };
         $(resultDivId).text("loading...");
         $.ajax({
