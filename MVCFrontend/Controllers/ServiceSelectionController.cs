@@ -12,6 +12,7 @@ using System.Web.Mvc;
 using System.Security.Claims;
 using MVCFrontend.Extentions;
 using MVCFrontend.Overrides.Filters;
+using System.Net;
 
 namespace MVCFrontend.Controllers
 {
@@ -32,7 +33,7 @@ namespace MVCFrontend.Controllers
 
             return PartialView("~/views/Message/ServiceSelection-Styled.cshtml", model);
         }
-        private void LogValues(FormCollection values)
+        private void LogValuesToFile(FormCollection values)
         {
             var result = string.Empty;
             foreach (string key in values.Keys)
@@ -46,7 +47,7 @@ namespace MVCFrontend.Controllers
         {
             List<int> result;
             var list = GetFirstThreeSelectedvalues(values);
-            LogValues(values);
+            LogValuesToFile(values);
             if (list == null)
             {
                 WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, nothing is configured.");
@@ -153,9 +154,19 @@ namespace MVCFrontend.Controllers
             {
                 _logger.Debug("Settting service config at {0} with data {1}", apiUrl, JsonConvert.SerializeObject(data));
                 easyHttp.Post(apiUrl, data, HttpContentTypes.ApplicationJson);
-                _logger.Debug("Settting service config returned = {0}", easyHttp.Response.RawText);
-
-                result = JsonResponseToIntList(easyHttp.Response.RawText);
+                if (easyHttp.Response.StatusCode == HttpStatusCode.OK)
+                {
+                    _logger.Debug("Settting service config returned = {0}", easyHttp.Response.RawText);
+                    result = JsonResponseToIntList(easyHttp.Response.RawText);
+                }
+                else if (easyHttp.Response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The Queue Manager denied access, is your CORS token expired?");
+                }
+                else
+                {
+                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The Queue Manager returned " + easyHttp.Response.StatusCode);
+                }
             }
             catch (Exception ex)
             {
