@@ -28,10 +28,11 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Private", "index", "Message")</li>
+                    <li><a href="@Configsettings.HostUrl()/message">Private Area</a></li>
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li>@Html.ActionLink("View Claims", "About", "Home")</li>
+                        <li>@Html.ActionLink("Trigger Errors", "Index", "TriggerError")</li>
                         <li><a href="/logout">Logout</a></li>
                         <li style="color:white;">
                             <span>AspSessionID: @Session.SessionID</span><br />
@@ -183,7 +184,13 @@
                 return socketArg.ready == 0;
             }
             function DisplayApiFeed(msg) {
-                $("#api-request-feed").prepend("<p>" + msg + "</p>");
+                if ($("#api-request-feed").text().startsWith("Data Api")){
+                    $("#api-request-feed").text("<p>" + msg + "</p>");
+                }
+                else {
+                    $("#api-request-feed").prepend("<p>" + msg + "</p>");
+                }
+                
             }
 
             function LogMessage(msg) {

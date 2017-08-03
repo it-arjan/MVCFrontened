@@ -9,20 +9,16 @@ using System.Web.Mvc;
 namespace MVCFrontend.Controllers
 {
     [LogRequests]
-    public class SystemLayoutController : MyBaseController
+    public class TriggerLogExceptionController : MyBaseController
     {
-        public SystemLayoutController(ILogger logger, MakeStaticsMockable staticMocker) : base(logger)
+        public TriggerLogExceptionController(ILogger logger, IMakeStaticsMockable injectMockMe): base(logger)
         {
 
         }
-        // GET: SystemLayout
+        // GET: TriggerLogException
         public ActionResult Index()
         {
             return View();
-        }
-        public ActionResult GetAsPartial()
-        {
-            return PartialView("Index");
         }
     }
 }

@@ -16,5 +16,7 @@ namespace MVCFrontend.Models
         public string DoneToken;
         public string UserName;
         public string Roles;
+        public bool LogDropRequest;
+
     }
 }

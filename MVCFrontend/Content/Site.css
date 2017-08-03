@@ -15,7 +15,9 @@
 .dl-horizontal dt {
     white-space: normal;
 }
-
+span.sep {
+    min-width:10px;
+}
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
@@ -40,6 +42,9 @@ textarea {
 #RequestLog {
     height: 250px;
     max-height: 250px;
+}
+#TriggerException{
+    min-height: 250px;
 }
 #socketChat {
     height: 800px;

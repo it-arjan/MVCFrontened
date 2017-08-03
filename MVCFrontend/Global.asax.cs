@@ -35,7 +35,7 @@ namespace MVCFrontend
         {
             var start = Convert.ToDateTime(Session["asp_session_start_time"]);
             var end = DateTime.Now;
-            _logger.Debug("Session_End: Session started {0} and ends '{1}', diff (secs) = '{2}'", 
+            _logger.Debug("Session_End: Session started {0} and ends '{1}', duration (secs) = '{2}'", 
                 start.ToLongTimeString(), end.ToLongTimeString(), (end-start).TotalSeconds
                 );
             Session.Clear();
@@ -47,10 +47,25 @@ namespace MVCFrontend
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            new MyData.DataFactory(MyDbType.ApiDbNancy).DbSetup();
+
+            //only for etf dbtype new MyData.DataFactory(MyDbType.ApiDbNancy).DbSetup();
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;
+        }
+
+        protected void Application_Error(Object sender, EventArgs e)
+        {
+            // only handles exception that don't have filterContext.ExceptionHandled = true
+            var raisedException = Server.GetLastError();
+            _logger.Error("Unhandled exception: {0}", raisedException != null? raisedException.ToString(): "no message");
+            if (Response.StatusCode == 404)
+            {
+                Response.Redirect("/error/error_404");
+            }
+            else
+            Response.Redirect("/static/application_error.html");
+            // Process exception
         }
     }
 }

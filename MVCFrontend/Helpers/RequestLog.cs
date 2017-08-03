@@ -15,18 +15,15 @@ namespace MVCFrontend.Helpers
             string username = HttpContext.Current.Request.IsAuthenticated
                               ? ClaimsPrincipal.Current.GetClaimValue("name")
                               : "Anonymous";
-            if (!IgnoreSessionId(db, AspSessionId))
-            {
 
-                var logEntry = RequestLog.CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
-                logEntry.AspSessionId = AspSessionId;
+            var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
+            logEntry.AspSessionId = AspSessionId;
 
-                logEntry.RecentContributions = username == "Anonymous" ? 0
-                    : db.GetPostbacksFromToday().Count();
+            logEntry.RecentContributions = username == "Anonymous" ? 0
+                : db.GetPostbacksFromToday().Count();
 
-                db.Add(logEntry);
-                db.Commit();
-            }
+            db.Add(logEntry);
+            db.Commit();
         }
 
         public static RequestLogEntry CreateApiLogEntryWithRequestData(HttpRequest request)
@@ -44,9 +41,11 @@ namespace MVCFrontend.Helpers
                 Path = request.Path
             };
         }
-        public static bool IgnoreSessionId(MyData.IData db, string sessionId)
+
+        public static bool IgnoreIp(string ip)
         {
-            return db.SessionIdExists(sessionId);
+            return Configsettings.LogRequestIgnoreIpList().Contains(ip);
         }
+
     }
 }

@@ -52,7 +52,7 @@ namespace MVCFrontend.Controllers
 
             model.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
-
+            model.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
             ViewBag.Message = CheckSessionSettings();
             return View("SendMessage", model);
         }

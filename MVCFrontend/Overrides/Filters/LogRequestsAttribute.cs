@@ -9,62 +9,52 @@ using System.Web.Mvc;
 using System.Data.Entity;
 using MyData.Models;
 using MyData;
+using NLogWrapper;
 
 namespace MVCFrontend.Overrides.Filters
 {
+    // [HandleError] error filters not work with error in Filters
     public class LogRequestsAttribute : ActionFilterAttribute
     {
+        private ILogger _logger = LogManager.CreateLogger(typeof(LogRequestsAttribute), Helpers.Configsettings.LogLevel());
+
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             var mvcHandler = HttpContext.Current.Handler as MvcHandler;
             if (mvcHandler != null)
             {
-                if (IgnoreIp())
+                try
                 {
-                    LinkSessionIdIp(filterContext);
-                }
-                else
-                {
-                    IdSrv3.EnsureTokenClaimIsValid("data_api_token");
-                    var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                        Configsettings.DataApiUrl(),
-                        ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
-                        ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
-                        );
-                    var AspSessionId = filterContext.HttpContext.Session.SessionID;
+                    ThrowIfTriggerLogExceptionRequest();
+                    if (!RequestLog.IgnoreIp(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress))
+                    {
+                        IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+                        var db = new DataFactory(MyDbType.ApiDbNancy).Db(
+                            Configsettings.DataApiUrl(),
+                            ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
+                            ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
+                            );
 
-                    RequestLog.StoreRequestForSessionId(db, AspSessionId);
-                    db.Dispose();
+                        var AspSessionId = filterContext.HttpContext.Session.SessionID;
+                        RequestLog.StoreRequestForSessionId(db, AspSessionId);
+                        db.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Log Exception! {0}", ex.ToString());
+                    // swallow or let IIS handle custom error page
+                    if (!Configsettings.SwalloWLogExceptions()) filterContext.HttpContext.Response.StatusCode = 500;
                 }
             }
 
             base.OnActionExecuting(filterContext);
         }
 
-        private void LinkSessionIdIp(ActionExecutingContext filterContext)
+        private void ThrowIfTriggerLogExceptionRequest()
         {
-            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
-            var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                        Configsettings.DataApiUrl(),
-                        ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
-                        ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
-                );
-            var sessionID = filterContext.HttpContext.Session.SessionID;
-            var remoteIpAddress = HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress;
-
-            if (!db.IpSessionIdExists(sessionID,remoteIpAddress))
-            {
-                var x = new IpSessionId { SessionID = sessionID, Ip = remoteIpAddress };
-                db.Add(x);
-                db.Commit();
-                db.Dispose();
-            }
+            if (HttpContext.Current.Request.Path.Contains("TriggerLogException"))
+                throw new Exception("programmed Log Exception!");
         }
-
-        private bool IgnoreIp()
-        {
-            return Configsettings.LogRequestIgnoreIpList().Contains(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress);
-        }
- 
     }
 }

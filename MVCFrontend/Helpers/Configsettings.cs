@@ -33,6 +33,7 @@ namespace MVCFrontend.Helpers
         public const string AzureIgnoreCertificateErrorsKey = "azure.ignore.cert.errors";
         public const string LogRequestIgnoreIpListKey = "log.request.ignore.ip.csv";
 
+        public const string SwalloWLogExceptionsKey = "swallow.log.exceptions";
 
         public static string AuthUrl()
         {
@@ -122,6 +123,11 @@ namespace MVCFrontend.Helpers
         {
             return GetBoolSetting(AzureIgnoreCertificateErrorsKey);
         }
+        public static bool SwalloWLogExceptions()
+        {
+            return GetBoolSetting(SwalloWLogExceptionsKey);
+        }
+        
         public static int CookieTimeoutMinutes()
         {
             return GetIntSetting(CookieTimeoutKey);

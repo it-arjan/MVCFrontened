@@ -18,7 +18,7 @@
             <button id="openOnLoad" class="tablinks" onclick="openTab(event, 'SendMessage')">Drop a Message</button>
             <button class="tablinks" onclick="openTab(event, 'ServerConfig')">Queue Manager Configuration</button>
             <button class="tablinks"  onclick="openTab(event, 'RequestLog'); RefreshRequests('#RequestLog')">Request Log</button>
-            <button class="tablinks"></button>
+            <button class="tablinks"   onclick="openTab(event, 'TriggerErrors')">Trigger Ajax Error</button>
             <button class="tablinks"></button>
             <button class="tablinks" onclick="openTab(event, 'SystemLayout')">System Layout</button>
         </div>
@@ -46,13 +46,14 @@
                                     <option>@i</option>}
                             </select><span> times</span>
                         </div>
-
+                        <inout typeof="hidden" name="logrequests" value="@Model.LogDropRequest" />
                         <span id="dropResult"></span>
                     </form>
                 </div>
                 <div class="col-md-4">
                     <h4>data Api request feed - live</h4>
-                    <div id="api-request-feed" class="scroll-div"> 
+                    <div id="api-request-feed" class="scroll-div">Data Api is starting up...
+                        
                     </div>
                 </div>
                 <div id="timeout-settings" class="col-md-2">
@@ -66,7 +67,6 @@
                     <div>
                         <b>Cors Token - </b><span id="exp_cors_token"></span><br />
                         <a onclick="event.preventDefault();alert('todo')">Refresh CORS1 </a><br />(cookie-auth)<br />
-                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS2</a> <br />(token-auth)
                     </div>
                     <h4>Timeout Settings</h4>
                     <span class='Info'>Auth.Cookie.SlidingExp=@Configsettings.CookieSlidingExpiration()</span><br />
@@ -92,7 +92,13 @@
                 </div>
             </div>
             <div id="RequestLog" class="tabcontent col-md-12 scroll-div">
+                
             </div>
+            <div id="TriggerErrors" class="tabcontent col-md-12">
+                <br />
+                <div style="text-align:center"><button onclick="alert('TODO')">500 Error</button><span class="sep"> </span><button onclick="alert('TODO')">404 Error</button><span class="sep"></span><button onclick="alert('TODO')">401 Error</button><span class="sep"> </span><button onclick="alert('TODO')">Request Log Error</button></div>
+            </div>
+            
         </div>
         <hr />
             <div class="row">
@@ -169,6 +175,20 @@
                         $(resultDivId).append("<br/>Querying request logs failed: error= " + errorThrown);
                     })
                 }
+                function TriggerLogError(tokenNotUsed, resultDivId) {
+                    $(resultDivId).html("<h3>Triggering log Exception... </h3>");
+                    $.ajax({
+                        type: 'Get',
+                        dataType: 'html',
+                        url: '/TriggerLogException/',
+                    })
+                        .done(function (htmlPartial) {
+                            $(resultDivId).html(htmlPartial);
+                        })
+                        .fail(function (jqXHR, textStatus, errorThrown) {
+                            $(resultDivId).append("<br/>Querying request logs failed: error= " + errorThrown);
+                        })
+                }
                 function InitializeChat() {
                     $("#socketChat").empty();
                     $("#socketChat").prepend("<span class='tourTip ttScreen'>Js WebSocket</span>");
@@ -192,6 +212,7 @@
                         'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
                         'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
                         'AspSessionId': '@Session.SessionID',
+                        'LogDropRequest': '@Model.LogDropRequest',
                     };
 
                     SendCmd(formData, ajaxAccessToken, resultDivId);

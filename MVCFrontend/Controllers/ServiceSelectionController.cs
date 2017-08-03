@@ -64,6 +64,7 @@ namespace MVCFrontend.Controllers
                 data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
                 data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
                 data.AspSessionId = Session.SessionID;
+                data.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
 
                 result = Post(data);
                 if (list.Contains("7"))
@@ -91,6 +92,7 @@ namespace MVCFrontend.Controllers
             data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
             data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
             data.AspSessionId = Session.SessionID;
+            data.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
             return data;
         }
 
@@ -208,6 +210,6 @@ namespace MVCFrontend.Controllers
         public string UserName { get; set; }
         public string ApiFeedToken { get; set; }
         public string AspSessionId { get; set; }
-        
+        public bool LogDropRequest { get; set; }
     }
 }

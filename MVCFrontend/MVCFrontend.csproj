@@ -215,6 +215,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\interfaces\IMakeStaticsMockable.cs" />
     <Compile Include="Controllers\MessageController.cs" />
@@ -223,8 +224,12 @@
     <Compile Include="Controllers\RequestLogEntriesController.cs" />
     <Compile Include="Controllers\ServiceSelectionController.cs" />
     <Compile Include="Controllers\SystemLayoutController.cs" />
+    <Compile Include="Controllers\TriggerErrorController.cs" />
+    <Compile Include="Controllers\TriggerLogExceptionController.cs" />
+    <Compile Include="Helpers\ErrorHandling.cs" />
     <Compile Include="Helpers\SettingsChecker.cs" />
     <Compile Include="Overrides\CustomControllerFactory.cs" />
+    <Compile Include="Overrides\Filters\HandleErrorAttribute.cs" />
     <Compile Include="Overrides\Filters\LogRequestsAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -280,6 +285,7 @@
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="static\application_error.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -307,6 +313,12 @@
     <Content Include="Views\RequestLogEntries\Details.cshtml" />
     <Content Include="Views\RequestLogEntries\Index.cshtml" />
     <Content Include="Views\SystemLayout\Index.cshtml" />
+    <Content Include="Views\Error\Error_500.cshtml" />
+    <Content Include="Views\Error\Error_404.cshtml" />
+    <Content Include="Views\Error\Error.cshtml" />
+    <Content Include="Views\TriggerLogException\index.cshtml" />
+    <Content Include="Views\Error\LogRequestError.cshtml" />
+    <Content Include="Views\TriggerError\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="api\" />

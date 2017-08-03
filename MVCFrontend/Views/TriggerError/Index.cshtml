@@ -1,0 +1,12 @@
+﻿<div id="TriggerErrors">
+    <br />
+    <div style="text-align:center">
+    <button onclick="Goto('/TriggerError/Error500')">Trigger 500 Error</button><span class="sep"> </span>
+    <button onclick="Goto('/TriggerError/Error404')">Trigger 404 Error</button><span class="sep"></span>
+    <button onclick="Goto('/TriggerLogException')">Trigger Request Log Error</button></div>
+</div>
+<script>
+    function Goto(path) {
+        window.location.href = path;
+    }
+</script>

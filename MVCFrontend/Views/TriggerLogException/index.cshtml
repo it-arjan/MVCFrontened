@@ -1,0 +1,11 @@
+﻿
+@using MVCFrontend.Helpers
+@{
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+}
+<h2>This is the view of the triggerLogExeption test class.</h2> 
+If the error handling is configured correctly, seeing this view implies that a log exception has been triggered, but it has been swallowed and normal execution is allowed to continue. 
+<br />The swallow Log exception setting is currently set to @Configsettings.SwalloWLogExceptions()
+
