@@ -59,60 +59,7 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
-    <script>
-        var allBoxes = ["#message_box1", "#message_box2", "#message_box3"];
-        var busyBoxes = [];
-
-        function DisplayNotification(notification) {
-            var finder = new FreeBoxFinder();
-            finder.findBox(finder, notification);
-            if (!finder.found) {
-                //console.log("trying again..");
-                //
-            }
-        }
-       
-        function FreeBoxFinder() {
-            this.found = false,
-            this.findBox = FreeBoxFinderFunc
-        }
-
-        function FreeBoxFinderFunc(caller, notification) {
-            for (var i = 0; i < allBoxes.length; i++) {
-                if (busyBoxes.indexOf(allBoxes[i]) < 0) {
-                    //console.log("animating " + allBoxes[i]);
-                    caller.found = true;
-                    AnimateMessageBox(allBoxes[i], notification);
-                    break;
-                }
-            }
-            if (!caller.found) {
-                console.log("no free box available, trying again in a sec or so");
-                setTimeout(function () {
-                    caller.findBox(caller, notification);
-                }, 1000);
-            }
-        }
-
-        function AnimateMessageBox(cssId, notification) {
-            //console.log("starting animation for box " + cssId);
-            busyBoxes.push(cssId);
-            $(cssId).css({
-                visibility: "visible",
-                top: 150
-            }).text(notification.toString())
-                .animate({
-                    top: 0
-                }, 4500, function () {
-                    var idx = busyBoxes.indexOf(cssId);
-                    //console.log("removing " + cssId + " from pos " + idx);
-                    busyBoxes.splice(idx, 1);
-                    $(cssId).css({
-                        visibility: "hidden"
-                    })
-                });
-        }
-    </script>
+    <script src="~/Scripts/Custom/NotificationAnimate.js"></script>
     @if (ClaimsPrincipal.Current.Identity.IsAuthenticated)
     {
         //Socket stuff in this script
@@ -140,11 +87,11 @@
                                 if (msg.data.toString().indexOf(qm_log_token.toString()) == 0) {
                                     var msgWithoutToken = msg.data.toString().substring(qm_log_token.toString().length + 6, msg.data.toString().length);
                                     if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
-                                        LogMessage("Done token received, auto-refreshing postbacks...");
+                                        toLogManagerChat("Done token received, auto-refreshing postbacks...");
                                         CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaimValue("ajax_backend_token")', "#postbackResult");
                                     }
                                     else {
-                                        LogMessage(msgWithoutToken);
+                                        toLogManagerChat(msgWithoutToken);
                                     }
                                 }
                                 else if (msg.data.toString().indexOf(notification_token.toString()) == 0) {
@@ -161,22 +108,22 @@
 
                             };
                             _gSocket.onerror = function (msg) {
-                                LogMessage("_gSocket.onerror is triggered: " + msg.data);
+                                toLogManagerChat("_gSocket.onerror is triggered: " + msg.data);
                             };
 
-                            LogMessage("..socket log initialized. Log messages of remote system will show here..");
+                            toLogManagerChat("..socket log initialized. Log messages of remote system will show here..");
                         }
                         catch (ex) {
-                            LogMessage("Exception connecting to socket server: " + serverUrl);
-                            LogMessage(ex.message);
+                            toLogManagerChat("Exception connecting to socket server: " + serverUrl);
+                            toLogManagerChat(ex.message);
                         }
                     }
                     else {
-                        LogMessage("Socket Token not set, the socket chat will not work, refresh the page.");
+                        toLogManagerChat("Socket Token not set, the socket chat will not work, refresh the page.");
                     }
                 }
                 else {
-                    LogMessage("webSockets are not supported on this browser, the socket chat log will not work.");
+                    toLogManagerChat("webSockets are not supported on this browser, the socket chat log will not work.");
                 }
             }
 
@@ -185,7 +132,7 @@
             }
             function DisplayApiFeed(msg) {
                 if ($("#api-request-feed").text().startsWith("Data Api")){
-                    $("#api-request-feed").text("<p>" + msg + "</p>");
+                    $("#api-request-feed").html("<p>" + msg + "</p>");
                 }
                 else {
                     $("#api-request-feed").prepend("<p>" + msg + "</p>");
@@ -193,7 +140,7 @@
                 
             }
 
-            function LogMessage(msg) {
+            function toLogManagerChat(msg) {
                 $("#socketChat").prepend("<p>" + msg + "</p>");
             }
     </script>

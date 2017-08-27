@@ -47,7 +47,6 @@ namespace MVCFrontend.Controllers
         {
             List<int> result;
             var list = GetFirstThreeSelectedvalues(values);
-            LogValuesToFile(values);
             if (list == null)
             {
                 WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, nothing is configured.");

@@ -115,6 +115,8 @@
             </div>
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
             <script src="~/Scripts/Custom/secure-utils.js"></script>
+            <script src="~/Scripts/Custom/WebEntryPointCommunication.js"></script>
+            <script src="~/Scripts/Custom/BackendCommunication.js"></script>
             <script>
                 $(document).keypress(
                     function (event) {
@@ -158,42 +160,13 @@
                     $("#" + tabId).show();
                     evt.currentTarget.className += " active";
                 }
-                function RefreshRequests(resultDivId) {
-                    CallFuncWhenCookieStillValid(GetRequestLogs, "no token, cookie", resultDivId);
-                }
-                function GetRequestLogs(tokenNotUsed, resultDivId) {
-                    $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
-                    $.ajax({
-                        type: 'Get',
-                        dataType: 'html',
-                        url: '/RequestLogEntries/',
-                    })
-                    .done(function (htmlPartial) {
-                        $(resultDivId).html(htmlPartial);
-                    })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        $(resultDivId).append("<br/>Querying request logs failed: error= " + errorThrown);
-                    })
-                }
-                function TriggerLogError(tokenNotUsed, resultDivId) {
-                    $(resultDivId).html("<h3>Triggering log Exception... </h3>");
-                    $.ajax({
-                        type: 'Get',
-                        dataType: 'html',
-                        url: '/TriggerLogException/',
-                    })
-                        .done(function (htmlPartial) {
-                            $(resultDivId).html(htmlPartial);
-                        })
-                        .fail(function (jqXHR, textStatus, errorThrown) {
-                            $(resultDivId).append("<br/>Querying request logs failed: error= " + errorThrown);
-                        })
-                }
+
                 function InitializeChat() {
                     $("#socketChat").empty();
                     $("#socketChat").prepend("<span class='tourTip ttScreen'>Js WebSocket</span>");
                     ConnectToSocketServer();
                 }
+
                 function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': "GetModus",
@@ -203,8 +176,10 @@
                         'AspSessionId': '@Session.SessionID',
                     };
 
-                    SendCmd(formData, ajaxAccessToken, resultDivId);
+                    var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
+                    SendCmd(url, formData, ajaxAccessToken, resultDivId);
                 }
+
                 function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': 'ToggleModus',
@@ -214,35 +189,27 @@
                         'AspSessionId': '@Session.SessionID',
                         'LogDropRequest': '@Model.LogDropRequest',
                     };
-
-                    SendCmd(formData, ajaxAccessToken, resultDivId);
+                    var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
+                    SendCmd(url, formData, ajaxAccessToken, resultDivId);
                 }
-                function SendCmd(formData, ajaxAccessToken, resultDivId) {
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Configsettings.EntrypointUrl()' + 'api/cmdqueue',
-                        data: formData,
-                        dataType: 'text',
-                        encode: true,
-                        beforeSend: function (xhr) {
-                            xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                            xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-                        },
-                    })
-                    .done(function (data) {
-                        var obj = JSON.parse(data);
-                        $(resultDivId).text(obj.Message);
-                    })
-                        .fail(function (jqXHR, textStatus, errorThrown) {
-                            var msg = "";
-                            if (jqXHR.status == 401) {
-                                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
-                            }
-                            else {
-                                msg = "Drop failed, status= " + jqXHR.status
-                            }
-                            $(resultDivId).text(msg);
-                    })
+
+                function RefreshRequests(resultDivId) {
+                    CallFuncWhenCookieStillValid(GetRequestLogs, "no token, cookie", resultDivId);
+                }
+
+                function GetRequestLogs(tokenNotUsed, resultDivId) {
+                    $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
+                    getPartial(/RequestLogEntries/, resultDivId);
+                }
+
+                function TriggerLogError(tokenNotUsed, resultDivId) {
+                    $(resultDivId).html("<h3>Triggering log Exception... </h3>");
+                    getPartial(/TriggerLogException/, resultDivId);
+                }
+
+                function QueryPostbackData(ajaxAccessToken, resultDivId) {
+                    $(resultDivId).html("<h3>Loading actions.. </h3>");
+                    getPartial(/Postbackdatas/, resultDivId);
                 }
 
                 function DropIntoQueueCors(ajaxAccessToken, resultDivId, msgId, nrDrops) {
@@ -275,16 +242,16 @@
                         var obj = JSON.parse(data);
                         $(resultDivId).text(obj.message);
                     })
-                        .fail(function (jqXHR, textStatus, errorThrown) {
-                            var msg = "";
-                            if (jqXHR.status == 401) {
-                                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
-                            }
-                            else {
-                                msg = "<br/>Drop failed, status= " + jqXHR.status
-                            }
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        var msg = "";
+                        if (jqXHR.status == 401) {
+                            msg = "AUTHENTICATION FAILED, is the Cors token expired?"
+                        }
+                        else {
+                            msg = "<br/>Drop failed, status= " + jqXHR.status
+                        }
                         $(resultDivId).text(msg);
-                        })
+                    })
                     .always(function () {
                         setTimeout(function () {
                             $('button[name=dropSubmit]').show();
@@ -375,27 +342,9 @@
                 function setExpiredAndStop(intervalRef, resultId) {
                     clearInterval(intervalRef);
                     $(resultId).text("EXPIRED");
-                    $(resultId).text().fontcolor("red");
+                    $(resultId).css("color", "red");
                 }
             </script>
-        //postback data view stuff in this script
-        <script>
-            function QueryPostbackData(ajaxAccessToken, resultDivId) {
-                $(resultDivId).html("<h3>Loading actions.. </h3>");
-                $.ajax({
-                    type: 'Get',
-                    dataType: 'html',
-                    url: '/Postbackdatas/',
-                })
-                .done(function (partialView) {
-                    $(resultDivId).html(partialView);
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
-                    $(resultDivId).append("<br/>Querying postback data failed: error= " + errorThrown);
-                })
-            }
-        </script>
-
     }
     else
     {
