@@ -81,7 +81,7 @@
                                 //alert('closing existing socket..');
                                 _gSocket.close();
                             }
-                            _gSocket = new WebSocket(serverUrl);
+                            _gSocket = new WebSocket(serverUrl, "TestToken123");
                             // Add a message listener
                             _gSocket.onmessage = function (msg) {
                                 if (msg.data.toString().indexOf(qm_log_token.toString()) == 0) {

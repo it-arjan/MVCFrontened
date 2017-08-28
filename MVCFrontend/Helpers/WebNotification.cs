@@ -27,7 +27,8 @@ namespace MVCFrontend.Helpers
                                                         true,
                                                         tokSrc.Token
                                                         );
-                    tsk.Wait(); tsk.Dispose();
+                    if (!tsk.IsFaulted) tsk.Wait();
+                    tsk.Dispose();
                     tokSrc.Dispose();
                     Close(_wsClient);
                 }
@@ -37,17 +38,14 @@ namespace MVCFrontend.Helpers
         private static ClientWebSocket Connect(string url)
         {
             var _wsClient = new ClientWebSocket();
+            _wsClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", "TestToken123");
             _logger.Info("Connecting to {0}", url);
 
-            if (Configsettings.Ssl())
-            {
-                _logger.Info("Loading certificate from file");
-                //_wsClient.Options.ClientCertificates.Add(Security.GetCertificateFromFile());
-            }
             var tokSrc = new CancellationTokenSource();
-            //cannot use await within lock
+            // We cannot use await within lock
             var task = _wsClient.ConnectAsync(new Uri(url), tokSrc.Token);
-            task.Wait(); task.Dispose();
+            if (!task.IsFaulted) task.Wait();
+            task.Dispose();
 
             _logger.Info("Opened ClientWebSocket to {0}", url);
             tokSrc.Dispose();
