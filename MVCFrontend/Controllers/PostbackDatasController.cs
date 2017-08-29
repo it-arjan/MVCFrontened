@@ -73,7 +73,7 @@ namespace MVCFrontend.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Add(postbackData);
+                db.AddPostback(postbackData);
                 db.Commit();
                 return RedirectToAction("Index");
             }

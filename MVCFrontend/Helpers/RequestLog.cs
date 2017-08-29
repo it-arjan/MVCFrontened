@@ -22,7 +22,7 @@ namespace MVCFrontend.Helpers
             logEntry.RecentContributions = username == "Anonymous" ? 0
                 : db.GetPostbacksFromToday().Count();
 
-            db.Add(logEntry);
+            db.AddRequestlog(logEntry);
             db.Commit();
         }
 

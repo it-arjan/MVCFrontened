@@ -103,7 +103,7 @@ namespace MVCFrontend.Controllers
                 data.Duration = MqResult.Duration;
                 data.UserName = MqResult.UserName;
 
-                db.Add(data);
+                db.AddPostback(data);
                 db.Commit();
                 db.Dispose();
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
