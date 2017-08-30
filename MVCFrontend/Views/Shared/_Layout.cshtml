@@ -70,25 +70,26 @@
 
             function ConnectToSocketServer() {
                 if ("WebSocket" in window) {
-                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")';
-                    var doneToken = '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")';
-                    var notification_token = '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")';
-                    var api_feed_token = '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")';
-                    //var api_feed_token = "x_x_x";
+                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)';
+                    var doneToken = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimPostbackCompleted)';
+                    var notification_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)';
+                    var api_feed_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)';
+                    var socket_server_access_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)';
+
                     if (qm_log_token.length > 0) {
                         try {
                             if (_gSocket != null) {
                                 //alert('closing existing socket..');
                                 _gSocket.close();
                             }
-                            _gSocket = new WebSocket(serverUrl, "TestToken123");
+                            _gSocket = new WebSocket(serverUrl, socket_server_access_token);
                             // Add a message listener
                             _gSocket.onmessage = function (msg) {
                                 if (msg.data.toString().indexOf(qm_log_token.toString()) == 0) {
                                     var msgWithoutToken = msg.data.toString().substring(qm_log_token.toString().length + 6, msg.data.toString().length);
                                     if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
                                         toLogManagerChat("Done token received, auto-refreshing postbacks...");
-                                        CallFuncWhenCookieStillValid(QueryPostbackData, '@ClaimsPrincipal.Current.GetClaimValue("ajax_backend_token")', "#postbackResult");
+                                        CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
                                     }
                                     else {
                                         toLogManagerChat(msgWithoutToken);
@@ -137,7 +138,7 @@
                 else {
                     $("#api-request-feed").prepend("<p>" + msg + "</p>");
                 }
-                
+
             }
 
             function toLogManagerChat(msg) {

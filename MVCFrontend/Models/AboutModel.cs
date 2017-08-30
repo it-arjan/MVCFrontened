@@ -8,7 +8,7 @@ namespace MVCFrontend.Models
     public class AboutModel
     {
         public IEnumerable<System.Security.Claims.Claim> Claims { get; set; }
-        public DateTime TokenSessionStart;
-        public DateTime TokenSessionEnd;
+        public DateTime AuthSessionStart;
+        public DateTime AuthSessionEnd;
     }
 }

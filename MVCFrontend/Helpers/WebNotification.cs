@@ -3,7 +3,8 @@ using System.Text;
 using System.Net.WebSockets;
 using System.Threading;
 using NLogWrapper;
-using MVCFrontend.Helpers;
+using MVCFrontend.Extentions;
+using System.Security.Claims;
 
 namespace MVCFrontend.Helpers
 {
@@ -11,15 +12,15 @@ namespace MVCFrontend.Helpers
     {
         private static ILogger _logger = LogManager.CreateLogger(typeof(WebNotification), Configsettings.LogLevel());
         private static object serializer = new object();
-        public static void Send(string sessionToken, string msg, params object[] msgPars)
+        public static void Send(string feedId, string msg, params object[] msgPars)
         {
             lock (serializer)
             {
-                var _wsClient = Connect(Configsettings.SocketServerUrl());
+                var _wsClient = Connect(Configsettings.SocketServerUrl(), ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess));
                 if (Connected(_wsClient))
                 {
 
-                    string total_msg = string.Format("{0}#-_-_-#Backend notification: {1}", sessionToken, string.Format(msg, msgPars));
+                    string total_msg = string.Format("{0}#-_-_-#Backend notification: {1}", feedId, string.Format(msg, msgPars));
                     var tokSrc = new CancellationTokenSource();
                     var tsk = _wsClient.SendAsync(
                                     new ArraySegment<byte>(Encoding.UTF8.GetBytes(total_msg)),
@@ -35,10 +36,10 @@ namespace MVCFrontend.Helpers
             }
         }
 
-        private static ClientWebSocket Connect(string url)
+        private static ClientWebSocket Connect(string url, string accessToken)
         {
             var _wsClient = new ClientWebSocket();
-            _wsClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", "TestToken123");
+            _wsClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", accessToken);
             _logger.Info("Connecting to {0}", url);
 
             var tokSrc = new CancellationTokenSource();
@@ -58,7 +59,8 @@ namespace MVCFrontend.Helpers
             {
                 var tokSrc = new CancellationTokenSource();
                 var tsk = _wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "", tokSrc.Token);
-                tsk.Wait(); tsk.Dispose();
+                if (!tsk.IsFaulted) tsk.Wait();
+                tsk.Dispose();
                 tokSrc.Dispose();
             }
             _logger.Debug("ClientWebSocket CLOSED");

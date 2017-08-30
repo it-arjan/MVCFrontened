@@ -1,24 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Owin;
-using Owin;
-using System.IdentityModel.Tokens;
-using System.Collections.Generic;
-using Microsoft.Owin.Security.Cookies;
+﻿using IdentityServer3.AccessTokenValidation;
 using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security.OpenIdConnect;
-using NLogWrapper;
-using System.Security.Claims;
-using Microsoft.Owin.Security;
 using Microsoft.IdentityModel.Protocols;
-using System.Configuration;
-using IdentityServer3.AccessTokenValidation;
-using System.Net;
+using Microsoft.Owin;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.OpenIdConnect;
 using MVCFrontend.Helpers;
-using System.Xml;
-using Microsoft.AspNet.Identity.Owin;
-using Nancy.Owin;
-using IdentityModel.Client;
+using NLogWrapper;
+using Owin;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens;
+using System.Net;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 [assembly: OwinStartup(typeof(MVCFrontend.Startup))]
 
@@ -77,6 +72,8 @@ namespace MVCFrontend
             CheckHealth();
 
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
+            //debugging middleware code
             //app.Use(async (Context, next) =>
             //{
             //    _logger.Debug("OWIN DEBUG::1 ==>Before cookie, before OIDC");
@@ -114,7 +111,7 @@ namespace MVCFrontend
                     },
                 }
             });
-
+            //debugging middleware code
             //app.Use(async (Context, next) =>
             //{
             //    _logger.Debug("OWIN DEBUG::2 ==>after cookie, before OIDC");
@@ -141,41 +138,17 @@ namespace MVCFrontend
 
                         var identity = n.AuthenticationTicket.Identity;
 
-                        //add usefult claims
-                        identity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken)); //id_token is for commnication with idSrv
-                        identity.AddClaim(new Claim("access_token", n.ProtocolMessage.AccessToken)); //access_token is for commnication with api
+                        CleanupClaims(identity);
 
-                        identity.AddClaim(new Claim("qm_socket_id", Guid.NewGuid().ToString()));
-                        identity.AddClaim(new Claim("notification_socket_id", Guid.NewGuid().ToString()));
-                        identity.AddClaim(new Claim("api_feed_socket_id", Guid.NewGuid().ToString()));
-                        
-                        identity.AddClaim(new Claim("msg_done_id", Guid.NewGuid().ToString()));
+                        // Add new, no need for std id_token & access_token, we use cookie auth
+                        identity.AddClaim(new Claim(IdSrv3.ClaimCorsToken, IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi)));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimApiToken, IdSrv3.NewSiliconClientToken(IdSrv3.ScopeFrontendDataApi)));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimScoketAccess, Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimQmFeedId, Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimNotificationFeedId, Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimApiFeedId, Guid.NewGuid().ToString()));
+                        identity.AddClaim(new Claim(IdSrv3.ClaimPostbackCompleted, Guid.NewGuid().ToString()));
 
-                        var corsToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi);
-                        identity.AddClaim(new Claim("ajax_cors_token", corsToken));
-
-                        var dataApiToken = IdSrv3.NewSiliconClientToken(IdSrv3.ScopeFrontendDataApi);
-                        identity.AddClaim(new Claim("data_api_token", dataApiToken));
-
-                        // clean up
-                        var claimsToRemove = new List<Claim>();
-                        foreach (var claim in identity.Claims)
-                        {
-                            if (claim.Type == "iss" ||
-                                claim.Type == "nbf" ||
-                                claim.Type == "aud" ||
-                                claim.Type == "iat" ||
-                                claim.Type == "at_hash" ||
-                                claim.Type == "sid" ||
-                                claim.Type == "idp" ||
-                                claim.Type == "nonce" ||
-                                claim.Type == "amr" )
-                            {
-                                claimsToRemove.Add(claim);
-                            }
-                        }
-
-                        claimsToRemove.ForEach(c => identity.RemoveClaim(c));
 
                         // not sure why creating a new AuthenticationTicket is needed
                         n.AuthenticationTicket = new AuthenticationTicket(identity, n.AuthenticationTicket.Properties);
@@ -241,7 +214,26 @@ namespace MVCFrontend
             _logger.Info("startup executed");
         }
 
-
+        private static void CleanupClaims(ClaimsIdentity identity)
+        {
+            var claimsToRemove = new List<Claim>();
+            foreach (var claim in identity.Claims)
+            {
+                if (claim.Type == "iss" ||
+                    claim.Type == "nbf" ||
+                    claim.Type == "aud" ||
+                    claim.Type == "iat" ||
+                    claim.Type == "at_hash" ||
+                    claim.Type == "sid" ||
+                    claim.Type == "idp" ||
+                    claim.Type == "nonce" ||
+                    claim.Type == "amr")
+                {
+                    claimsToRemove.Add(claim);
+                }
+            }
+            claimsToRemove.ForEach(c => identity.RemoveClaim(c));
+        }
 
         private static bool IsAjaxRequest(IOwinRequest request)
         {

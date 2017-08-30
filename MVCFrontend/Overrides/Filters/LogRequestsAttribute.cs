@@ -28,11 +28,12 @@ namespace MVCFrontend.Overrides.Filters
                     ThrowIfTriggerLogExceptionRequest();
                     if (!RequestLog.IgnoreIp(HttpContext.Current.Request.GetOwinContext().Request.RemoteIpAddress))
                     {
-                        IdSrv3.EnsureTokenClaimIsValid("data_api_token");
+                        IdSrv3.EnsureTokenClaimIsValid(IdSrv3.ClaimApiToken);
                         var db = new DataFactory(MyDbType.ApiDbNancy).Db(
                             Configsettings.DataApiUrl(),
-                            ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
-                            ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
+                            ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiToken),
+                            ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess),
+                           ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)
                             );
 
                         var AspSessionId = filterContext.HttpContext.Session.SessionID;

@@ -19,8 +19,8 @@ namespace MVCFrontend.Controllers
 
         protected override void OnException(ExceptionContext filterContext)
         {
-            var msg = filterContext.Exception != null ? filterContext.Exception.Message : "no exception message";
-            _logger.Error("Exception! Message = {0}", msg);
+            var msg = filterContext.Exception != null ? filterContext.Exception.ToString() : "no exception message";
+            _logger.Error("MyBaseController: Exception! Message = {0}", msg);
 
             // Let IIS serve the custom error page using httpErrors tag
             filterContext.ExceptionHandled = true;

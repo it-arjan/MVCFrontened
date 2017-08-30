@@ -130,7 +130,7 @@
 
                     $('#msgForm').submit(function (event) {
                         event.preventDefault();
-                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")',
+                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)',
                             "#dropResult", $('input[name=message]').val(), $('select[name=nrdrops]').val());
                         $('select[name=nrdrops]').val(1);
                     });
@@ -144,12 +144,12 @@
                     });
                     $('#toggleQueue').click(function (event) {
                         event.preventDefault();
-                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")', "#toggleResult");
+                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
                     });
 
                     //call these on page load
                     document.getElementById("openOnLoad").click();
-                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token")', "#toggleResult");
+                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
                     QueryPostbackData('token-not-used', '#postbackResult');
                     InitializeChat();
                 });
@@ -170,9 +170,10 @@
                 function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': "GetModus",
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
                         'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
+                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
                         'AspSessionId': '@Session.SessionID',
                     };
 
@@ -183,9 +184,10 @@
                 function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
                     var formData = {
                         'cmdType': 'ToggleModus',
-                        'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
                         'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
+                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
                         'AspSessionId': '@Session.SessionID',
                         'LogDropRequest': '@Model.LogDropRequest',
                     };
@@ -216,11 +218,12 @@
                     var formData = {
                         'MessageId': msgId,
                         'PostBackUrl': '@string.Format("{0}/postback", Configsettings.DataApiUrl())',
-                        'SocketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
-                        'NotificationToken': '@ClaimsPrincipal.Current.GetClaimValue("notification_socket_id")',
-                        'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue("msg_done_id")',
+                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
+                        'SocketNotificationFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)',
+                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
+                        'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimPostbackCompleted)',
                         'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'ApiFeedToken': '@ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")',
                         'AspSessionId': '@Session.SessionID',
                         'NrDrops': nrDrops
                     };

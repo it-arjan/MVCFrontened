@@ -49,7 +49,10 @@ namespace MVCFrontend.Controllers
             var list = GetFirstThreeSelectedvalues(values);
             if (list == null)
             {
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "Less the 3 web services selected, nothing is configured.");
+                WebNotification.Send(
+                    ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), 
+                    "Less the 3 web services selected, nothing is configured."
+                    );
                 result = Post(GetServiceConfigdata());
             }
             else
@@ -59,20 +62,25 @@ namespace MVCFrontend.Controllers
                 data.Service1Nr = list[0];
                 data.Service2Nr = list[1];
                 data.Service3Nr = list[2];
-                data.SocketToken = ClaimsPrincipal.Current.GetClaimValue("qm_socket_id");
+
+                data.SocketAccessToken = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess);
+                data.SocketQmFeed = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId);
+                data.SocketApiFeed = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId);
+
                 data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
-                data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
                 data.AspSessionId = Session.SessionID;
                 data.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
 
                 result = Post(data);
                 if (list.Contains("7"))
                 {
-                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "You have selected postal code lookup. Post a message like \"1234Ab 12\" and We'll lookup some public info about this property.\n\n");
+                    WebNotification.Send(
+                        ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), 
+                        "You have selected postal code lookup. Post a message like \"1234Ab 12\" and We'll lookup some public info about this property.\n\n");
                 }
                 else // default message
                 {
-                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The first three services in your selection are configured");
+                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), "The first three services in your selection are configured");
                 }
             }
             var model = CreateModel(result);
@@ -87,9 +95,9 @@ namespace MVCFrontend.Controllers
             data.Service1Nr = string.Empty;
             data.Service2Nr = string.Empty;
             data.Service3Nr = string.Empty;
-            data.SocketToken = ClaimsPrincipal.Current.GetClaimValue("qm_socket_id");
+            data.SocketQmFeed = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId);
             data.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
-            data.ApiFeedToken = ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id");
+            data.SocketApiFeed = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId);
             data.AspSessionId = Session.SessionID;
             data.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
             return data;
@@ -147,7 +155,7 @@ namespace MVCFrontend.Controllers
 
             var easyHttp = new HttpClient();
             var apiUrl = string.Format("{0}/api/CmdQueue", Configsettings.EntrypointUrl());
-            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"));
+            var auth_header = string.Format("bearer {0}", ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken));
             easyHttp.Request.AddExtraHeader("Authorization", auth_header);
             easyHttp.Request.Accept = HttpContentTypes.ApplicationJson;
 
@@ -162,11 +170,15 @@ namespace MVCFrontend.Controllers
                 }
                 else if (easyHttp.Response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The Queue Manager denied access, is your CORS token expired?");
+                    WebNotification.Send(
+                        ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), 
+                        "The Queue Manager denied access, is your CORS token expired?");
                 }
                 else
                 {
-                    WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "The Queue Manager returned " + easyHttp.Response.StatusCode);
+                    WebNotification.Send(
+                        ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), 
+                        "Queue Manager returned {0}", easyHttp.Response.StatusCode);
                 }
             }
             catch (Exception ex)
@@ -192,7 +204,9 @@ namespace MVCFrontend.Controllers
             }
             else //ERROR, return empty list 
             {
-                WebNotification.Send(ClaimsPrincipal.Current.GetClaimValue("notification_socket_id"), "An error ocurred parsing the json of the server response");
+                WebNotification.Send(
+                    ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId), 
+                    "An error ocurred parsing the json of the server response");
             }
             return result;
         }
@@ -205,9 +219,12 @@ namespace MVCFrontend.Controllers
         public string Service1Nr { get; set; }
         public string Service2Nr { get; set; }
         public string Service3Nr { get; set; }
-        public string SocketToken { get; set; }
+
+        public string SocketAccessToken { get; set; }
+        public string SocketQmFeed { get; set; }
+        public string SocketApiFeed { get; set; }
+
         public string UserName { get; set; }
-        public string ApiFeedToken { get; set; }
         public string AspSessionId { get; set; }
         public bool LogDropRequest { get; set; }
     }

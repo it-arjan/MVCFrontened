@@ -1,28 +1,17 @@
-﻿using MyData;
-using MyData.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Security.Claims;
-using NLogWrapper;
-using System.Net.Http.Headers;
-
-using EasyHttp.Http;
-using System.Net;
-using System.Threading.Tasks;
-using IdentityModel.Client;
-using Newtonsoft.Json;
-using System.Security.Permissions;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using MVCFrontend.Helpers;
-using System.Xml;
+﻿using EasyHttp.Http;
 using MVCFrontend.Extentions;
-using System.Configuration;
+using MVCFrontend.Helpers;
 using MVCFrontend.Models;
 using MVCFrontend.Overrides.Filters;
+using MyData;
+using MyData.Models;
+using Newtonsoft.Json;
+using NLogWrapper;
+using System;
+using System.Net;
+using System.Security.Claims;
+using System.Web;
+using System.Web.Mvc;
 
 namespace MVCFrontend.Controllers
 {
@@ -39,10 +28,9 @@ namespace MVCFrontend.Controllers
             //Session.Abandon();
             var model = new MessageViewModel();
 
-            //ClaimsPrincipal.Current.AddUpdateClaim("ajax_cors_token", IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi));
-            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
+            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), "exp");
             Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
-                                                        ClaimsPrincipal.Current.GetClaimValue("ajax_cors_token"), "exp");
+                                                        ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), "exp");
             
             Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp");
             Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
@@ -54,7 +42,31 @@ namespace MVCFrontend.Controllers
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
             model.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
             ViewBag.Message = CheckSessionSettings();
+
+            var registerUrl = string.Format("{0}/api/CheckinToken", Configsettings.EntrypointUrl());
+            
+            // when restarting entrypoint, we want to reregister on reload of page
+            RegisterSocketServerAccessToken(
+                registerUrl, 
+                ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), 
+                ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)
+                );
+
             return View("SendMessage", model);
+        }
+
+        private void RegisterSocketServerAccessToken(string url, string corsToken, string socketServerAccessToken)
+        {
+            var eHttp = new EasyHttp.Http.HttpClient();
+            eHttp.Request.AddExtraHeader("Authorization", string.Format("bearer {0}", corsToken));
+            eHttp.Request.AddExtraHeader("X-socketServerAccessToken", socketServerAccessToken);
+            eHttp.Post(url, socketServerAccessToken, HttpContentTypes.ApplicationXWwwFormUrlEncoded);
+
+            if (eHttp.Response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                _logger.Error("RegisterSocketServerAccessToken returned {0}", eHttp.Response.StatusCode);
+                throw new EasyHttp.Infrastructure.HttpException(eHttp.Response.StatusCode, eHttp.Response.StatusDescription);
+            }
         }
 
         private string CheckSessionSettings()
@@ -73,78 +85,6 @@ namespace MVCFrontend.Controllers
         public string AuthPing()
         {
             return "Auth Cookie still valid.";
-        }
-
-        [HttpPost]
-        public ActionResult Postback(DataFromQM MqResult)
-        {
-            // NOT called when running  with separate data Api Db
-           _logger.Debug("Data is posted back:  '{0}'", JsonConvert.SerializeObject(MqResult));
-
-            try
-            {
-                WebNotification.Send(MqResult.NotificationToken, "Postback received.");
-                // manually log the request
-                // in order to be able to related it to the human session
-                IdSrv3.EnsureTokenClaimIsValid("data_api_token");
-                var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                Configsettings.DataApiUrl(), 
-                    ClaimsPrincipal.Current.GetClaimValue("data_api_token"), 
-                    ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
-                    );
-                RequestLog.StoreRequestForSessionId(db, MqResult.AspSessionId);
-
-                var data = new PostbackData();
-                data.MessageId = MqResult.MessageId;
-                data.Start = MqResult.Start;
-                data.End = MqResult.End;
-                data.AspSessionId = MqResult.AspSessionId;
-                data.Content = MqResult.Content;
-                data.Duration = MqResult.Duration;
-                data.UserName = MqResult.UserName;
-
-                db.AddPostback(data);
-                db.Commit();
-                db.Dispose();
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
-            }
-            catch (Exception ex) {
-                string msg = ex.Message;
-                while (ex.InnerException != null)
-                {
-                    msg = string.Format("{0} \n{1}", msg, ex.InnerException.Message);
-                    ex = ex.InnerException;
-                }
-                _logger.Error("Error saving postback in dbcontext: {0}/n posted values: '{1}'", msg, JsonConvert.SerializeObject(MqResult));
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpGet]
-        public JsonResult GetPostbacks()
-        {
-            IdSrv3.EnsureTokenClaimIsValid("data_api_token");
-            var db = new DataFactory(MyDbType.ApiDbNancy).Db(
-                        Configsettings.DataApiUrl(),
-                        ClaimsPrincipal.Current.GetClaimValue("data_api_token"),
-                        ClaimsPrincipal.Current.GetClaimValue("api_feed_socket_id")
-                );
-            var recentPostbacks = db.GetRecentPostbacks(10);
-            db.Dispose();
-            return Json(JsonConvert.SerializeObject(recentPostbacks), JsonRequestBehavior.AllowGet );
-
-        }
-        public class DataFromQM
-        {
-            public string MessageId { get; set; }
-            public string UserName { get; set; }
-            public DateTime Start { get; set; }
-            public DateTime End { get; set; }
-
-            public decimal Duration { get; set; }
-            public string Content { get; set; }
-            public string AspSessionId { get; set; }
-            public string NotificationToken { get; set; }
         }
     }
 }

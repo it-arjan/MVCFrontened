@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims
 @using MVCFrontend.Extentions
+@using MVCFrontend.Helpers
 @model MVCFrontend.Models.ServiceSelectionModel
 
 <div id="serviceSelectDiv">
@@ -39,7 +40,7 @@
             'service6': $("#service6").is(':checked'),
             'service7': $("#service7").is(':checked'),
             'service8': $("#service8").is(':checked'),
-            'socketToken': '@ClaimsPrincipal.Current.GetClaimValue("qm_socket_id")',
+            'socketToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
         };
         $(resultDivId).text("Configuring Queue manager...");
         $.ajax({

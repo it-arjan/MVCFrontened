@@ -92,7 +92,7 @@ namespace MVCFrontend.Controllers.Tests
             var abouModel = result.Model as Models.AboutModel;
             Assert.AreSame(abouModel.Claims, claimList);
             // Claim Setup: auth_time == exp from access_token
-            Assert.IsTrue(abouModel.TokenSessionStart == abouModel.TokenSessionEnd);
+            Assert.IsTrue(abouModel.AuthSessionStart == abouModel.AuthSessionEnd);
         }
 
         private static HomeController MockHomeController( out Mock<ClaimsPrincipal> principalMock, out Mock<MakeStaticsMockable> staticsMock)

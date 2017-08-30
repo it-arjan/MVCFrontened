@@ -23,6 +23,16 @@ namespace MVCFrontend.Helpers
         public const string ScopeWcfService = "wcf-service";
         public const string ScopeMsWebApi = "ms-webapi2";
 
+        public const string ClaimQmFeedId = "socket_qm_feed";
+        public const string ClaimNotificationFeedId = "socket_notification_feed";
+        public const string ClaimApiFeedId = "socket_api_feed";
+        public const string ClaimScoketAccess = "socket_access_token";
+
+        public const string ClaimPostbackCompleted = "postback_completed_sign";
+
+        public const string ClaimCorsToken = "oath_ajax_cors";
+        public const string ClaimApiToken = "oath_data_api";
+
         public static string UniqueClaimOfAntiForgeryToken = "given_name";
 
         public static int SessionRefreshTimeoutSecs = 3600;
@@ -31,8 +41,8 @@ namespace MVCFrontend.Helpers
 
         private static Dictionary<string, string> claimTypeScopeMap = new Dictionary<string, string>
         {
-            { "ajax_cors_token", IdSrv3.ScopeEntryQueueApi },
-            { "data_api_token", IdSrv3.ScopeFrontendDataApi}
+            { IdSrv3.ClaimCorsToken, IdSrv3.ScopeEntryQueueApi },
+            { IdSrv3.ClaimApiToken, IdSrv3.ScopeFrontendDataApi}
         };
 
         public static string NewSiliconClientToken(string scope)
@@ -46,6 +56,7 @@ namespace MVCFrontend.Helpers
             if (token.IsError) return "Error Getting a Silicon Token for scope " + scope;
             return token.AccessToken;
         }
+
         public static bool EnsureTokenClaimIsValid(string claimType)
         {
             if (TokenAlmostExpired(ClaimsPrincipal.Current.GetClaimValue(claimType), claimTypeScopeMap[claimType]))
@@ -55,10 +66,11 @@ namespace MVCFrontend.Helpers
             }
             return true;
         }
+
         private static bool TokenAlmostExpired(string jwt, string scope)
         {
             if (jwt.Contains("not set")) return true;
-            _logger.Debug("Checking expiration of token({1}) {0}", jwt, scope);
+            _logger.Trace("Checking expiration of token({1}) {0}", jwt, scope);
             // #PastedCode
             //
             //=> Retrieve the 2nd part of the JWT token (this the JWT payload)
