@@ -40,7 +40,7 @@ namespace MVCFrontend.Controllers
 
             model.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
-            model.LogDropRequest = !RequestLog.IgnoreIp(HttpContext.Request.GetOwinContext().Request.RemoteIpAddress);
+            model.LogDropRequest = !RequestLog.IgnoreIp( HttpContext.Request.GetOwinContext().Request.RemoteIpAddress );
             ViewBag.Message = CheckSessionSettings();
 
             var registerUrl = string.Format("{0}/api/CheckinToken", Configsettings.EntrypointUrl());

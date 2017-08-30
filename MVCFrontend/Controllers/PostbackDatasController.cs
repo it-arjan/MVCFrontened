@@ -99,7 +99,7 @@ namespace MVCFrontend.Controllers
 
          // POST: PostbackDatas/Delete/5
         [HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
             int intPk = Convert.ToInt16(id);

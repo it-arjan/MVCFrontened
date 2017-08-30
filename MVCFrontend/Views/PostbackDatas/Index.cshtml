@@ -48,6 +48,7 @@
     </table>
 </div>
 <div id="PostbackDetails" class="postback-detail-div" style="display:none;position:absolute;top:0%;left:0%;width:100%; "></div>
+@Html.AntiForgeryToken()
 
 <script>
     $(document).keyup(function (e) {
@@ -61,16 +62,17 @@
         $('#PostbackDetails').slideToggle();
     }
     function deletePostback(id) {
-        CallFuncWhenCookieStillValid(DeletePostbackAjax, 'token-not-used', "#postbackResult", id);
+        CallFuncWhenCookieStillValid(DeletePostbackAjax, $("input[name='__RequestVerificationToken']").attr("value"), "#postbackResult", id);
     }
-    function DeletePostbackAjax(ajaxAccessToken, resultDivId, id) {
+    function DeletePostbackAjax(requestVerificationToken, resultDivId, id) {
+        var formData = {
+            __RequestVerificationToken: requestVerificationToken
+        };
         $.ajax({
             type: 'Post',
             dataType: 'html',
             url: '/Postbackdatas/Delete/' + id,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-            },
+            data: formData
         })
         .done(function (data) {
             $(resultDivId).html(data);

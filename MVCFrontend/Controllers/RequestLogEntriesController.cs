@@ -66,26 +66,7 @@ namespace MVCFrontend.Controllers
             return PartialView(requestLogEntry);
         }
 
-         // GET: RequestLogEntries/Delete/5
-        //public ActionResult Delete(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        //    }
-        //    if (!ClaimsPrincipal.Current.isAdmin())
-        //    {
-        //        return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
-        //    }
-        //    RequestLogEntry requestLogEntry = db.RequestLogEntries.Find(id);
-        //    if (requestLogEntry == null)
-        //    {
-        //        return HttpNotFound();
-        //    }
-        //    return View(requestLogEntry);
-        //}
-
-        // POST: RequestLogEntries/Delete/5
+         // POST: RequestLogEntries/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
