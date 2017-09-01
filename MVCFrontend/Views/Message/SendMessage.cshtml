@@ -172,8 +172,8 @@
                         'cmdType': "GetModus",
                         'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
                         'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
                         'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
+                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
                         'AspSessionId': '@Session.SessionID',
                     };
 
@@ -201,17 +201,17 @@
 
                 function GetRequestLogs(tokenNotUsed, resultDivId) {
                     $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
-                    getPartial(/RequestLogEntries/, resultDivId);
+                    getPartial('/RequestLogEntries/', resultDivId);
                 }
 
                 function TriggerLogError(tokenNotUsed, resultDivId) {
                     $(resultDivId).html("<h3>Triggering log Exception... </h3>");
-                    getPartial(/TriggerLogException/, resultDivId);
+                    getPartial('/TriggerLogException/', resultDivId);
                 }
 
                 function QueryPostbackData(ajaxAccessToken, resultDivId) {
                     $(resultDivId).html("<h3>Loading actions.. </h3>");
-                    getPartial(/Postbackdatas/, resultDivId);
+                    getPartial('/Postbackdatas/', resultDivId);
                 }
 
                 function DropIntoQueueCors(ajaxAccessToken, resultDivId, msgId, nrDrops) {

@@ -41,6 +41,18 @@ namespace MVCFrontend
             Session.Clear();
         }
 
+        private void CheckHealth()
+        {
+            _logger.Info("Checking config settings..");
+            _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
+            SettingsChecker.CheckPresenceAllPlainSettings(typeof(Configsettings));
+
+            _logger.Info("all requried config settings seem present..");
+            _logger.Info("Url = {0}", Configsettings.HostUrl());
+            _logger.Info("Socket server Url = {0}", Configsettings.SocketServerUrl());
+            _logger.Info("Auth server Url= {0}", Configsettings.AuthUrl());
+            _logger.Info("..done with config checks.");
+        }
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -52,6 +64,8 @@ namespace MVCFrontend
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;
+
+            CheckHealth();
         }
 
         protected void Application_Error(Object sender, EventArgs e)

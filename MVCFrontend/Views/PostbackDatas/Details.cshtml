@@ -5,7 +5,15 @@
 @{
     Layout = null;
 }
-<div>
+<script>
+    function togglePopupDetails(id) {
+        //console.log('->togglePopupDetails');
+        $(id).slideToggle();
+    }
+</script>
+
+
+<div><button id='xbutton' class='xbutton' onclick="togglePopupDetails('#PostbackDetails');">X</button>
     <div>
         <dl class="postback-detail">
             <dt>

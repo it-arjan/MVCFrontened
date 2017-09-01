@@ -39,17 +39,16 @@
                 @Html.DisplayFor(modelItem => item.End)
             </td>
             <td>
-                <a href="#" id="openPopupDetails" class="fancyButtons" onclick="event.preventDefault();openPopupDetails(@item.Id);">Show log</a>
-                <a href="#" id="deletePostback" class="txtButton" onclick="event.preventDefault();deletePostback(@item.Id);">Delete</a>
+                <a href="#" id="openPopupDetails" class="fancyButtons" onclick="event.preventDefault();openPopupDetails(@item.Id, '#PostbackDetails');">Show log</a>
+                <a href="#" id="deletePostback" class="txtButton" onclick="event.preventDefault();deletePostback(@item.Id, '#postbackResult');">Delete</a>
             </td>
         </tr>
     }
-    
     </table>
 </div>
 <div id="PostbackDetails" class="postback-detail-div" style="display:none;position:absolute;top:0%;left:0%;width:100%; "></div>
-@Html.AntiForgeryToken()
 
+@Html.AntiForgeryToken()
 <script>
     $(document).keyup(function (e) {
         if (e.keyCode === 27) { // esc
@@ -57,51 +56,7 @@
             $('#PostbackDetails').hide(); //slideToggle gets confused when called here
         }
     });
-    function togglePopupDetails() {
-        //console.log('->togglePopupDetails');
-        $('#PostbackDetails').slideToggle();
-    }
-    function deletePostback(id) {
-        CallFuncWhenCookieStillValid(DeletePostbackAjax, $("input[name='__RequestVerificationToken']").attr("value"), "#postbackResult", id);
-    }
-    function DeletePostbackAjax(requestVerificationToken, resultDivId, id) {
-        var formData = {
-            __RequestVerificationToken: requestVerificationToken
-        };
-        $.ajax({
-            type: 'Post',
-            dataType: 'html',
-            url: '/Postbackdatas/Delete/' + id,
-            data: formData
-        })
-        .done(function (data) {
-            $(resultDivId).html(data);
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            $(resultDivId).append("<br/>Querying postback details failed: error= " + errorThrown);
-        })
-    }
-    function openPopupDetails(id) {
-        CallFuncWhenCookieStillValid(QueryDetails, 'token-not-used', "#PostbackDetails", id);
-    }
-    function QueryDetails(ajaxAccessToken, resultDivId, id) {
-        $('#PostbackDetails').hide();
-        togglePopupDetails();
-        $(resultDivId).html("<h3>Loading details ... </h3>");
-        $.ajax({
-            type: 'Get',
-            dataType: 'html',
-            url: '/Postbackdatas/Details?id=' + id,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-            },
-        })
-        .done(function (data) {
-            var buttonHtml = "<button id='xbutton' class='xbutton' onclick='togglePopupDetails();'>X</button>";
-            $(resultDivId).html(buttonHtml + data);
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            $(resultDivId).append("<br/>Querying postback details failed: error= " + errorThrown);
-        })
-    }
+
+
+
 </script>
