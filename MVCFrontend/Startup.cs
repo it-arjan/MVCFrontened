@@ -22,18 +22,6 @@ namespace MVCFrontend
     public class Startup
     {
         private ILogger _logger = LogManager.CreateLogger(typeof(Startup), Configsettings.LogLevel());
-        private void CheckHealth()
-        {
-            _logger.Info("Checking config settings..");
-            _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
-            SettingsChecker.CheckPresenceAllPlainSettings(typeof(Configsettings));
-
-            _logger.Info("all requried config settings seem present..");
-            _logger.Info("Url = {0}", Configsettings.HostUrl());
-            _logger.Info("Socket server Url = {0}", Configsettings.SocketServerUrl());
-            _logger.Info("Auth server Url= {0}", Configsettings.AuthUrl());
-            _logger.Info("..done with config checks.");
-        }
 
         private static Task GetAuthCookieExp(CookieValidateIdentityContext context)
         {
@@ -58,18 +46,19 @@ namespace MVCFrontend
             }
             return Task.FromResult(0);
         }
-
-        public void Configuration(IAppBuilder app)
+        private void HandleAzureNotTrustingSelfSignedCertificates()
         {
             if (Configsettings.OnAzure())
             {
+                // remvoe
                 ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
             }
-
+        }
+        public void Configuration(IAppBuilder app)
+        {
+            HandleAzureNotTrustingSelfSignedCertificates();
             _logger.Info("startup starting");
-
-            CheckHealth();
 
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
 
