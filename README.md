@@ -27,7 +27,13 @@ To see how MVCFrontend fits in the overall system, see https://messagequeuefront
 - Owin code dealing with OAUTH
 - setting the different claims on auth success
 
+### /Script/Custom Folder
+-BackendCommunication.js + WebEntryPointCommunication.js are JQuery
+-NotificationAnimate.js is a mix of Js/Jquery. There can be any amount of random incoming notiications, but there are max 3 message-divs available to display. If all divs are taken, the notification has to wait until a div becomes vailable. Could be done differently, but it was an interesting problem to solve in single threaded Js.
+
+
 ### /Helpers/SettingsChecker
 - Auto-checks on Application_Startup if all registered settings are present in Web.config, if not .. exception
 
-
+### MVCFrontendTests Project
+- currently only holds a few MS unit tests for HomeController. This reaquired to implement DI in Custom controller factory, and a wrapper onject for extention methods
