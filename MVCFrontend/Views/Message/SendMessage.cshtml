@@ -43,10 +43,11 @@
                             <select name="nrdrops">
                                 @for (int i = 1; i <= 10; i++)
                                 {
-                                    <option>@i</option>}
+                                    <option>@i</option>
+                                }
                             </select><span> times</span>
                         </div>
-                        <inout typeof="hidden" name="logrequests" value="@Model.LogDropRequest" />
+                        <input type="hidden" name="logrequests" value="@Model.LogDropRequest" />
                         <span id="dropResult"></span>
                     </form>
                 </div>
@@ -113,8 +114,7 @@
                 <div id="socketChat" class="col-md-8 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
                 <div id="postbackResult" class="col-md-4 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
             </div>
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-            <script src="~/Scripts/Custom/secure-utils.js"></script>
+
             <script src="~/Scripts/Custom/WebEntryPointCommunication.js"></script>
             <script src="~/Scripts/Custom/BackendCommunication.js"></script>
             <script>
@@ -204,11 +204,6 @@
                     getPartial('/RequestLogEntries/', resultDivId);
                 }
 
-                function TriggerLogError(tokenNotUsed, resultDivId) {
-                    $(resultDivId).html("<h3>Triggering log Exception... </h3>");
-                    getPartial('/TriggerLogException/', resultDivId);
-                }
-
                 function QueryPostbackData(ajaxAccessToken, resultDivId) {
                     $(resultDivId).html("<h3>Loading actions.. </h3>");
                     getPartial('/Postbackdatas/', resultDivId);
@@ -268,76 +263,58 @@
         // Session expiration counter stuff
         //
             <script>
+
                 // the Asp Counter
-                var AspCounter = setInterval(function () {
-                    var resultId = '#exp_asp';
-                    var expDateStr = '@DateTime.UtcNow.AddMinutes(Session.Timeout)';
-
-                    var clientLocalNow = new Date();
-                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
-                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
-                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
-
-                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
-
-                    if (secs < 0) {
-                        setExpiredAndStop(AspCounter, resultId);
-                    }
-                    else {
-                        var msg = getCounterDisplayMsg(secs);
-                        // Display the result
-                        $(resultId).text(msg);
-                    }
+                var aspCounter = setInterval(function () {
+                    RefreshCounter('#exp_asp', '@Session["exp_aspsession_utc_iso"]');
                 }, 1000);
                 // auth Cookie Counter
-                var CookieCounter = setInterval(function () {
-                    var resultId = '#exp_cookie';
-
-                    var expDateStr = '@Session["exp_cookie_time_utc"]';
-                    var clientLocalNow = new Date();
-                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
-                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
-                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
-
-                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
-
-                    if (secs < 0) {
-                        setExpiredAndStop(CookieCounter, resultId);
-                    }
-                    else {
-                        var msg = getCounterDisplayMsg(secs);
-                        // Display the result
-                        $(resultId).text(msg);
-                    }
+                var cookieCounter = setInterval(function () {
+                    var expstr = '@Session["exp_cookie_utc_iso"]';
+                    RefreshCounter('#exp_cookie', expstr);
                 }, 1000);
 
                 // Cors Token Counter
                 var tokenCounter = setInterval(function () {
-                    var resultId = '#exp_cors_token';
+                    RefreshCounter ('#exp_cors_token', '@Session["exp_cors_utc_iso"]');
+                }, 1000);
 
-                    var expDateStr = '@Session["exp_cors_token_time_utc"]';
-                    var clientLocalNow = new Date();
-                    var clientUtcNow = new Date(clientLocalNow.getUTCFullYear(),
-                        clientLocalNow.getUTCMonth(), clientLocalNow.getUTCDate(),
-                        clientLocalNow.getUTCHours(), clientLocalNow.getUTCMinutes(), clientLocalNow.getUTCSeconds());
+                // Refresh counter
+                function RefreshCounter(resultId, expDateStrUtc) {
 
-                    var secs = new Date(expDateStr).getTime() - clientUtcNow.getTime();
+                    var nowStrUtc = new Date().toUTCString();
+                    var clientUtcNow = new Date(nowStrUtc); // not same (in ticks) as new Date()
 
-                    if (secs < 0) {
-                        setExpiredAndStop(tokenCounter, resultId);
+                    var expDate = new Date(expDateStrUtc);
+
+                    var ticks = expDate.getTime() - clientUtcNow.getTime();
+
+                    if (ticks < 0) {
+                        console.log("==== Counter expired ====");
+                        console.log("Utc now Date = " + clientUtcNow);
+                        console.log("expdateStrUtc= " + expDateStrUtc);
+                        console.log("expstrUtc new Date= " + expDate);
+
+                        console.log("ticks expUtc/utcNow " + expDate.getTime() + ", " + clientUtcNow.getTime());
+
+                        // provisoric
+                        var counterToStop = resultId === '#exp_asp' ? aspCounter :
+                            resultId === '#exp_cookie' ? cookieCounter : tokenCounter;
+
+                        setExpiredAndStop(counterToStop, resultId);
                     }
                     else {
-                        var msg = getCounterDisplayMsg(secs);
+                        var msg = getCounterDisplayMsg(ticks);
                         //console.log("Msg: " + msg)
                         // Display the result
                         $(resultId).text(msg);
                     }
-                }, 1000);
+                }
 
-                function getCounterDisplayMsg(secs) {
-                    var hours = Math.floor((secs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    var minutes = Math.floor((secs % (1000 * 60 * 60)) / (1000 * 60));
-                    var seconds = Math.floor((secs % (1000 * 60)) / 1000);
+                function getCounterDisplayMsg(ticks) {
+                    var hours = Math.floor((ticks % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((ticks % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((ticks % (1000 * 60)) / 1000);
 
                     var hrs_relevant = hours > 0 ? hours + "h " : "";
                     return hrs_relevant + minutes + "m " + seconds + "s ";
@@ -347,6 +324,16 @@
                     clearInterval(intervalRef);
                     $(resultId).text("EXPIRED");
                     $(resultId).css("color", "red");
+                }
+
+                function ConvertUTCTimeToLocalTime(utcDateString) {
+                    var convertdLocalTime = new Date(utcDateString);
+
+                    var hourOffset = convertdLocalTime.getTimezoneOffset() / 60;
+
+                    convertdLocalTime.setHours(convertdLocalTime.getHours() + hourOffset);
+
+                    return convertdLocalTime;
                 }
             </script>
     }

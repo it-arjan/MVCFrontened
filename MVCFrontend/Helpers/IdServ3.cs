@@ -33,6 +33,8 @@ namespace MVCFrontend.Helpers
         public const string ClaimCorsToken = "oath_ajax_cors";
         public const string ClaimApiToken = "oath_data_api";
 
+        public const string ClaimCookieExp= "auth_cookie_exp";
+
         public static string UniqueClaimOfAntiForgeryToken = "given_name";
 
         public static int SessionRefreshTimeoutSecs = 3600;

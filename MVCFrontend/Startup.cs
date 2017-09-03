@@ -34,14 +34,13 @@ namespace MVCFrontend
                 // add the expiry time back to cookie as one of the claims, called 'myExpireUtc'
                 // to ensure that the claim has latest value, we must keep only one claim
                 // otherwise we will be having multiple claims with same type but different values
-                var claimType = "auth_cookie_exp";
                 var identity = context.Identity;
-                if (identity.HasClaim(c => c.Type == claimType))
+                if (identity.HasClaim(c => c.Type == IdSrv3.ClaimCookieExp))
                 {
-                    var existingClaim = identity.FindFirst(claimType);
+                    var existingClaim = identity.FindFirst(IdSrv3.ClaimCookieExp);
                     identity.RemoveClaim(existingClaim);
                 }
-                var newClaim = new Claim(claimType, expireUtc.ToString());
+                var newClaim = new Claim(IdSrv3.ClaimCookieExp, expireUtc.ToString());
                 context.Identity.AddClaim(newClaim);
             }
             return Task.FromResult(0);
@@ -129,7 +128,7 @@ namespace MVCFrontend
 
                         CleanupClaims(identity);
 
-                        // Add new, no need for std id_token & access_token, we use cookie auth
+                        // Add new claims, no need for std id_token & access_token, we use cookie auth
                         identity.AddClaim(new Claim(IdSrv3.ClaimCorsToken, IdSrv3.NewSiliconClientToken(IdSrv3.ScopeEntryQueueApi)));
                         identity.AddClaim(new Claim(IdSrv3.ClaimApiToken, IdSrv3.NewSiliconClientToken(IdSrv3.ScopeFrontendDataApi)));
                         identity.AddClaim(new Claim(IdSrv3.ClaimScoketAccess, Guid.NewGuid().ToString()));
@@ -187,19 +186,13 @@ namespace MVCFrontend
             });
 
               // silicon client authorization
-            app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
-            {
-                Authority = Configsettings.AuthUrl(),
-                ValidationMode = ValidationMode.Both, 
-                RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
-            });
-            
-            // Later figure out auth config for nancy
-            //app.UseNancy(new NancyOptions
+            //app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             //{
-                
+            //    Authority = Configsettings.AuthUrl(),
+            //    ValidationMode = ValidationMode.Both, 
+            //    RequiredScopes = new[] { IdSrv3.ScopeMvcFrontEnd }
             //});
-
+            
             _logger.Info("startup executed");
         }
 

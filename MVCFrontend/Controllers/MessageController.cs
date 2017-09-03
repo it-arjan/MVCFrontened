@@ -25,18 +25,17 @@ namespace MVCFrontend.Controllers
         [LogRequests]
         public ActionResult Index()
         {
-            //Session.Abandon();
             var model = new MessageViewModel();
 
-            Session["exp_cors"] = Utils.GetClaimFromToken(ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), "exp");
-            Session["exp_cors_token_time_utc"] = Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow,
-                                                        ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), "exp");
+            var corsExp = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken);
+            Session["exp_cors"] = Utils.GetClaimFromToken(corsExp, "exp");
+            Session["exp_cors_utc_iso"] = TimestampToJsFormat(Utils.GetClaimFromToken(corsExp, "exp"));
             
-            Session["exp_coookie"] = ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp");
-            Session["exp_cookie_time_utc"] = ClaimsPrincipal.Current.HasClaim(c => c.Type == "auth_cookie_exp")
-                ? Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, ClaimsPrincipal.Current.GetClaimValue("auth_cookie_exp"))
-                : DateTime.Now.AddHours(-5);
+            var cookieExp = ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCookieExp);
+            Session["exp_coookie"] = cookieExp;
+            Session["exp_cookie_utc_iso"] = TimestampToJsFormat(cookieExp);
 
+            Session["exp_aspsession_utc_iso"] = ToISODateString(DateTime.UtcNow.AddMinutes(Session.Timeout));
 
             model.UserName = ClaimsPrincipal.Current.GetClaimValue("given_name");
             model.Roles = string.Join(", ", ClaimsPrincipal.Current.GetAllClaims("role"));
@@ -44,15 +43,46 @@ namespace MVCFrontend.Controllers
             ViewBag.Message = CheckSessionSettings();
 
             var registerUrl = string.Format("{0}/api/CheckinToken", Configsettings.EntrypointUrl());
-            
-            // when restarting entrypoint, we want to reregister on reload of page
-            RegisterSocketServerAccessToken(
-                registerUrl, 
-                ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken), 
-                ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)
-                );
 
+            try
+            {
+                // Handy for DEV
+                // Register socketaccessToken here,
+                // so when restarting WebEntrypoint, we only need to reload this page instead of logging out/in
+                RegisterSocketServerAccessToken(
+                    registerUrl,
+                    ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken),
+                    ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)
+                    );
+            }
+            catch (Exception ex) {
+                ViewBag.Message += "Cors Token Expired";
+            }
             return View("SendMessage", model);
+        }
+
+        public string AspSessionExpInJsFormat()
+        {
+            return ToISODateString(DateTime.UtcNow.AddMinutes(Session.Timeout));
+        }
+
+        private string GetTimeClaimInJsFormat(string jwt)
+        {
+            return ToISODateString(
+                Utils.GetTimeClaimFromToken(DateTime.UtcNow - DateTime.UtcNow, jwt, "exp")
+                    );
+        }
+
+        private string TimestampToJsFormat(string timstamp)
+        {
+            return ToISODateString(
+                Utils.TimestampToTime(DateTime.UtcNow - DateTime.UtcNow, timstamp)
+                );
+        }
+
+        private string ToISODateString(DateTime d)
+        {
+            return d.ToString("yyyy-MM-ddZHH:mm:ss");
         }
 
         private void RegisterSocketServerAccessToken(string url, string corsToken, string socketServerAccessToken)
@@ -73,9 +103,9 @@ namespace MVCFrontend.Controllers
         {
             var msg = string.Empty;
 
-            if (Convert.ToDateTime(Session["asp_session_exp_time"]) <= Convert.ToDateTime(Session["exp_cookie_time_utc"]))
+            if (Convert.ToDateTime(Session["asp_session_exp_time"]) <= Convert.ToDateTime(Session["exp_cookie_utc_iso"]))
                 msg += string.Format("<span class='Warn'>Warning: Asp session ({0}) expires before the auth cookie ({1}), this config does not work well!</span><br/>", 
-                    Session["asp_session_exp_time"], Session["exp_cookie_time_utc"]);
+                    Session["asp_session_exp_time"], Session["exp_cookie_utc_iso"]);
 
             return msg;
         }

@@ -1,15 +1,19 @@
-﻿function getPartial(url, resultDivId) {
+﻿function CallFuncWhenCookieStillValid(func, ajaxAccessToken, resultDivId, funcData) {
+
     $.ajax({
-        type: 'Get',
-        dataType: 'html',
-        url: url,
+        type: 'GET',
+        url: '/Message/AuthPing',
+        //beforeSend: function (xhr) {
+        //    xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+        //},
     })
-    .done(function (htmlPartial) {
-        $(resultDivId).html(htmlPartial);
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-        $(resultDivId).html("<br/>Request failed: error= " + errorThrown);
-    })
+        .done(function (authPingResult) {
+            if (typeof funcData === "undefined") func(ajaxAccessToken, resultDivId);
+            else func(ajaxAccessToken, resultDivId, funcData);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).text("Auth cookie expired, refresh the page.");
+        });
 }
 
 function deletePostback(id, resultDivId) {
@@ -46,4 +50,18 @@ function QueryDetails(ajaxAccessToken, resultDivId, postbackId) {
 
     $(resultDivId).html("<h3>Loading details ... </h3>");
     getPartial('/Postbackdatas/Details?id=' + postbackId, resultDivId);
+}
+
+function getPartial(url, resultDivId) {
+    $.ajax({
+        type: 'Get',
+        dataType: 'html',
+        url: url,
+    })
+        .done(function (htmlPartial) {
+            $(resultDivId).html(htmlPartial);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(resultDivId).html("<br/>Request failed: error= " + errorThrown);
+        })
 }

@@ -37,7 +37,7 @@
     @foreach (var claim in Model.Claims.OrderBy(c => c.Type))
     {
         claimValue = claim.Value;
-        claimDate = claim.Type == "exp" || claim.Type == "auth_time" || claim.Type == "auth_cookie_exp"
+        claimDate = claim.Type == "exp" || claim.Type == "auth_time" || claim.Type == IdSrv3.ClaimCookieExp
             ? UnoxStartDateCET.AddSeconds(double.Parse(claim.Value)).ToLongTimeString()
             : string.Empty;
 

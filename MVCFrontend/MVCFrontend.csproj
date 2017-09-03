@@ -275,7 +275,6 @@
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\Custom\BackendCommunication.js" />
     <Content Include="Scripts\Custom\NotificationAnimate.js" />
-    <Content Include="Scripts\Custom\secure-utils.js" />
     <Content Include="Scripts\Custom\WebEntryPointCommunication.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
