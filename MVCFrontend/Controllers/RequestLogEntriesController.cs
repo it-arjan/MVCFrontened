@@ -13,6 +13,7 @@ using MVCFrontend.Extentions;
 using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
 using MVCFrontend.Helpers;
+using System.Threading.Tasks;
 
 namespace MVCFrontend.Controllers
 {
@@ -33,18 +34,18 @@ namespace MVCFrontend.Controllers
         }
 
         // GET: RequestLogEntries
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetRecentRequestLogs(50));
+                return PartialView(await db.GetRecentRequestLogsAsync(50));
             }
 
-            return PartialView(db.GetRecentRequestLogs(50, Session.SessionID));
+            return PartialView(await db.GetRecentRequestLogsAsync(50, Session.SessionID));
         }
 
         // GET: RequestLogEntries/Details/5
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -58,7 +59,7 @@ namespace MVCFrontend.Controllers
                     ContentType = "text/html"
                 };
             }
-            RequestLogEntry requestLogEntry = db.FindRequestLog((int)id);
+            RequestLogEntry requestLogEntry = await db.FindRequestLogAsync((int)id);
             if (requestLogEntry == null)
             {
                 return HttpNotFound();
@@ -69,13 +70,13 @@ namespace MVCFrontend.Controllers
          // POST: RequestLogEntries/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             if (!ClaimsPrincipal.Current.isAdmin())
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
             }
-            db.RemoveRequestlog(id);
+            await db.RemoveRequestlogAsync(id);
             db.Commit();
             return RedirectToAction("Index");
         }

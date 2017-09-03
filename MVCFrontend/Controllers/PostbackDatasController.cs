@@ -12,6 +12,7 @@ using MVCFrontend.Extentions;
 using MVCFrontend.Overrides.Filters;
 using NLogWrapper;
 using MVCFrontend.Helpers;
+using System.Threading.Tasks;
 
 namespace MVCFrontend.Controllers
 {
@@ -32,26 +33,26 @@ namespace MVCFrontend.Controllers
     }
 
     // GET: PostbackDatas
-    public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             if (ClaimsPrincipal.Current.isAdmin())
             {
-                return PartialView(db.GetRecentPostbacks(50));
+                return PartialView(await db.GetRecentPostbacksAsync(50));
             }
             else
             {
-                return PartialView(db.GetRecentPostbacks(50, Session.SessionID));
+                return PartialView(await db.GetRecentPostbacksAsync(50, Session.SessionID));
             }
         }
 
         // GET: PostbackDatas/Details/5
-        public ActionResult Details(string id)
+        public async Task<ActionResult> Details(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.FindPostback(Convert.ToInt32(id)); 
+            PostbackData postbackData = await db.FindPostbackAsync(Convert.ToInt32(id)); 
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -65,31 +66,14 @@ namespace MVCFrontend.Controllers
             return View();
         }
 
-        // POST: PostbackDatas/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Duration,UserName,Content")] PostbackData postbackData)
-        {
-            if (ModelState.IsValid)
-            {
-                db.AddPostback(postbackData);
-                db.Commit();
-                return RedirectToAction("Index");
-            }
-
-            return View(postbackData);
-        }
-
         // GET: PostbackDatas/Edit/5
-        public ActionResult Edit(string id)
+        public async Task<ActionResult> Edit(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            PostbackData postbackData = db.FindPostback(Convert.ToInt32(id));
+            PostbackData postbackData = await db.FindPostbackAsync(Convert.ToInt32(id));
             if (postbackData == null)
             {
                 return HttpNotFound();
@@ -100,10 +84,10 @@ namespace MVCFrontend.Controllers
          // POST: PostbackDatas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(string id)
+        public async Task<ActionResult> DeleteConfirmed(string id)
         {
             int intPk = Convert.ToInt16(id);
-            db.RemovePostback(intPk);
+            await db.RemovePostbackAsync(intPk);
             db.Commit();
             return RedirectToAction("Index");
         }

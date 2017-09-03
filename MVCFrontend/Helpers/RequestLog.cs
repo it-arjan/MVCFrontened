@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace MVCFrontend.Helpers
@@ -19,9 +20,14 @@ namespace MVCFrontend.Helpers
             var logEntry = CreateApiLogEntryWithRequestData(HttpContext.Current.Request);
             logEntry.AspSessionId = AspSessionId;
 
-            logEntry.RecentContributions = username == "Anonymous" ? 0
-                : db.GetPostbacksFromToday().Count();
-
+            if (username == "Anonymous")
+                logEntry.RecentContributions = 0;
+            else
+            {
+                // todo return count from method
+                var result = db.GetPostbacksFromToday();
+                logEntry.RecentContributions = result.Count();
+            }
             db.AddRequestlog(logEntry);
             db.Commit();
         }

@@ -37,6 +37,7 @@ namespace MVCFrontend.Overrides.Filters
                             );
 
                         var AspSessionId = filterContext.HttpContext.Session.SessionID;
+                        // todo, going async here gets us into trouble
                         RequestLog.StoreRequestForSessionId(db, AspSessionId);
                         db.Dispose();
                     }

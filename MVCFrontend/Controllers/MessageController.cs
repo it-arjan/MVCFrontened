@@ -55,7 +55,7 @@ namespace MVCFrontend.Controllers
                     ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)
                     );
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 ViewBag.Message += "Cors Token Expired";
             }
             return View("SendMessage", model);
