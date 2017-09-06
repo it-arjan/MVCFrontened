@@ -16,7 +16,7 @@
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             var msg = "";
-            if (jqXHR.status == 401) {
+            if (jqXHR.status === 401) {
                 msg = "AUTHENTICATION FAILED, is the Cors token expired?"
             }
             else {
