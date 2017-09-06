@@ -45,7 +45,9 @@ namespace MVCFrontend
         {
             _logger.Info("Checking config settings..");
             _logger.Info("Running under: Environment.UserName= {0}, Environment.UserDomainName= {1}", Environment.UserName, Environment.UserDomainName);
-            SettingsChecker.CheckPresenceAllPlainSettings(typeof(Configsettings));
+
+            var excludeList = new List<string> { Configsettings.DbConnectionStringKey };
+            SettingsChecker.CheckPlainSettings(typeof(Configsettings), excludeList);
 
             _logger.Info("all requried config settings seem present..");
             _logger.Info("Url = {0}", Configsettings.HostUrl());

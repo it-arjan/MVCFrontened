@@ -35,6 +35,8 @@ namespace MVCFrontend.Helpers
 
         public const string SwalloWLogExceptionsKey = "swallow.log.exceptions";
 
+        public const string DbConnectionStringKey = "FrontendDbContext";
+
         public static string AuthUrl()
         {
             return string.Format("{0}://{1}", Scheme(), AuthServer());
@@ -126,6 +128,11 @@ namespace MVCFrontend.Helpers
         public static bool SwalloWLogExceptions()
         {
             return GetBoolSetting(SwalloWLogExceptionsKey);
+        }
+
+        public static string DbConnectionString()
+        {
+            return ConfigurationManager.ConnectionStrings[DbConnectionStringKey].ToString();
         }
         
         public static int CookieTimeoutMinutes()
