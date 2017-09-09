@@ -62,7 +62,8 @@ namespace MVCFrontend
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            //only for etf dbtype new MyData.DataFactory(MyDbType.ApiDbNancy).DbSetup();
+            //only for etf dbtype 
+            // new MyData.DataFactory(MyDbType.EtfDb).DbSetup();
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
 
             System.Web.Helpers.AntiForgeryConfig.UniqueClaimTypeIdentifier = Helpers.IdSrv3.UniqueClaimOfAntiForgeryToken;
