@@ -87,7 +87,7 @@
                             // Add a message listeners
                             _gSocket.onmessage = function (received_msg) {
                                 if (msgForQmFeed(received_msg, qm_feed_id)) {
-                                    HandleQueueManagerMsg(received_msg, qm_feed_id, doneToken);
+                                    handleQmFeedMsg(received_msg, qm_feed_id, doneToken);
                                 }
                                 else if (msgForNotificationFeed(received_msg, notification_feed_id)) {
                                     var bare_msg = stripFeedId(received_msg, notification_feed_id);
@@ -122,7 +122,7 @@
                 }
             }
 
-            function HandleQueueManagerMsg(socket_msg, qm_feed_id, doneToken){
+            function handleQmFeedMsg(socket_msg, qm_feed_id, doneToken){
                 var bare_msg = stripFeedId(socket_msg, qm_feed_id);
                 if (bare_msg.indexOf(doneToken.toString()) >= 0) {
                     displayInQmChat("Done token received, auto-refreshing postbacks...");
