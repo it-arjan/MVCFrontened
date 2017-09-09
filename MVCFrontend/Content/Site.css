@@ -18,6 +18,15 @@
 span.sep {
     min-width:10px;
 }
+#always-on-container{
+    position: absolute;
+    top:5%;
+    z-index: 100;
+    left: 75%;
+    width: 25%;
+    border:1px solid black;
+    padding: 5px;
+}
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
@@ -29,8 +38,8 @@ textarea {
     background: ivory;
 }
 #api-request-feed {
-    height: 250px;
-    max-height: 250px;
+    height: 150px;
+    max-height: 150px;
 }
 #timeout-settings {
     font-size: 12px;
@@ -65,6 +74,7 @@ textarea {
     text-align: center;
     font-size: 10pt;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    z-index: 500;
 }
 button.xbutton {
     margin-top: 1px;

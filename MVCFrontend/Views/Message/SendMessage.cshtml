@@ -24,7 +24,7 @@
         </div>
         <div class="row">
             <div id="SendMessage" class="tabcontent">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <p>&nbsp;</p>
                     <p>
                         Dropped messages land in a remote Message Queue, where they get picked up by a Queue Manager. This manager will use MSMQ to offer your input to 3 configured Web Services. 
@@ -51,28 +51,7 @@
                         <span id="dropResult"></span>
                     </form>
                 </div>
-                <div class="col-md-4">
-                    <h4>data Api request feed - live</h4>
-                    <div id="api-request-feed" class="scroll-div">Data Api is starting up...
-                        
-                    </div>
-                </div>
-                <div id="timeout-settings" class="col-md-2">
-                    <h4>Timeouts </h4>
-                    <div >
-                        <b>ASP Session - </b><span id="exp_asp"></span>
-                    </div>
-                    <div>
-                        <b>Auth Cookie - </b><span id="exp_cookie"></span>
-                    </div>
-                    <div>
-                        <b>Cors Token - </b><span id="exp_cors_token"></span><br />
-                        <a onclick="event.preventDefault();alert('todo')">Refresh CORS1 </a><br />(cookie-auth)<br />
-                    </div>
-                    <h4>Timeout Settings</h4>
-                    <span class='Info'>Auth.Cookie.SlidingExp=@Configsettings.CookieSlidingExpiration()</span><br />
-                    <span class='Info'>Use.Token.Lifetime=@Configsettings.UseTokenLifetime()</span><br />
-                </div>
+                <div class="col-md-4"></div>
             </div>
             <div id="ServerConfig" class="tabcontent">
                 <div class="col-md-4">
@@ -102,242 +81,264 @@
             
         </div>
         <hr />
-            <div class="row">
-                <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
-                <div class="col-md-4">
-                    <div class="wrapper">@(ClaimsPrincipal.Current.isAdmin()? "All actions": "Actions related to asp.net cookie")
-                    <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span>
-                     </div>
+    <div class="row">
+        <div class="col-md-8"> <div class="wrapper"><a class="fancyButtons" href="#" id="initializeChat">Re-Initialize</a><span class="tourTip ttButton">Js</span>Queue Mananger Log (=socket chat).</div></div>
+        <div class="col-md-4">
+            <div class="wrapper">@(ClaimsPrincipal.Current.isAdmin()? "All actions": "Actions related to asp.net cookie")
+            <a href="#" id="queryPostbackData" class="fancyButtons">Refresh</a><span class="tourTip ttButton">Ajax</span>
                 </div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="socketChat" class="col-md-8 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
+        <div id="postbackResult" class="col-md-4 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
+    </div>
+
+    <div id="always-on-container">
+        <div>
+            <h4>data Api request feed - live</h4>
+            <div id="api-request-feed" class="scroll-div">
+                Data Api is starting up...
+
             </div>
-            <div class="row">
-                <div id="socketChat" class="col-md-8 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
-                <div id="postbackResult" class="col-md-4 scroll-div" style="border: solid 1px #3399CC; padding: 3px;"></div>
+        </div>
+        <div id="timeout-settings">
+            <h4>Timeouts </h4>
+            <div>
+                <b>ASP Session - </b><span id="exp_asp"></span>
             </div>
+            <div>
+                <b>Auth Cookie - </b><span id="exp_cookie"></span>
+            </div>
+            <div>
+                <b>Cors Token - </b><span id="exp_cors_token"></span><br />
+                <a onclick="event.preventDefault();alert('todo')">Refresh CORS1 </a><br />(cookie-auth)<br />
+            </div>
+        </div>
+    </div>
+<script src="~/Scripts/Custom/WebEntryPointCommunication.js"></script>
+<script src="~/Scripts/Custom/BackendCommunication.js"></script>
+<script>
+    $(document).keypress(
+        function (event) {
+            if (event.which == '13') {
+                event.preventDefault();
+            }
 
-            <script src="~/Scripts/Custom/WebEntryPointCommunication.js"></script>
-            <script src="~/Scripts/Custom/BackendCommunication.js"></script>
-            <script>
-                $(document).keypress(
-                    function (event) {
-                        if (event.which == '13') {
-                            event.preventDefault();
-                        }
 
+        });
+    $(document).ready(function () {
 
-                    });
-                $(document).ready(function () {
+        $('#msgForm').submit(function (event) {
+            event.preventDefault();
+            DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)',
+                "#dropResult", $('input[name=message]').val(), $('select[name=nrdrops]').val());
+            $('select[name=nrdrops]').val(1);
+        });
+        $('#queryPostbackData').click(function (event) {
+            event.preventDefault();
+            CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
+        });
+        $('#initializeChat').click(function (event) {
+            event.preventDefault();
+            InitializeChat()
+        });
+        $('#toggleQueue').click(function (event) {
+            event.preventDefault();
+            ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
+        });
 
-                    $('#msgForm').submit(function (event) {
-                        event.preventDefault();
-                        DropIntoQueueCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)',
-                            "#dropResult", $('input[name=message]').val(), $('select[name=nrdrops]').val());
-                        $('select[name=nrdrops]').val(1);
-                    });
-                    $('#queryPostbackData').click(function (event) {
-                        event.preventDefault();
-                        CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
-                    });
-                    $('#initializeChat').click(function (event) {
-                        event.preventDefault();
-                        InitializeChat()
-                    });
-                    $('#toggleQueue').click(function (event) {
-                        event.preventDefault();
-                        ToggleQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
-                    });
+        //call these on page load
+        document.getElementById("openOnLoad").click();
+        GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
+        QueryPostbackData('token-not-used', '#postbackResult');
+        InitializeChat();
+    });
 
-                    //call these on page load
-                    document.getElementById("openOnLoad").click();
-                    GetQueueStatusCors('@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimCorsToken)', "#toggleResult");
-                    QueryPostbackData('token-not-used', '#postbackResult');
-                    InitializeChat();
-                });
-
-                function openTab(evt, tabId) {
-                    $(".tabcontent").hide();
-                    $(".tablinks").removeClass("active");
-                    $("#" + tabId).show();
-                    evt.currentTarget.className += " active";
-                }
-
-                function InitializeChat() {
-                    $("#socketChat").empty();
-                    $("#socketChat").prepend("<span class='tourTip ttScreen'>Js WebSocket</span>");
-                    ConnectToSocketServer();
-                }
-
-                function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
-                    var formData = {
-                        'cmdType': "GetModus",
-                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
-                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
-                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'AspSessionId': '@Session.SessionID',
-                    };
-
-                    var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
-                    SendCmd(url, formData, ajaxAccessToken, resultDivId);
-                }
-
-                function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
-                    var formData = {
-                        'cmdType': 'ToggleModus',
-                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
-                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
-                        'AspSessionId': '@Session.SessionID',
-                        'LogDropRequest': '@Model.LogDropRequest',
-                    };
-                    var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
-                    SendCmd(url, formData, ajaxAccessToken, resultDivId);
-                }
-
-                function RefreshRequests(resultDivId) {
-                    CallFuncWhenCookieStillValid(GetRequestLogs, "no token, cookie", resultDivId);
-                }
-
-                function GetRequestLogs(tokenNotUsed, resultDivId) {
-                    $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
-                    getPartial('/RequestLogEntries/', resultDivId);
-                }
-
-                function QueryPostbackData(ajaxAccessToken, resultDivId) {
-                    $(resultDivId).html("<h3>Loading actions.. </h3>");
-                    getPartial('/Postbackdatas/', resultDivId);
-                }
-
-                function DropIntoQueueCors(ajaxAccessToken, resultDivId, msgId, nrDrops) {
-                    var formData = {
-                        'MessageId': msgId,
-                        'PostBackUrl': '@string.Format("{0}/postback", Configsettings.DataApiUrl())',
-                        'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
-                        'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
-                        'SocketNotificationFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)',
-                        'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
-                        'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimPostbackCompleted)',
-                        'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
-                        'AspSessionId': '@Session.SessionID',
-                        'LogDropRequest': '@Model.LogDropRequest',
-                        'NrDrops': nrDrops
-                    };
-
-                    $('button[name=dropSubmit]').hide();
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Configsettings.EntrypointUrl()' + 'api/entryqueue',
-                        data: formData,
-                        dataType: 'text',
-                        encode: true,
-                        beforeSend: function (xhr) {
-                            xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
-                            xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-                        },
-                    })
-                    .done(function (data) {
-                        var obj = JSON.parse(data);
-                        $(resultDivId).text(obj.message);
-                    })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        var msg = "";
-                        if (jqXHR.status === 401) {
-                            msg = "AUTHENTICATION FAILED, is the Cors token expired?"
-                        }
-                        else {
-                            msg = "<br/>Drop failed, status= " + jqXHR.status
-                        }
-                        $(resultDivId).text(msg);
-                    })
-                    .always(function () {
-                        setTimeout(function () {
-                            $('button[name=dropSubmit]').show();
-                        }, 3000);
-
-                    })
-                }
-            </script>
-        //
-        // Session expiration counter stuff
-        //
-            <script>
-
-                // the Asp Counter
-                var aspCounter = setInterval(function () {
-                    RefreshCounter('#exp_asp', '@Session["exp_aspsession_utc_iso"]');
-                }, 1000);
-                // auth Cookie Counter
-                var cookieCounter = setInterval(function () {
-                    var expstr = '@Session["exp_cookie_utc_iso"]';
-                    RefreshCounter('#exp_cookie', expstr);
-                }, 1000);
-
-                // Cors Token Counter
-                var tokenCounter = setInterval(function () {
-                    RefreshCounter ('#exp_cors_token', '@Session["exp_cors_utc_iso"]');
-                }, 1000);
-
-                // Refresh counter
-                function RefreshCounter(resultId, expDateStrUtc) {
-
-                    var nowStrUtc = new Date().toUTCString();
-                    var clientUtcNow = new Date(nowStrUtc); // not same (in ticks) as new Date()
-
-                    var expDate = new Date(expDateStrUtc);
-
-                    var ticks = expDate.getTime() - clientUtcNow.getTime();
-
-                    if (ticks < 0) {
-                        console.log("==== Counter expired ====");
-                        console.log("Utc now Date = " + clientUtcNow);
-                        console.log("expdateStrUtc= " + expDateStrUtc);
-                        console.log("expstrUtc new Date= " + expDate);
-
-                        console.log("ticks expUtc/utcNow " + expDate.getTime() + ", " + clientUtcNow.getTime());
-
-                        // provisoric
-                        var counterToStop = resultId === '#exp_asp' ? aspCounter :
-                            resultId === '#exp_cookie' ? cookieCounter : tokenCounter;
-
-                        setExpiredAndStop(counterToStop, resultId);
-                    }
-                    else {
-                        var msg = getCounterDisplayMsg(ticks);
-                        //console.log("Msg: " + msg)
-                        // Display the result
-                        $(resultId).text(msg);
-                    }
-                }
-
-                function getCounterDisplayMsg(ticks) {
-                    var hours = Math.floor((ticks % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    var minutes = Math.floor((ticks % (1000 * 60 * 60)) / (1000 * 60));
-                    var seconds = Math.floor((ticks % (1000 * 60)) / 1000);
-
-                    var hrs_relevant = hours > 0 ? hours + "h " : "";
-                    return hrs_relevant + minutes + "m " + seconds + "s ";
-                }
-
-                function setExpiredAndStop(intervalRef, resultId) {
-                    clearInterval(intervalRef);
-                    $(resultId).text("EXPIRED");
-                    $(resultId).css("color", "red");
-                }
-
-                function ConvertUTCTimeToLocalTime(utcDateString) {
-                    var convertdLocalTime = new Date(utcDateString);
-
-                    var hourOffset = convertdLocalTime.getTimezoneOffset() / 60;
-
-                    convertdLocalTime.setHours(convertdLocalTime.getHours() + hourOffset);
-
-                    return convertdLocalTime;
-                }
-            </script>
+    function openTab(evt, tabId) {
+        $(".tabcontent").hide();
+        $(".tablinks").removeClass("active");
+        $("#" + tabId).show();
+        evt.currentTarget.className += " active";
     }
-    else
-    {
-        <p>Your assigned roles do not allow for sending messages.</p>
+
+    function InitializeChat() {
+        $("#socketChat").empty();
+        $("#socketChat").prepend("<span class='tourTip ttScreen'>Js WebSocket</span>");
+        ConnectToSocketServer();
     }
+
+    function GetQueueStatusCors(ajaxAccessToken, resultDivId) {
+        var formData = {
+            'cmdType': "GetModus",
+            'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+            'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
+            'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
+            'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+            'AspSessionId': '@Session.SessionID',
+        };
+
+        var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
+        SendCmd(url, formData, ajaxAccessToken, resultDivId);
+    }
+
+    function ToggleQueueStatusCors(ajaxAccessToken, resultDivId) {
+        var formData = {
+            'cmdType': 'ToggleModus',
+            'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+            'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
+            'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+            'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
+            'AspSessionId': '@Session.SessionID',
+            'LogDropRequest': '@Model.LogDropRequest',
+        };
+        var url = '@Configsettings.EntrypointUrl()' + 'api/cmdqueue';
+        SendCmd(url, formData, ajaxAccessToken, resultDivId);
+    }
+
+    function RefreshRequests(resultDivId) {
+        CallFuncWhenCookieStillValid(GetRequestLogs, "no token, cookie", resultDivId);
+    }
+
+    function GetRequestLogs(tokenNotUsed, resultDivId) {
+        $(resultDivId).html("<h3>Getting most recent Request Logs.. </h3>");
+        getPartial('/RequestLogEntries/', resultDivId);
+    }
+
+    function QueryPostbackData(ajaxAccessToken, resultDivId) {
+        $(resultDivId).html("<h3>Loading actions.. </h3>");
+        getPartial('/Postbackdatas/', resultDivId);
+    }
+
+    function DropIntoQueueCors(ajaxAccessToken, resultDivId, msgId, nrDrops) {
+        var formData = {
+            'MessageId': msgId,
+            'PostBackUrl': '@string.Format("{0}/postback", Configsettings.DataApiUrl())',
+            'SocketAccessToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)',
+            'SocketQmFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)',
+            'SocketNotificationFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)',
+            'SocketApiFeed': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)',
+            'DoneToken': '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimPostbackCompleted)',
+            'UserName': '@ClaimsPrincipal.Current.GetClaimValue("given_name")',
+            'AspSessionId': '@Session.SessionID',
+            'LogDropRequest': '@Model.LogDropRequest',
+            'NrDrops': nrDrops
+        };
+
+        $('button[name=dropSubmit]').hide();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Configsettings.EntrypointUrl()' + 'api/entryqueue',
+            data: formData,
+            dataType: 'text',
+            encode: true,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'bearer ' + ajaxAccessToken);
+                xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+            },
+        })
+        .done(function (data) {
+            var obj = JSON.parse(data);
+            $(resultDivId).text(obj.message);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            var msg = "";
+            if (jqXHR.status === 401) {
+                msg = "AUTHENTICATION FAILED, is the Cors token expired?"
+            }
+            else {
+                msg = "<br/>Drop failed, status= " + jqXHR.status
+            }
+            $(resultDivId).text(msg);
+        })
+        .always(function () {
+            setTimeout(function () {
+                $('button[name=dropSubmit]').show();
+            }, 3000);
+
+        })
+    }
+</script>
+    //
+    // Session expiration counter stuff
+    //
+<script>
+
+    // the Asp Counter
+    var aspCounter = setInterval(function () {
+        RefreshCounter('#exp_asp', '@Session["exp_aspsession_utc_iso"]');
+    }, 1000);
+    // auth Cookie Counter
+    var cookieCounter = setInterval(function () {
+        var expstr = '@Session["exp_cookie_utc_iso"]';
+        RefreshCounter('#exp_cookie', expstr);
+    }, 1000);
+
+    // Cors Token Counter
+    var tokenCounter = setInterval(function () {
+        RefreshCounter ('#exp_cors_token', '@Session["exp_cors_utc_iso"]');
+    }, 1000);
+
+    // Refresh counter
+    function RefreshCounter(resultId, expDateStrUtc) {
+
+        var nowStrUtc = new Date().toUTCString();
+        var clientUtcNow = new Date(nowStrUtc); // not same (in ticks) as new Date()
+
+        var expDate = new Date(expDateStrUtc);
+
+        var ticks = expDate.getTime() - clientUtcNow.getTime();
+
+        if (ticks < 0) {
+            console.log("==== Counter expired ====");
+            console.log("Utc now Date = " + clientUtcNow);
+            console.log("expdateStrUtc= " + expDateStrUtc);
+            console.log("expstrUtc new Date= " + expDate);
+
+            console.log("ticks expUtc/utcNow " + expDate.getTime() + ", " + clientUtcNow.getTime());
+
+            // provisoric
+            var counterToStop = resultId === '#exp_asp' ? aspCounter :
+                resultId === '#exp_cookie' ? cookieCounter : tokenCounter;
+
+            setExpiredAndStop(counterToStop, resultId);
+        }
+        else {
+            var msg = getCounterDisplayMsg(ticks);
+            //console.log("Msg: " + msg)
+            // Display the result
+            $(resultId).text(msg);
+        }
+    }
+
+    function getCounterDisplayMsg(ticks) {
+        var hours = Math.floor((ticks % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((ticks % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((ticks % (1000 * 60)) / 1000);
+
+        var hrs_relevant = hours > 0 ? hours + "h " : "";
+        return hrs_relevant + minutes + "m " + seconds + "s ";
+    }
+
+    function setExpiredAndStop(intervalRef, resultId) {
+        clearInterval(intervalRef);
+        $(resultId).text("EXPIRED");
+        $(resultId).css("color", "red");
+    }
+
+    function ConvertUTCTimeToLocalTime(utcDateString) {
+        var convertdLocalTime = new Date(utcDateString);
+
+        var hourOffset = convertdLocalTime.getTimezoneOffset() / 60;
+
+        convertdLocalTime.setHours(convertdLocalTime.getHours() + hourOffset);
+
+        return convertdLocalTime;
+    }
+</script>
+}
+else
+{
+    <p>Your assigned roles do not allow for sending messages.</p>
+}
