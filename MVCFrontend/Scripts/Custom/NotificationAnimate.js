@@ -1,7 +1,7 @@
 ﻿var allBoxes = ["#message_box1", "#message_box2", "#message_box3"];
 var busyBoxes = [];
 
-function DisplayNotification(notification) {
+function displayAsNotification(notification) {
     var finder = new FreeBoxFinder();
     finder.findBox(finder, notification);
     if (!finder.found) {

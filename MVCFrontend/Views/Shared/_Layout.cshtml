@@ -70,68 +70,86 @@
 
             function ConnectToSocketServer() {
                 if ("WebSocket" in window) {
-                    var qm_log_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)';
+                    var qm_feed_id = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)';
                     var doneToken = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimPostbackCompleted)';
-                    var notification_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)';
-                    var api_feed_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)';
+                    var notification_feed_id = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimNotificationFeedId)';
+                    var api_feed_id = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)';
                     var socket_server_access_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)';
 
-                    if (qm_log_token.length > 0) {
+                    if (qm_feed_id.length > 0) {
                         try {
                             if (_gSocket != null) {
                                 //alert('closing existing socket..');
                                 _gSocket.close();
                             }
                             _gSocket = new WebSocket(serverUrl, socket_server_access_token);
-                            // Add a message listener
-                            _gSocket.onmessage = function (msg) {
-                                if (msg.data.toString().indexOf(qm_log_token.toString()) === 0) {
-                                    var msgWithoutToken = msg.data.toString().substring(qm_log_token.toString().length + 6, msg.data.toString().length);
-                                    if (msgWithoutToken.indexOf(doneToken.toString()) >= 0) {
-                                        toLogManagerChat("Done token received, auto-refreshing postbacks...");
-                                        CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
-                                    }
-                                    else {
-                                        toLogManagerChat(msgWithoutToken);
-                                    }
+
+                            // Add a message listeners
+                            _gSocket.onmessage = function (received_msg) {
+                                if (msgForQmFeed(received_msg, qm_feed_id)) {
+                                    HandleQueueManagerMsg(received_msg, qm_feed_id, doneToken);
                                 }
-                                else if (msg.data.toString().indexOf(notification_token.toString()) === 0) {
-                                    var msgWithoutToken = msg.data.toString().substring(notification_token.toString().length + 6, msg.data.toString().length);
-                                    DisplayNotification(msgWithoutToken);
+                                else if (msgForNotificationFeed(received_msg, notification_feed_id)) {
+                                    var bare_msg = stripFeedId(received_msg, notification_feed_id);
+                                    displayAsNotification(bare_msg);
                                 }
-                                else if (msg.data.toString().indexOf(api_feed_token.toString()) === 0) {
-                                    var msgWithoutToken = msg.data.toString().substring(api_feed_token.toString().length + 6, msg.data.toString().length);
-                                    DisplayApiFeed(msgWithoutToken);
+                                else if (msgForApiFeed(received_msg, api_feed_id)) {
+                                    var bare_msg = stripFeedId(received_msg, api_feed_id);
+                                    displayInApiFeed(bare_msg);
                                 }
                                 else {
-                                    DisplayNotification("It seems other users are active on the site..");
+                                    displayAsNotification("It seems other users are active on the site..");
                                 }
-
-                            };
-                            _gSocket.onerror = function (msg) {
-                                toLogManagerChat("_gSocket.onerror is triggered: " + msg.data);
                             };
 
-                            toLogManagerChat("..socket log initialized. Log messages of remote system will show here..");
+                            _gSocket.onerror = function (socket_msg) {
+                                displayInQmChat("_gSocket.onerror is triggered: " + socket_msg.data);
+                            };
+                            // done adding msg listeners
+                            displayInQmChat("..socket log initialized. Log messages of remote system will show here..");
                         }
                         catch (ex) {
-                            toLogManagerChat("Exception connecting to socket server: " + serverUrl);
-                            toLogManagerChat(ex.message);
+                            displayInQmChat("Exception connecting to socket server: " + serverUrl);
+                            displayInQmChat(ex.message);
                         }
                     }
                     else {
-                        toLogManagerChat("Socket Token not set, the socket chat will not work, refresh the page.");
+                        displayInQmChat("Socket Token not set, the socket chat will not work, refresh the page.");
                     }
                 }
                 else {
-                    toLogManagerChat("webSockets are not supported on this browser, the socket chat log will not work.");
+                    displayInQmChat("webSockets are not supported on this browser, the socket chat log will not work.");
                 }
             }
 
-            function socketDisconnected(socketArg) {
-                return socketArg.ready === 0;
+            function HandleQueueManagerMsg(socket_msg, qm_feed_id, doneToken){
+                var bare_msg = stripFeedId(socket_msg, qm_feed_id);
+                if (bare_msg.indexOf(doneToken.toString()) >= 0) {
+                    displayInQmChat("Done token received, auto-refreshing postbacks...");
+                    CallFuncWhenCookieStillValid(QueryPostbackData, 'token-not-used', "#postbackResult");
+                }
+                else {
+                    displayInQmChat(bare_msg);
+                }
             }
-            function DisplayApiFeed(msg) {
+
+            function stripFeedId(socket_msg, feed_id) {
+                return socket_msg.data.toString().substring(feed_id.toString().length + 6, socket_msg.data.toString().length);
+            }
+
+            function msgForQmFeed(socket_msg, qm_feed_id) {
+                return socket_msg.data.toString().indexOf(qm_feed_id.toString()) === 0;
+            }
+
+            function msgForNotificationFeed(socket_msg, notification_feed_id) {
+                socket_msg.data.toString().indexOf(notification_feed_id.toString()) === 0;
+            }
+
+            function msgForApiFeed(socket_msg, api_feed_id) {
+                return socket_msg.data.toString().indexOf(api_feed_id.toString()) === 0;
+            }
+
+            function displayInApiFeed(msg) {
                 if ($("#api-request-feed").text().startsWith("Data Api")){
                     $("#api-request-feed").html("<p>" + msg + "</p>");
                 }
@@ -141,7 +159,7 @@
 
             }
 
-            function toLogManagerChat(msg) {
+            function displayInQmChat(msg) {
                 $("#socketChat").prepend("<p>" + msg + "</p>");
             }
     </script>
