@@ -90,12 +90,12 @@
                                     handleQmFeedMsg(received_msg, qm_feed_id, doneToken);
                                 }
                                 else if (msgForNotificationFeed(received_msg, notification_feed_id)) {
-                                    var bare_msg = stripFeedId(received_msg, notification_feed_id);
-                                    displayAsNotification(bare_msg);
+                                    var msg_txt = stripFeedId(received_msg, notification_feed_id);
+                                    displayAsNotification(msg_txt);
                                 }
                                 else if (msgForApiFeed(received_msg, api_feed_id)) {
-                                    var bare_msg = stripFeedId(received_msg, api_feed_id);
-                                    displayInApiFeed(bare_msg);
+                                    var msg_txt = stripFeedId(received_msg, api_feed_id);
+                                    displayInApiFeed(msg_txt);
                                 }
                                 else {
                                     displayAsNotification("It seems other users are active on the site..");
@@ -142,7 +142,7 @@
             }
 
             function msgForNotificationFeed(socket_msg, notification_feed_id) {
-                socket_msg.data.toString().indexOf(notification_feed_id.toString()) === 0;
+                return socket_msg.data.toString().indexOf(notification_feed_id.toString()) === 0;
             }
 
             function msgForApiFeed(socket_msg, api_feed_id) {
