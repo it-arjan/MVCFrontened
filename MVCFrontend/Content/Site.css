@@ -38,8 +38,8 @@ textarea {
     background: ivory;
 }
 #api-request-feed {
-    height: 150px;
-    max-height: 150px;
+    height: 200px;
+    max-height: 200px;
 }
 #timeout-settings {
     font-size: 12px;
