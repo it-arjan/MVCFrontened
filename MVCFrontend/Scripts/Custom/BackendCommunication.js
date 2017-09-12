@@ -1,4 +1,5 @@
-﻿function CallFuncWhenCookieStillValid(func, ajaxAccessToken, resultDivId, funcData) {
+﻿"use strict";
+function CallFuncWhenCookieStillValid(func, ajaxAccessToken, resultDivId, funcData) {
 
     $.ajax({
         type: 'GET',

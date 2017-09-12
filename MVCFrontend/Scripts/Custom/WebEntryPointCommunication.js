@@ -1,4 +1,5 @@
-﻿function SendCmd(url, formData, ajaxAccessToken, resultDivId) {
+﻿"use strict";
+function SendCmd(url, formData, ajaxAccessToken, resultDivId) {
     $.ajax({
         type: 'POST',
         url: url,

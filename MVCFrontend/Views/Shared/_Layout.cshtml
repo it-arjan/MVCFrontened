@@ -10,9 +10,6 @@
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/bundles/jquery")
-    @*<script src="https://code.jquery.com/jquery-3.2.1.js"
-            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-            crossorigin="anonymous"></script>*@
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -64,10 +61,10 @@
         <script src="~/Scripts/Custom/NotificationAnimate.js"></script>
         //Socket stuff in this script
         <script>
+            "use strict";
             // Create SocketIO instance, connect
             var _gSocket = null;
             var serverUrl = '@Configsettings.SocketServerUrl()';
-
             function ConnectToSocketServer() {
                 if ("WebSocket" in window) {
                     var qm_feed_id = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimQmFeedId)';
@@ -76,45 +73,23 @@
                     var api_feed_id = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimApiFeedId)';
                     var socket_server_access_token = '@ClaimsPrincipal.Current.GetClaimValue(IdSrv3.ClaimScoketAccess)';
 
-                    if (qm_feed_id.length > 0) {
-                        try {
-                            if (_gSocket != null) {
-                                //alert('closing existing socket..');
-                                _gSocket.close();
-                            }
-                            _gSocket = new WebSocket(serverUrl, socket_server_access_token);
-
-                            // Add a message listeners
-                            _gSocket.onmessage = function (received_msg) {
-                                if (msgForQmFeed(received_msg, qm_feed_id)) {
-                                    handleQmFeedMsg(received_msg, qm_feed_id, doneToken);
-                                }
-                                else if (msgForNotificationFeed(received_msg, notification_feed_id)) {
-                                    var msg_txt = stripFeedId(received_msg, notification_feed_id);
-                                    displayAsNotification(msg_txt);
-                                }
-                                else if (msgForApiFeed(received_msg, api_feed_id)) {
-                                    var msg_txt = stripFeedId(received_msg, api_feed_id);
-                                    displayInApiFeed(msg_txt);
-                                }
-                                else {
-                                    displayAsNotification("It seems other users are active on the site..");
-                                }
+                    try
+                    {
+                        _gSocket = new WebSocket(serverUrl, socket_server_access_token);
+                        // Add message listeners
+                        _gSocket.onmessage = function (received_msg) {
+                            handleMessage(received_msg, qm_feed_id, notification_feed_id, api_feed_id, doneToken);
+                            };
+                        _gSocket.onerror = function (socket_msg) {
+                            displayInQmChat("socket error: " + socket_msg.data);
                             };
 
-                            _gSocket.onerror = function (socket_msg) {
-                                displayInQmChat("_gSocket.onerror is triggered: " + socket_msg.data);
-                            };
-                            // done adding msg listeners
-                            displayInQmChat("..socket log initialized. Log messages of remote system will show here..");
-                        }
-                        catch (ex) {
-                            displayInQmChat("Exception connecting to socket server: " + serverUrl);
-                            displayInQmChat(ex.message);
-                        }
+                        // done adding message listeners
+                        displayInQmChat("..socket log initialized. Log messages of remote system will show here..");
                     }
-                    else {
-                        displayInQmChat("Socket Token not set, the socket chat will not work, refresh the page.");
+                    catch (ex) {
+                        displayInQmChat("Exception connecting to socket server: " + serverUrl);
+                        displayInQmChat(ex.message);
                     }
                 }
                 else {
@@ -122,7 +97,22 @@
                 }
             }
 
-            function handleQmFeedMsg(socket_msg, qm_feed_id, doneToken){
+            function handleMessage(received_msg, qm_feed_id, notification_feed_id, api_feed_id, doneToken) {
+                if (msgForQmFeed(received_msg, qm_feed_id)) {
+                    handleQmFeedMsg(received_msg, qm_feed_id, doneToken);
+                }
+                else if (msgForNotificationFeed(received_msg, notification_feed_id)) {
+                    displayAsNotification(stripFeedId(received_msg, notification_feed_id));
+                }
+                else if (msgForApiFeed(received_msg, api_feed_id)) {
+                    displayInApiFeed(stripFeedId(received_msg, api_feed_id));
+                }
+                else {
+                    displayAsNotification("It seems other users are active on the site..");
+                }
+            }
+
+            function handleQmFeedMsg(socket_msg, qm_feed_id, doneToken) {
                 var bare_msg = stripFeedId(socket_msg, qm_feed_id);
                 if (bare_msg.indexOf(doneToken.toString()) >= 0) {
                     displayInQmChat("Done token received, auto-refreshing postbacks...");

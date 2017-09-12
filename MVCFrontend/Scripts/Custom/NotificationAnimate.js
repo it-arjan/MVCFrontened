@@ -1,4 +1,5 @@
-﻿var allBoxes = ["#message_box1", "#message_box2", "#message_box3"];
+﻿"use strict";
+var allBoxes = ["#message_box1", "#message_box2", "#message_box3"];
 var busyBoxes = [];
 
 function displayAsNotification(notification) {
