@@ -63,14 +63,12 @@ textarea {
     height: 800px;
     max-height: 800px;
 }
-#message_box1, #message_box2, #message_box3 {
-    position: absolute;
-    left: 70%;
-    width: 30%;
-    height: 55px;
-    visibility: hidden;
+.message_box {
+    width: 320px;
+    /*height: 55px;*/
     background-color: #bca;
-    border: 1px solid green;
+    border: 1px solid black;
+    padding:2px 2px 2px 2px;
     text-align: center;
     font-size: 10pt;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
